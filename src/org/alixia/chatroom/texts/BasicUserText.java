@@ -15,7 +15,8 @@ import javafx.scene.text.TextFlow;
  * @author Zeale
  *
  */
-public class BasicUserMessage extends ConsoleText {
+public class BasicUserText extends ConsoleText {
+
 	public String username, message;
 
 	@Override
@@ -28,7 +29,7 @@ public class BasicUserMessage extends ConsoleText {
 		flow.getChildren().addAll(name, arrow, msg, println());
 	}
 
-	public BasicUserMessage(String username, String message) {
+	public BasicUserText(String username, String message) {
 		this.username = username;
 		this.message = message;
 	}

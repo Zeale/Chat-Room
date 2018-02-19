@@ -1,14 +1,11 @@
 package org.alixia.chatroom;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
-import org.alixia.chatroom.connections.Client;
-import org.alixia.chatroom.connections.Server;
+import org.alixia.chatroom.connections.ConnectionManager;
+import org.alixia.chatroom.connections.messages.BasicUserMessage;
 import org.alixia.chatroom.texts.BasicInfoText;
-import org.alixia.chatroom.texts.BasicUserMessage;
+import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.Println;
 
 import javafx.scene.Scene;
@@ -29,9 +26,6 @@ public class ChatRoom {
 	private final static Background DEFAULT_NODE_BACKGROUND = new Background(
 			new BackgroundFill(new Color(0.4, 0.4, 0.4, 0.7), null, null));
 
-	private List<Client> clients = new ArrayList<>();
-	private List<Server> servers = new ArrayList<>();
-
 	private String username = "Unnamed";
 
 	// Some of these fields have aliases.
@@ -44,6 +38,7 @@ public class ChatRoom {
 	private final Stage stage;
 
 	private final CommandManager commandManager = new CommandManager();
+	private final ConnectionManager connectionManager = new ConnectionManager();
 
 	ChatRoom(Stage stage) {
 		this.stage = stage;
@@ -153,7 +148,15 @@ public class ChatRoom {
 			// TODO Check if the command was recognized.
 			commandManager.runCommand(text);
 		} else {
-			new BasicUserMessage(username, text).print(flow);
+
+			if (connectionManager.isClientSelected()) {
+				connectionManager.getCurrentClient().sendObject(new BasicUserMessage(username, text));
+				new BasicUserText(username, text).print(flow);
+			} else {
+				print("You can only send messages to a server through a client. Do ", Color.RED);
+				print("/new help ", Color.ORANGERED);
+				println("For help with connections.", Color.RED);
+			}
 		}
 		input.setText("");
 	}
