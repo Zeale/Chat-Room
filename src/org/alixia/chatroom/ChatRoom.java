@@ -91,7 +91,24 @@ public class ChatRoom {
 			event.consume();
 		});
 
+		print("Connect to a server with ", Color.RED);
+		print("/connect (URL:Hostname) [Int:Port] ", Color.CRIMSON);
+		print("to get started!", Color.RED);
+		println();
+		print("Do ", Color.PURPLE);
+		print("/help ", Color.WHITE);
+		print("for more help.", Color.PURPLE);
+
 	}
+
+	private void print(String text, Color color) {
+		new BasicInfoText(text, color).print(flow);
+	}
+
+	private void println() {
+		new Println(flow);
+	}
+
 	private void onUserSubmit() {
 		input.setText("");
 	}
