@@ -3,9 +3,12 @@ package org.alixia.chatroom;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alixia.chatroom.commands.Command;
+import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
 import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.texts.BasicInfoText;
+import org.alixia.chatroom.texts.BasicUserMessage;
 import org.alixia.chatroom.texts.Println;
 
 import javafx.scene.Scene;
@@ -29,14 +32,18 @@ public class ChatRoom {
 	private List<Client> clients = new ArrayList<>();
 	private List<Server> servers = new ArrayList<>();
 
+	private String username = "Unnamed";
+
 	// Some of these fields have aliases.
-	private final TextFlow flow = new TextFlow(), output = flow, console = flow;
+	private final TextFlow flow = new TextFlow();
 	private final TextArea input = new TextArea();
 	private final Button sendButton = new Button("Send");
-	private final AnchorPane root = new AnchorPane(flow, input, sendButton), pane = root;
+	private final AnchorPane root = new AnchorPane(flow, input, sendButton);
 
 	private final Scene scene = new Scene(root);
 	private final Stage stage;
+
+	private final CommandManager commandManager = new CommandManager();
 
 	ChatRoom(Stage stage) {
 		this.stage = stage;
@@ -91,13 +98,34 @@ public class ChatRoom {
 			event.consume();
 		});
 
+		println("Setting up commands...", Color.BISQUE);
+		{
+			commandManager.commands.add(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					if (equalsAnyIgnoreCase(name, "cls", "clear-screen", "clearscreen"))
+						return true;
+					return false;
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					flow.getChildren().clear();
+				}
+			});
+		}
+		println("Done!", Color.GREEN);
+
 		print("Connect to a server with ", Color.RED);
 		print("/connect (URL:Hostname) [Int:Port] ", Color.CRIMSON);
 		print("to get started!", Color.RED);
 		println();
 		print("Do ", Color.PURPLE);
 		print("/help ", Color.WHITE);
-		print("for more help.", Color.PURPLE);
+		println("for more help.", Color.PURPLE);
+		println();
+		println();
 
 	}
 
@@ -109,7 +137,24 @@ public class ChatRoom {
 		new Println(flow);
 	}
 
+	private void println(String text, Color color) {
+		print(text, color);
+		println();
+	}
+
 	private void onUserSubmit() {
+		String text = input.getText();
+
+		// We don't want to handle nothing...
+		if (text.isEmpty())
+			return;
+
+		if (text.startsWith("/")) {
+			// TODO Check if the command was recognized.
+			commandManager.runCommand(text);
+		} else {
+			new BasicUserMessage(username, text).print(flow);
+		}
 		input.setText("");
 	}
 
