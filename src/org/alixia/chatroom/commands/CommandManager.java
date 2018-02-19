@@ -20,6 +20,10 @@ public class CommandManager {
 
 		String input = rawInput.trim();
 
+		// Get rid of duplicate spaces.
+		while (input.contains("  "))
+			input = input.replaceAll("  ", " ");
+
 		// Handle no args.
 		if (!input.contains(" "))
 			return runCommand(input.substring(1), new String[0]);
