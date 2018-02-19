@@ -7,6 +7,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
@@ -43,6 +46,15 @@ public class Launch extends Application {
 
 		Scene scene = new Scene(root);
 		primaryStage.setScene(scene);
+		try {
+			new ChatRoom(root, flow, input, primaryStage);
+		} catch (Exception e) {
+			Text error = new Text("An error occurred.");
+			error.setFont(Font.font(30));
+			error.setFill(Color.CRIMSON);
+			flow.setTextAlignment(TextAlignment.CENTER);
+			flow.getChildren().add(error);
+		}
 	}
 
 	public static void main(String[] args) {
