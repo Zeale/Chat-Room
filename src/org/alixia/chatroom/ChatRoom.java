@@ -102,6 +102,44 @@ public class ChatRoom {
 
 		println("Setting up commands...", Color.BISQUE);
 		{
+
+			// /help
+			commandManager.commands.add(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("help") || name.equals("?");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length == 0) {
+						// TODO Print syntax rules first.
+
+						// /clear-screen
+						printBasicHelp("/help [command]",
+								"Provides help for a specific command (if provided) or all commands in general.");
+						printBasicHelp("/clear-screen", "Clears all text (and other nodes) from the console.");
+						// /new
+						println("/new ...", Color.CRIMSON);
+						printBasicHelp("\tclient (server-address) [port] (client-name)",
+								"Creates a new client. The client will be connected to the server specified by (server-address). The port is optional and defaults to "
+										+ DEFAULT_PORT
+										+ ". The (client-name) is required and can be used to refer to the new client later.");
+						printBasicHelp("\tserver [port] (server-name)",
+								"Creates a new server with the given port. Do note that your router's firewall (if there is one) will likely block any incoming connections to your computer on any port, unless you port forward. The [port] is optional and defaults to "
+										+ DEFAULT_PORT + ".");
+					}
+				}
+
+				public void printBasicHelp(String syntax, String description) {
+					print(syntax, Color.CRIMSON);
+					print(" - ", Color.WHITE);
+					println(description, Color.DARKTURQUOISE);
+				}
+
+			});
+
 			// /clear-screen
 			commandManager.commands.add(new Command() {
 
@@ -132,8 +170,9 @@ public class ChatRoom {
 
 						@Override
 						protected void act(String name, String... args) {
-							if (args.length < 3) {
-								print("Not enough arguments. Please input a server address. E.g., ", Color.RED);
+							if (args.length < 2) {
+								print("Not enough arguments. Please input a server address and a name for the client. E.g., ",
+										Color.RED);
 								// Using 'name', we can get the exact command name that they put in, whether
 								// they did /new client, or /new c.
 								println("/new " + name + " dusttoash.org Test 25000", Color.ORANGE);
@@ -141,17 +180,42 @@ public class ChatRoom {
 								print("would be the server address, and ", Color.RED);
 								print("Test ", Color.ORANGE);
 								println("would be the client's name.", Color.RED);
+								print("See ", Color.RED);
+								print("/help ", Color.ORANGE);
+								println("for more information.", Color.RED);
 							} else {
-								if (args.length > 3)
-									println("Too many arguments... Parsing only what is needed: (the first three args).",
-											Color.GOLD);
 								try {
-									Client client = new Client(args[0], Integer.parseInt(args[2]));
-									connectionManager.addClient(args[1], client);
-									if (!connectionManager.isClientSelected()) {
+
+									Client client;
+
+									final String hostname = args[0];
+									final int port;
+									final String clientName;
+
+									// No port
+									if (args.length == 2) {
+										port = DEFAULT_PORT;
+										clientName = args[1];
+									} else {
+										if (args.length > 3)
+											println("Too many arguments... Parsing only what is needed: (the first three args).",
+													Color.GOLD);
+										port = Integer.parseInt(args[2]);
+										clientName = args[2];
+
+									}
+
+									client = new Client(hostname, port);
+
+									// TODO The case of a taken name should be handled before the client is created.
+									if (!connectionManager.addClient(clientName, client)) {
+										println("A client with this name already exists. Please choose a new name and try again.",
+												Color.RED);
+										client.closeConnection();
+									} else if (!connectionManager.isClientSelected()) {
 										println("Since there is currently not a selected client, this new one that you've just created will be selected.",
 												Color.CORNFLOWERBLUE);
-										connectionManager.selectClient(args[1]);
+										connectionManager.selectClient(clientName);
 									}
 								} catch (NumberFormatException e) {
 									println("The third argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
@@ -164,7 +228,6 @@ public class ChatRoom {
 									e.printStackTrace();
 								}
 							}
-
 						}
 					});
 
@@ -178,7 +241,6 @@ public class ChatRoom {
 
 						@Override
 						protected void act(String name, String... args) {
-							// Takes either a server name, or a server name and a port. (Ordered as said.)
 
 							if (args.length < 1) {
 								print("Too few arguments. See ", Color.RED);
@@ -188,6 +250,10 @@ public class ChatRoom {
 							}
 
 							try {
+
+								final String serverName;
+								final Integer port;
+
 								Server server;
 
 								// Handle 2+ args (name and port)
@@ -195,15 +261,25 @@ public class ChatRoom {
 									if (args.length > 2)
 										println("Too many arguments... Using only what is needed: (args 1 & 2).",
 												Color.GOLD);
-									server = new Server(Integer.parseInt(args[1]));
+									serverName = args[1];
+									port = Integer.parseInt(args[1]);
 
 								} // Handle 1 arg (name)
-								else
-									server = new Server();
+								else {
+									port = DEFAULT_PORT;
+									serverName = args[0];
 
-								connectionManager.addServer(args[0], server);
+								}
+
+								server = new Server(port);
+
+								if (!connectionManager.addServer(serverName, server)) {
+									println("There already exists a server with the name " + serverName
+											+ ". Please choose a different name and try again.", Color.RED);
+									server.stop();
+								}
 								if (!connectionManager.isServerSelected()) {
-									connectionManager.selectServer(args[0]);
+									connectionManager.selectServer(serverName);
 									println("You did not previously have a server selected, so the one you just made was selected automatically.",
 											Color.GREEN);
 								}
