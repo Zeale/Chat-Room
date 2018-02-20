@@ -28,10 +28,10 @@ public class CommandManager {
 		if (!input.contains(" "))
 			return runCommand(input.substring(1), new String[0]);
 
-		String cmd = input.substring(1, input.indexOf(" "));
-		String args = input.substring(input.indexOf(" "));
+		// Handle args.
+		String cmd = input.substring(1, input.indexOf(" "));// 1 gets rid of '/'
+		String args = input.substring(input.indexOf(" ") + 1);
 		String[] argArr = args.split(" ");
-
 		return runCommand(cmd, argArr);
 
 	}
