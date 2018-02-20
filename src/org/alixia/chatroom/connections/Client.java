@@ -11,12 +11,6 @@ import java.net.UnknownHostException;
 
 public class Client {
 
-	private final String id;
-
-	public String getId() {
-		return id;
-	}
-
 	private boolean connectionClosed;
 
 	private final Socket socket;
@@ -78,21 +72,19 @@ public class Client {
 		}
 	});
 
-	public Client(final Socket socket, String id) throws IOException {
+	public Client(final Socket socket) throws IOException {
 		this.socket = socket;
 
 		objOut = new ObjectOutputStream(socket.getOutputStream());
 		objIn = new ObjectInputStream(socket.getInputStream());
 
-		this.id = id;
 	}
 
-	public Client(final String hostname, final int port, String id) throws UnknownHostException, IOException {
+	public Client(final String hostname, final int port) throws UnknownHostException, IOException {
 		socket = new Socket(hostname, port);
 
 		objOut = new ObjectOutputStream(socket.getOutputStream());
 		objIn = new ObjectInputStream(socket.getInputStream());
-		this.id = id;
 
 	}
 

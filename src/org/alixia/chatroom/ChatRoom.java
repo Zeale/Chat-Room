@@ -7,6 +7,7 @@ import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
 import org.alixia.chatroom.connections.ConnectionManager;
+import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.messages.BasicUserMessage;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
@@ -29,6 +30,8 @@ import javafx.stage.Stage;
 public class ChatRoom {
 	private final static Background DEFAULT_NODE_BACKGROUND = new Background(
 			new BackgroundFill(new Color(0.4, 0.4, 0.4, 0.7), null, null));
+
+	private static final int DEFAULT_PORT = 25000;
 
 	private String username = "Unnamed";
 
@@ -99,6 +102,7 @@ public class ChatRoom {
 
 		println("Setting up commands...", Color.BISQUE);
 		{
+			// /clear-screen
 			commandManager.commands.add(new Command() {
 
 				@Override
@@ -112,11 +116,13 @@ public class ChatRoom {
 				}
 			});
 
+			// /new
 			commandManager.commands.add(new Command() {
 
 				CommandManager argumentManager = new CommandManager();
 
 				{
+					// /new Client
 					argumentManager.commands.add(new Command() {
 
 						@Override
@@ -130,7 +136,7 @@ public class ChatRoom {
 								print("Not enough arguments. Please input a server address. E.g., ", Color.RED);
 								// Using 'name', we can get the exact command name that they put in, whether
 								// they did /new client, or /new c.
-								println("/new " + name + " dusttoash.org Test", Color.ORANGE);
+								println("/new " + name + " dusttoash.org Test 25000", Color.ORANGE);
 								print("dusttoash.org ", Color.ORANGE);
 								print("would be the server address, and ", Color.RED);
 								print("Test ", Color.ORANGE);
@@ -140,24 +146,74 @@ public class ChatRoom {
 									println("Too many arguments... Parsing only what is needed: (the first three args).",
 											Color.GOLD);
 								try {
-									Client client = new Client(args[0], Integer.parseInt(args[1]), args[2]);
+									Client client = new Client(args[0], Integer.parseInt(args[2]));
+									connectionManager.addClient(args[1], client);
 									if (!connectionManager.isClientSelected()) {
 										println("Since there is currently not a selected client, this new one that you've just created will be selected.",
 												Color.CORNFLOWERBLUE);
-										connectionManager.addClient(name, client);
-										connectionManager.selectClient(name);
+										connectionManager.selectClient(args[1]);
 									}
 								} catch (NumberFormatException e) {
-									println("The second argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
+									println("The third argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
 											Color.RED);
 								} catch (UnknownHostException e) {
 									println("The address could not be parsed as a valid server address, or the ip address of the host could not be determined.",
 											Color.RED);
 								} catch (IOException e) {
 									println("Some kind of unknown error occurred while trying to connect.", Color.RED);
+									e.printStackTrace();
 								}
 							}
 
+						}
+					});
+
+					// /new Server
+					argumentManager.commands.add(new Command() {
+
+						@Override
+						protected boolean match(String name) {
+							return name.equalsIgnoreCase("Server") || name.equals("s");
+						}
+
+						@Override
+						protected void act(String name, String... args) {
+							// Takes either a server name, or a server name and a port. (Ordered as said.)
+
+							if (args.length < 1) {
+								print("Too few arguments. See ", Color.RED);
+								print("/help new " + name + " ", Color.ORANGE);
+								println("for more info.", Color.RED);
+								return;
+							}
+
+							try {
+								Server server;
+
+								// Handle 2+ args (name and port)
+								if (args.length > 1) {
+									if (args.length > 2)
+										println("Too many arguments... Using only what is needed: (args 1 & 2).",
+												Color.GOLD);
+									server = new Server(Integer.parseInt(args[1]));
+
+								} // Handle 1 arg (name)
+								else
+									server = new Server();
+
+								connectionManager.addServer(args[0], server);
+								if (!connectionManager.isServerSelected()) {
+									connectionManager.selectServer(args[0]);
+									println("You did not previously have a server selected, so the one you just made was selected automatically.",
+											Color.GREEN);
+								}
+
+							} catch (NumberFormatException e) {
+								println("Couldn't parse a port number for the server. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, for example, but 0 and 65536 will not.)",
+										Color.RED);
+							} catch (IOException e) {
+								println("An error occurred while trying to host the server.", Color.RED);
+							}
 						}
 					});
 				}
