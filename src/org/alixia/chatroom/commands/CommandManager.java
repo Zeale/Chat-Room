@@ -1,5 +1,6 @@
 package org.alixia.chatroom.commands;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -43,5 +44,34 @@ public class CommandManager {
 				return true;
 			}
 		return false;
+	}
+
+	/**
+	 * Runs a command where the command's name is the first item in the string array
+	 * and the command's arguments are the remaining items in the string array.
+	 * 
+	 * @param args
+	 *            The string array containing the command name and the given
+	 *            arguments.
+	 * @return <code>true</code> if the input command was matched to a command in
+	 *         this {@link CommandManager}, false otherwise.
+	 */
+	public boolean runCommand(String... args) {
+		String name;
+
+		// Get the command's name.
+		if (args.length == 0)
+			name = "";
+		else
+			name = args[0];
+
+		// Make an args array.
+		String[] newArgs = new String[args.length - 1];
+
+		// Populate the new args array.
+		for (int i = 1; i < args.length; i++)
+			newArgs[i - 1] = args[i];
+
+		return runCommand(name, newArgs);
 	}
 }
