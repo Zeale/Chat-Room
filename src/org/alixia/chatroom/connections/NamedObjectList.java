@@ -2,7 +2,7 @@ package org.alixia.chatroom.connections;
 
 import java.util.HashMap;
 
-abstract class SelectableObjectManager<T> {
+abstract class NamedObjectList<T extends NamedObject> {
 
 	protected final HashMap<String, T> items = new HashMap<>();
 
@@ -40,10 +40,10 @@ abstract class SelectableObjectManager<T> {
 		selectedItem = null;
 	}
 
-	public boolean addItem(String name, T client) {
+	public boolean addItem(T client) {
 		// putIfAbsent returns null if there was no mapping, so it returns null if we
 		// successfully added an item.
-		return items.putIfAbsent(name, client) == null;
+		return items.putIfAbsent(client.getName(), client) == null;
 	}
 
 	public abstract void close();

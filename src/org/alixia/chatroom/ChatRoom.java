@@ -135,9 +135,16 @@ public class ChatRoom {
 										Color.RED);
 								println("/client " + subcommand + " [client-name]", Color.ORANGE);
 							} else {
-
+								clients.removeItem(clients.getSelectedItem().getName());
 							}
 
+						} else {
+							String clientName = args[1];
+							if (clients.removeItem(clientName)) {
+								print("The client with the name ", Color.GREEN);
+								print(clientName, Color.WHITE);
+								println(" was removed successfully!", Color.GREEN);
+							}
 						}
 					}
 				}
@@ -245,10 +252,10 @@ public class ChatRoom {
 
 									}
 
-									client = new Client(hostname, port);
+									client = new Client(hostname, port, clientName);
 
 									// TODO The case of a taken name should be handled before the client is created.
-									if (!clients.addItem(clientName, client)) {
+									if (!clients.addItem(client)) {
 										println("A client with this name already exists. Please choose a new name and try again.",
 												Color.RED);
 										client.closeConnection();
@@ -308,12 +315,11 @@ public class ChatRoom {
 								else {
 									port = DEFAULT_PORT;
 									serverName = args[0];
-
 								}
 
-								server = new Server(port);
+								server = new Server(port, serverName);
 
-								if (!servers.addItem(serverName, server)) {
+								if (!servers.addItem(server)) {
 									println("There already exists a server with the name " + serverName
 											+ ". Please choose a different name and try again.", Color.RED);
 									server.stop();

@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class Client {
+public class Client extends NamedObject {
 
 	private boolean connectionClosed;
 
@@ -72,7 +72,8 @@ public class Client {
 		}
 	});
 
-	public Client(final Socket socket) throws IOException {
+	public Client(final Socket socket, String name) throws IOException {
+		super(name);
 		this.socket = socket;
 
 		objOut = new ObjectOutputStream(socket.getOutputStream());
@@ -80,7 +81,8 @@ public class Client {
 
 	}
 
-	public Client(final String hostname, final int port) throws UnknownHostException, IOException {
+	public Client(final String hostname, final int port, String name) throws UnknownHostException, IOException {
+		super(name);
 		socket = new Socket(hostname, port);
 
 		objOut = new ObjectOutputStream(socket.getOutputStream());

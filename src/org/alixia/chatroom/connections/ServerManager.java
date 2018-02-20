@@ -2,7 +2,7 @@ package org.alixia.chatroom.connections;
 
 import java.io.IOException;
 
-public class ServerManager extends SelectableObjectManager<Server> {
+public class ServerManager extends NamedObjectList<Server> {
 	@Override
 	public boolean removeItem(String name) {
 		Server s = items.remove(name);

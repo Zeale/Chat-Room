@@ -11,7 +11,7 @@ import java.util.List;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
 
-public class Server {
+public class Server extends NamedObject {
 
 	private final ServerSocket socket;
 
@@ -34,11 +34,14 @@ public class Server {
 		}
 	});
 
-	public Server() throws IOException {
+	public Server(String name) throws IOException {
+		super(name);
 		socket = new ServerSocket(0);
+		acceptThread.start();
 	}
 
-	public Server(final int port) throws IOException {
+	public Server(final int port, String name) throws IOException {
+		super(name);
 		socket = new ServerSocket(port);
 		acceptThread.start();
 	}
@@ -50,10 +53,11 @@ public class Server {
 
 				@Override
 				public void objectReceived(Serializable object) {
-					if (object instanceof UserMessage)
+					if (object instanceof UserMessage) {
 						for (ServerClient sc : connections)
 							if (sc != client)
 								sc.sendObject(object);
+					}
 
 				}
 
