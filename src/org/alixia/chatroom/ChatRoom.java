@@ -13,6 +13,7 @@ import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.Println;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -89,6 +90,9 @@ public class ChatRoom {
 	}
 
 	private void tryInit() {
+
+		stage.setOnCloseRequest(event -> connectionManager.close());
+
 		input.setOnKeyPressed(event -> {
 			if (event.getCode().equals(KeyCode.ENTER)) {
 				onUserSubmit();

@@ -1,5 +1,6 @@
 package org.alixia.chatroom.connections;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class ConnectionManager {
@@ -32,6 +33,17 @@ public class ConnectionManager {
 			return true;
 		}
 		return false;
+	}
+
+	public void close() {
+		for (Client c : clients.values())
+			c.closeConnection();
+		for (Server s : servers.values())
+			try {
+				s.stop();
+			} catch (IOException e) {
+				// TODO Handle this
+			}
 	}
 
 	public boolean selectServer(String serverName) {
