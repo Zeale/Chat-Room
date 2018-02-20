@@ -6,14 +6,14 @@ import java.net.UnknownHostException;
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
-import org.alixia.chatroom.connections.ConnectionManager;
+import org.alixia.chatroom.connections.ClientManager;
 import org.alixia.chatroom.connections.Server;
+import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.Println;
 
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -46,7 +46,8 @@ public class ChatRoom {
 	private final Stage stage;
 
 	private final CommandManager commandManager = new CommandManager();
-	private final ConnectionManager connectionManager = new ConnectionManager();
+	private final ClientManager clients = new ClientManager();
+	private final ServerManager servers = new ServerManager();
 
 	ChatRoom(Stage stage) {
 		this.stage = stage;
@@ -91,7 +92,10 @@ public class ChatRoom {
 
 	private void tryInit() {
 
-		stage.setOnCloseRequest(event -> connectionManager.close());
+		stage.setOnCloseRequest(event -> {
+			servers.close();
+			clients.close();
+		});
 
 		input.setOnKeyPressed(event -> {
 			if (event.getCode().equals(KeyCode.ENTER)) {
@@ -106,6 +110,38 @@ public class ChatRoom {
 
 		println("Setting up commands...", Color.BISQUE);
 		{
+
+			commandManager.commands.add(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("client");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (!(args.length > 0)) {
+						print("Usage: ", Color.RED);
+						println("/client (subcommand)", Color.ORANGE);
+						return;
+					}
+
+					String subcommand = args[0];
+					if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
+						if (args.length < 2) {
+							// No clientName specified. "/client stop"
+							if (!clients.isItemSelected()) {
+								print("You do not have a client selected. Did you mean to close a specific client?\nUsage: ",
+										Color.RED);
+								println("/client " + subcommand + " [client-name]", Color.ORANGE);
+							} else {
+
+							}
+
+						}
+					}
+				}
+			});
 
 			// /help
 			commandManager.commands.add(new Command() {
@@ -212,14 +248,14 @@ public class ChatRoom {
 									client = new Client(hostname, port);
 
 									// TODO The case of a taken name should be handled before the client is created.
-									if (!connectionManager.addClient(clientName, client)) {
+									if (!clients.addItem(clientName, client)) {
 										println("A client with this name already exists. Please choose a new name and try again.",
 												Color.RED);
 										client.closeConnection();
-									} else if (!connectionManager.isClientSelected()) {
+									} else if (!clients.isItemSelected()) {
 										println("Since there is currently not a selected client, this new one that you've just created will be selected.",
 												Color.CORNFLOWERBLUE);
-										connectionManager.selectClient(clientName);
+										clients.selectItem(clientName);
 									}
 								} catch (NumberFormatException e) {
 									println("The third argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
@@ -277,13 +313,13 @@ public class ChatRoom {
 
 								server = new Server(port);
 
-								if (!connectionManager.addServer(serverName, server)) {
+								if (!servers.addItem(serverName, server)) {
 									println("There already exists a server with the name " + serverName
 											+ ". Please choose a different name and try again.", Color.RED);
 									server.stop();
 								}
-								if (!connectionManager.isServerSelected()) {
-									connectionManager.selectServer(serverName);
+								if (!servers.isItemSelected()) {
+									servers.selectItem(serverName);
 									println("You did not previously have a server selected, so the one you just made was selected automatically.",
 											Color.GREEN);
 								}
@@ -360,8 +396,8 @@ public class ChatRoom {
 		// Given message.
 		else {
 
-			if (connectionManager.isClientSelected()) {
-				connectionManager.getCurrentClient().sendObject(new BasicUserMessage(username, text));
+			if (clients.isItemSelected()) {
+				clients.getSelectedItem().sendObject(new BasicUserMessage(username, text));
 				new BasicUserText(username, text).print(flow);
 			} else {
 				print("You can only send messages to a server through a client. Do ", Color.RED);
