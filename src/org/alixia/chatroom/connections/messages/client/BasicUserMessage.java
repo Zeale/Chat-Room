@@ -1,4 +1,4 @@
-package org.alixia.chatroom.connections.messages;
+package org.alixia.chatroom.connections.messages.client;
 
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.ConsoleText;

@@ -1,11 +1,15 @@
 package org.alixia.chatroom.connections;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
 
 public class Server {
 
@@ -41,8 +45,25 @@ public class Server {
 
 	protected void acceptConnection(final Socket connection) {
 		try {
-			// Add a listener to the ServerClient.
 			ServerClient client = new ServerClient(connection);
+			client.setListener(new ConnectionListener() {
+
+				@Override
+				public void objectReceived(Serializable object) {
+					if (object instanceof UserMessage)
+						for (ServerClient sc : connections)
+							if (sc != client)
+								sc.sendObject(object);
+
+				}
+
+				@Override
+				public void connectionClosed() {
+					connections.remove(client);
+					for (ServerClient sc : connections)
+						sc.sendObject(new BasicServerMessage("Someone left the server!"));
+				}
+			});
 			connections.add(client);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

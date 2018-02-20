@@ -8,7 +8,7 @@ import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
 import org.alixia.chatroom.connections.ConnectionManager;
 import org.alixia.chatroom.connections.Server;
-import org.alixia.chatroom.connections.messages.BasicUserMessage;
+import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.Println;
