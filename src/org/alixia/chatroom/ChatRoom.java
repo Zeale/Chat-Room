@@ -44,6 +44,9 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 public class ChatRoom {
+
+	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN;
+
 	private final static Background DEFAULT_NODE_BACKGROUND = new Background(
 			new BackgroundFill(new Color(0.4, 0.4, 0.4, 0.7), null, null));
 
@@ -145,7 +148,7 @@ public class ChatRoom {
 
 					if (args.length > 0) {
 						if (args[0].equalsIgnoreCase("force") || args[0].equals("-f")) {
-							println("Forcefully updating the program.", Color.RED);
+							println("Forcefully updating the program.", ERROR_COLOR);
 							println("This ignores checks to see whether or not your version is the latest. If the update command is causing problems with version checking, this command is useful.",
 									Color.CYAN);
 							updateProgram();
@@ -157,7 +160,7 @@ public class ChatRoom {
 
 						println();
 						println();
-						println("Attempting to connect to the download site.", Color.LIGHTBLUE);
+						println("Attempting to connect to the download site.", INFO_COLOR);
 
 						try {
 							Reader versionInput = new InputStreamReader(
@@ -170,17 +173,17 @@ public class ChatRoom {
 
 							lateSuccess = true;
 
-							print("The latest available version is ", Color.GREEN);
+							print("The latest available version is ", SUCCESS_COLOR);
 							print("" + latest, Color.WHITE);
-							println(".", Color.GREEN);
+							println(".", SUCCESS_COLOR);
 							println();
 
 						} catch (IOException e) {
 							println("An error occurred while trying to connect to the download server. The latest version could not be determined.",
-									Color.RED);
+									ERROR_COLOR);
 						}
 
-						println("Attempting to determine the version that you have.", Color.LIGHTBLUE);
+						println("Attempting to determine the version that you have.", INFO_COLOR);
 						try {
 							Reader versionInput = new InputStreamReader(getClass().getResourceAsStream("/version"));
 							int n;
@@ -191,15 +194,16 @@ public class ChatRoom {
 
 							currSuccess = true;
 
-							print("You have version ", Color.GREEN);
+							print("You have version ", SUCCESS_COLOR);
 							print("" + current, Color.WHITE);
-							println(".", Color.GREEN);
+							println(".", SUCCESS_COLOR);
 
 						} catch (NullPointerException e) {
-							println("The version of your copy of this application could not be determined.", Color.RED);
+							println("The version of your copy of this application could not be determined.",
+									ERROR_COLOR);
 						} catch (IOException e) {
 							println("There was an error while reading some data inside the app. Your local version could not be determined.",
-									Color.RED);
+									ERROR_COLOR);
 						}
 
 						if (currSuccess && lateSuccess) {
@@ -229,12 +233,12 @@ public class ChatRoom {
 							} else
 							// Fully updated
 							if (latest == current) {
-								println("You have the latest version. :D", Color.GREEN);
+								println("You have the latest version. :D", SUCCESS_COLOR);
 							} else
 							// Above update...
 							{
 								println("Your version is above the latest, publicly released version. Congrats...?",
-										Color.LIGHTBLUE);
+										INFO_COLOR);
 							}
 
 						}
@@ -289,13 +293,13 @@ public class ChatRoom {
 				@Override
 				protected void act(String name, String... args) {
 					if (args.length == 0) {
-						println("I can't set your name unless you tell me what you want it to be... >:(", Color.RED);
-						print("Usage: ", Color.RED);
+						println("I can't set your name unless you tell me what you want it to be... >:(", ERROR_COLOR);
+						print("Usage: ", ERROR_COLOR);
 						println("/set-name (name)", Color.ORANGE);
 					} else {
 						if (args.length > 1)
 							println("You gave me too many arguments, so I'll just use the first one... That will be your name.....",
-									Color.RED);
+									ERROR_COLOR);
 						if (args.length > 5) {
 							print("Man, you really gave me an ", Color.DARKRED);
 							print("excessive ", Color.CRIMSON);
@@ -314,7 +318,7 @@ public class ChatRoom {
 							println("The", Color.WHITE);
 							println("Args.....", Color.WHITE);
 							println();
-							println("By the way, I didn't set your name. :)", Color.RED);
+							println("By the way, I didn't set your name. :)", ERROR_COLOR);
 						}
 						String username = args[0];
 						ChatRoom.this.username = username;
@@ -332,7 +336,7 @@ public class ChatRoom {
 				@Override
 				protected void act(String name, String... args) {
 					if (!(args.length > 0)) {
-						print("Usage: ", Color.RED);
+						print("Usage: ", ERROR_COLOR);
 						println("/client (subcommand)", Color.ORANGE);
 						return;
 					}
@@ -343,7 +347,7 @@ public class ChatRoom {
 							// No clientName specified. "/client stop"
 							if (!clients.isItemSelected()) {
 								print("You do not have a client selected. Did you mean to close a specific client?\nUsage: ",
-										Color.RED);
+										ERROR_COLOR);
 								println("/client " + subcommand + " [client-name]", Color.ORANGE);
 							} else {
 								clients.removeItem(clients.getSelectedItem().getName());
@@ -352,13 +356,13 @@ public class ChatRoom {
 						} else {
 							String clientName = args[1];
 							if (clients.removeItem(clientName)) {
-								print("The client with the name ", Color.GREEN);
+								print("The client with the name ", SUCCESS_COLOR);
 								print(clientName, Color.WHITE);
-								println(" was removed successfully!", Color.GREEN);
+								println(" was removed successfully!", SUCCESS_COLOR);
 							} else {
-								print("A command by the name of ", Color.RED);
+								print("A command by the name of ", ERROR_COLOR);
 								print(clientName, Color.ORANGE);
-								println(" was not found.", Color.RED);
+								println(" was not found.", ERROR_COLOR);
 							}
 						}
 					}
@@ -434,17 +438,17 @@ public class ChatRoom {
 						protected void act(String name, String... args) {
 							if (args.length < 2) {
 								print("Not enough arguments. Please input a server address and a name for the client. E.g., ",
-										Color.RED);
+										ERROR_COLOR);
 								// Using 'name', we can get the exact command name that they put in, whether
 								// they did /new client, or /new c.
 								println("/new " + name + " dusttoash.org Test 25000", Color.ORANGE);
 								print("dusttoash.org ", Color.ORANGE);
-								print("would be the server address, and ", Color.RED);
+								print("would be the server address, and ", ERROR_COLOR);
 								print("Test ", Color.ORANGE);
-								println("would be the client's name.", Color.RED);
-								print("See ", Color.RED);
+								println("would be the client's name.", ERROR_COLOR);
+								print("See ", ERROR_COLOR);
 								print("/help ", Color.ORANGE);
-								println("for more information.", Color.RED);
+								println("for more information.", ERROR_COLOR);
 							} else {
 								try {
 
@@ -472,7 +476,7 @@ public class ChatRoom {
 									// TODO The case of a taken name should be handled before the client is created.
 									if (!clients.addItem(client)) {
 										println("A client with this name already exists. Please choose a new name and try again.",
-												Color.RED);
+												ERROR_COLOR);
 										client.closeConnection();
 									} else if (!clients.isItemSelected()) {
 										println("Since there is currently not a selected client, this new one that you've just created will be selected.",
@@ -481,12 +485,13 @@ public class ChatRoom {
 									}
 								} catch (NumberFormatException e) {
 									println("The third argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
-											Color.RED);
+											ERROR_COLOR);
 								} catch (UnknownHostException e) {
 									println("The address could not be parsed as a valid server address, or the ip address of the host could not be determined.",
-											Color.RED);
+											ERROR_COLOR);
 								} catch (IOException e) {
-									println("Some kind of unknown error occurred while trying to connect.", Color.RED);
+									println("Some kind of unknown error occurred while trying to connect.",
+											ERROR_COLOR);
 									e.printStackTrace();
 								}
 							}
@@ -505,9 +510,9 @@ public class ChatRoom {
 						protected void act(String name, String... args) {
 
 							if (args.length < 1) {
-								print("Too few arguments. See ", Color.RED);
+								print("Too few arguments. See ", ERROR_COLOR);
 								print("/help new " + name + " ", Color.ORANGE);
-								println("for more info.", Color.RED);
+								println("for more info.", ERROR_COLOR);
 								return;
 							}
 
@@ -536,20 +541,20 @@ public class ChatRoom {
 
 								if (!servers.addItem(server)) {
 									println("There already exists a server with the name " + serverName
-											+ ". Please choose a different name and try again.", Color.RED);
+											+ ". Please choose a different name and try again.", ERROR_COLOR);
 									server.stop();
 								}
 								if (!servers.isItemSelected()) {
 									servers.selectItem(serverName);
 									println("You did not previously have a server selected, so the one you just made was selected automatically.",
-											Color.GREEN);
+											SUCCESS_COLOR);
 								}
 
 							} catch (NumberFormatException e) {
 								println("Couldn't parse a port number for the server. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, for example, but 0 and 65536 will not.)",
-										Color.RED);
+										ERROR_COLOR);
 							} catch (IOException e) {
-								println("An error occurred while trying to host the server.", Color.RED);
+								println("An error occurred while trying to host the server.", ERROR_COLOR);
 							}
 						}
 					});
@@ -563,22 +568,22 @@ public class ChatRoom {
 				@Override
 				protected void act(String name, String... args) {
 					if (args.length == 0) {
-						print("No arguments specified. Do ", Color.RED);
+						print("No arguments specified. Do ", ERROR_COLOR);
 						print("/new help ", Color.ORANGE);
-						println("for help.", Color.RED);
+						println("for help.", ERROR_COLOR);
 					} else if (!argumentManager.runCommand(args)) {
-						print("Unknown argument: ", Color.RED);
+						print("Unknown argument: ", ERROR_COLOR);
 						println(args[0], Color.ORANGE);
 					}
 				}
 			});
 
 		}
-		println("Done!", Color.GREEN);
+		println("Done!", SUCCESS_COLOR);
 
-		print("Connect to a server with ", Color.RED);
+		print("Connect to a server with ", ERROR_COLOR);
 		print("/connect (URL:Hostname) [Int:Port] ", Color.CRIMSON);
-		print("to get started!", Color.RED);
+		print("to get started!", ERROR_COLOR);
 		println();
 		print("Do ", Color.PURPLE);
 		print("/help ", Color.WHITE);
@@ -621,9 +626,9 @@ public class ChatRoom {
 				clients.getSelectedItem().sendObject(new BasicUserMessage(username, text));
 				new BasicUserText(username, text).print(flow);
 			} else {
-				print("You can only send messages to a server through a client. Do ", Color.RED);
+				print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
 				print("/new help ", Color.ORANGERED);
-				println("For help with connections.", Color.RED);
+				println("For help with connections.", ERROR_COLOR);
 			}
 
 		}
@@ -640,16 +645,16 @@ public class ChatRoom {
 					Files.copy(is, new File(System.getProperty("user.home") + "\\Desktop").toPath(),
 							StandardCopyOption.COPY_ATTRIBUTES);
 					// Success
-					println("The newest version of Chat Room was placed on your desktop.", Color.GREEN);
+					println("The newest version of Chat Room was placed on your desktop.", SUCCESS_COLOR);
 					break TRY_DOWNLOAD;
 				}
 				// If there is a failure, we won't get to the "break TRY_DOWNLOAD"
 				// statement, so the below try block will be run, and Chat Room will
 				// attempt to open the latest version in the default browser.
 				catch (MalformedURLException e1) {
-					println("There was an error parsing the file's web address.", Color.RED);
+					println("There was an error parsing the file's web address.", ERROR_COLOR);
 				} catch (IOException e2) {
-					print("There was an error while trying to retrieve the file from the address: ", Color.RED);
+					print("There was an error while trying to retrieve the file from the address: ", ERROR_COLOR);
 					println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
 					println("Attempting to open the file in your browser...", Color.ORANGE);
 					println();
@@ -667,20 +672,20 @@ public class ChatRoom {
 				break TRY_DOWNLOAD;// And continue on to print our success.
 
 			} catch (MalformedURLException e3) {
-				println("There was an error while trying to locate the file.", Color.RED);
+				println("There was an error while trying to locate the file.", ERROR_COLOR);
 			} catch (IOException e4) {
-				println("There was an error while trying to download the file.", Color.RED);
+				println("There was an error while trying to download the file.", ERROR_COLOR);
 			} catch (URISyntaxException e5) {
-				println("There was an error parsing the file's web address.", Color.RED);
+				println("There was an error parsing the file's web address.", ERROR_COLOR);
 			} catch (UnsupportedOperationException e6) {
 				print("Apparently, your operating system does not support Chat Room opening a link with your default browser. Here is the link to the file: ",
-						Color.RED);
+						ERROR_COLOR);
 				println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
 			}
 
 			println();
 			println();
-			println("The latest version could not be downloaded...", Color.RED);
+			println("The latest version could not be downloaded...", ERROR_COLOR);
 
 		}
 		println("Opening the file in your browser seems to have succeeded. Please copy the file to wherever and run it for the latest version.",
