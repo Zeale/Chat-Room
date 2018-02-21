@@ -1,7 +1,17 @@
 package org.alixia.chatroom;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
@@ -14,6 +24,7 @@ import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
+import org.alixia.chatroom.texts.SimpleText;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -21,6 +32,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -120,6 +132,178 @@ public class ChatRoom {
 		println("Setting up commands...", Color.BISQUE);
 		{
 
+			commandManager.commands.add(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("update");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					// Update the program
+
+					if (args.length > 0) {
+
+					} else {
+						// versions
+						int latest = 0, current = 0;
+						boolean currSuccess = false, lateSuccess = false;
+
+						println();
+						println();
+						println("Attempting to connect to the download site.", Color.LIGHTBLUE);
+
+						try {
+							Reader versionInput = new InputStreamReader(
+									new URL("http://dusttoash.org/chat-room/version").openStream());
+							int n;
+							int inc = 0;
+							while ((n = versionInput.read()) != -1)
+								if (Character.isDigit(n))
+									latest += Math.pow(10, inc++) * Integer.parseInt("" + (char) n);
+
+							lateSuccess = true;
+
+							print("The latest available version is ", Color.GREEN);
+							print("" + latest, Color.WHITE);
+							println(".", Color.GREEN);
+							println();
+
+						} catch (IOException e) {
+							println("An error occurred while trying to connect to the download server. The latest version could not be determined.",
+									Color.RED);
+						}
+
+						println("Attempting to determine the version that you have.", Color.LIGHTBLUE);
+						try {
+							Reader versionInput = new InputStreamReader(getClass().getResourceAsStream("/version"));
+							int n;
+							int inc = 0;
+							while ((n = versionInput.read()) != -1)
+								if (Character.isDigit(n))
+									current += Math.pow(10, inc++) * Integer.parseInt("" + (char) n);
+
+							currSuccess = true;
+
+							print("You have version ", Color.GREEN);
+							print("" + current, Color.WHITE);
+							println(".", Color.GREEN);
+
+						} catch (NullPointerException e) {
+							println("The version of your copy of this application could not be determined.", Color.RED);
+						} catch (IOException e) {
+							println("There was an error while reading some data inside the app. Your local version could not be determined.",
+									Color.RED);
+						}
+
+						if (currSuccess && lateSuccess) {
+
+							// Need update
+							if (latest > current) {
+								print("There is a newer version of ", Color.ORANGE);
+								print("Chat Room ", Color.ORANGERED);
+								println("available.", Color.ORANGE);
+
+								SimpleText text = new SimpleText();
+
+								// Since this is a lambda expression, the object is not recreated each time.
+								text.text.setOnMouseClicked(event -> {
+									if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
+
+										TRY_DOWNLOAD: {
+											// Windows
+											if (System.getProperty("os.name").toLowerCase().startsWith("win"))
+												try (InputStream is = new URL(
+														"http://dusttoash.org/chat-room/ChatRoom.jar").openStream()) {
+													Files.copy(is,
+															new File(System.getProperty("user.home") + "\\Desktop")
+																	.toPath(),
+															StandardCopyOption.COPY_ATTRIBUTES);
+													// Success
+													println("The newest version of Chat Room was placed on your desktop.",
+															Color.GREEN);
+													break TRY_DOWNLOAD;
+												}
+												// If there is a failure, we won't get to the "break TRY_DOWNLOAD"
+												// statement, so the below try block will be run, and Chat Room will
+												// attempt to open the latest version in the default browser.
+												catch (MalformedURLException e1) {
+													println("There was an error parsing the file's web address.",
+															Color.RED);
+												} catch (IOException e2) {
+													print("There was an error while trying to retrieve the file from the address: ",
+															Color.RED);
+													println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
+													println("Attempting to open the file in your browser...",
+															Color.ORANGE);
+													println();
+												}
+
+											// Either the OS is not Windows, (and thus I don't know if their Desktop's
+											// location is their homedir +"\Desktop"), or the attempt to download the
+											// file failed.
+											try {
+												// This may throw an exception skipping the break and going to the catch
+												// blocks. right after that, we exit the try and go over the print
+												// statements for failures then we return.
+												Desktop.getDesktop().browse(
+														new URL("http://dusttoash.org/chat-room/ChatRoom.jar").toURI());
+
+												break TRY_DOWNLOAD;// And continue on to print our success.
+
+											} catch (MalformedURLException e3) {
+												println("There was an error while trying to locate the file.",
+														Color.RED);
+											} catch (IOException e4) {
+												println("There was an error while trying to download the file.",
+														Color.RED);
+											} catch (URISyntaxException e5) {
+												println("There was an error parsing the file's web address.",
+														Color.RED);
+											} catch (UnsupportedOperationException e6) {
+												print("Apparently, your operating system does not support Chat Room opening a link with your default browser. Here is the link to the file: ",
+														Color.RED);
+												println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
+											}
+
+											println();
+											println();
+											println("The latest version could not be downloaded...", Color.RED);
+
+										}
+										println("Opening the file in your browser seems to have succeeded. Please copy the file to wherever and run it for the latest version.",
+												Color.WHITE);
+										println("You can close the program and discard this file, then open the new one with the new updates.",
+												Color.WHITE);
+									}
+								});
+								text.text.setFill(Color.WHITE);
+								text.text.setUnderline(true);
+								text.text.setText("Double click here");
+								// I think TextFlows disable click on bounds, but whatever.
+								text.text.setPickOnBounds(true);
+								text.print(flow);
+
+								println(" to download the update.", Color.ORANGE);
+							} else
+							// Fully updated
+							if (latest == current) {
+								println("You have the latest version. :D", Color.GREEN);
+							} else
+							// Above update...
+							{
+								println("Your version is above the latest, publicly released version. Congrats...?",
+										Color.LIGHTBLUE);
+							}
+
+						}
+
+					}
+				}
+			});
+
+			// /set-name
 			commandManager.commands.add(new Command() {
 
 				final class SpecialConsoleText extends ConsoleText {
