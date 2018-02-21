@@ -12,6 +12,7 @@ import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
+import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 
 import javafx.scene.Scene;
@@ -113,6 +114,66 @@ public class ChatRoom {
 
 			commandManager.commands.add(new Command() {
 
+				final class SpecialConsoleText extends ConsoleText {
+
+					public String text;
+
+					public SpecialConsoleText(String text) {
+						this.text = text;
+					}
+
+					@Override
+					public void print(TextFlow flow) {
+						flow.getChildren().addAll(println(), println(), println());
+						for (char c : text.toCharArray()) {
+							Text t = new Text("" + c);
+							formatText(t);
+							t.setFill(new Color(Math.random(), Math.random(), Math.random(), 1));
+							flow.getChildren().add(t);
+						}
+						flow.getChildren().addAll(println(), println(), println());
+					}
+
+				}
+
+				@Override
+				protected boolean match(String name) {
+					return equalsAnyIgnoreCase(name, "setname", "set-name") || name.equals("sn");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length == 0) {
+						println("I can't set your name unless you tell me what you want it to be... >:(", Color.RED);
+						print("Usage: ", Color.RED);
+						println("/set-name (name)", Color.ORANGE);
+					} else {
+						if (args.length > 1)
+							println("You gave me too many arguments, so I'll just use the first one... That will be your name.....",
+									Color.RED);
+						if (args.length > 5) {
+							print("Man, you really gave me an ", Color.DARKRED);
+							print("excessive ", Color.CRIMSON);
+							println("amount of arguments...", Color.DARKRED);
+						}
+						if (args.length > 15) {
+							String chill = "Ch";
+							// Will iterate once if args.lenth==16, and once more for every one greater
+							// than that.
+							for (int i = 15; i < args.length; i++)
+								chill += "i";
+							chill += "ll";
+							new SpecialConsoleText(chill).print(flow);
+							println("By the way, I didn't set your name. :)", Color.RED);
+						}
+						String username = args[0];
+						ChatRoom.this.username = username;
+					}
+				}
+			});
+
+			commandManager.commands.add(new Command() {
+
 				@Override
 				protected boolean match(String name) {
 					return name.equalsIgnoreCase("client");
@@ -144,6 +205,10 @@ public class ChatRoom {
 								print("The client with the name ", Color.GREEN);
 								print(clientName, Color.WHITE);
 								println(" was removed successfully!", Color.GREEN);
+							} else {
+								print("A command by the name of ", Color.RED);
+								print(clientName, Color.ORANGE);
+								println(" was not found.", Color.RED);
 							}
 						}
 					}
