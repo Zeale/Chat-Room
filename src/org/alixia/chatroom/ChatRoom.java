@@ -17,7 +17,9 @@ import org.alixia.chatroom.texts.Println;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -41,7 +43,8 @@ public class ChatRoom {
 	private final TextFlow flow = new TextFlow();
 	private final TextArea input = new TextArea();
 	private final Button sendButton = new Button("Send");
-	private final AnchorPane root = new AnchorPane(flow, input, sendButton);
+	private final ScrollPane flowWrapper = new ScrollPane(flow);
+	private final AnchorPane root = new AnchorPane(flowWrapper, input, sendButton);
 
 	private final Scene scene = new Scene(root);
 	private final Stage stage;
@@ -60,10 +63,10 @@ public class ChatRoom {
 		flow.setBackground(DEFAULT_NODE_BACKGROUND);
 		input.setBackground(DEFAULT_NODE_BACKGROUND);
 
-		AnchorPane.setLeftAnchor(flow, 50d);
-		AnchorPane.setRightAnchor(flow, 50d);
-		AnchorPane.setTopAnchor(flow, 0d);
-		AnchorPane.setBottomAnchor(flow, 250d);
+		AnchorPane.setLeftAnchor(flowWrapper, 50d);
+		AnchorPane.setRightAnchor(flowWrapper, 50d);
+		AnchorPane.setTopAnchor(flowWrapper, 0d);
+		AnchorPane.setBottomAnchor(flowWrapper, 250d);
 
 		AnchorPane.setBottomAnchor(input, 0d);
 		AnchorPane.setLeftAnchor(input, 0d);
@@ -92,6 +95,11 @@ public class ChatRoom {
 	}
 
 	private void tryInit() {
+
+		flowWrapper.getStylesheets().add("org/alixia/chatroom/stylesheet.css");
+		flowWrapper.setBackground(null);
+		flowWrapper.setFitToWidth(true);
+		flow.setMinHeight(200);
 
 		stage.setOnCloseRequest(event -> {
 			servers.close();
