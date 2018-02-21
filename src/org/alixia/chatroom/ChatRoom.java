@@ -134,9 +134,22 @@ public class ChatRoom {
 					public void print(TextFlow flow) {
 						flow.getChildren().addAll(println(), println(), println());
 						for (char c : text.toCharArray()) {
+							// The text
 							Text t = new Text("" + c);
+
+							// Default formatting
 							formatText(t);
+
+							// Assing some stuff
 							t.setFill(new Color(Math.random(), Math.random(), Math.random(), 1));
+							t.setFont(Font.font(t.getFont().getFamily(), Math.random() * 10 + 35)); // 35 ~ 45
+
+							// Add a dropshadow
+							DropShadow ds = new DropShadow();
+							ds.setColor(new Color(Math.random(), Math.random(), Math.random(), 1));
+							t.setEffect(ds);
+
+							// Add it to the console.
 							flow.getChildren().add(t);
 						}
 						flow.getChildren().addAll(println(), println(), println());
@@ -165,13 +178,18 @@ public class ChatRoom {
 							println("amount of arguments...", Color.DARKRED);
 						}
 						if (args.length > 15) {
-							String chill = "Ch";
+							String chill = "CH";
 							// Will iterate once if args.lenth==16, and once more for every one greater
 							// than that.
 							for (int i = 15; i < args.length; i++)
-								chill += "i";
-							chill += "ll";
+								chill += "I";
+							chill += "LL";
 							new SpecialConsoleText(chill).print(flow);
+
+							println("With", Color.WHITE);
+							println("The", Color.WHITE);
+							println("Args.....", Color.WHITE);
+							println();
 							println("By the way, I didn't set your name. :)", Color.RED);
 						}
 						String username = args[0];
