@@ -135,7 +135,7 @@ public class ChatRoom {
 		println("Setting up commands...", Color.BISQUE);
 		{
 
-			commandManager.commands.add(new Command() {
+			commandManager.addCommand(new Command() {
 
 				@Override
 				protected boolean match(String name) {
@@ -248,7 +248,7 @@ public class ChatRoom {
 			});
 
 			// /set-name
-			commandManager.commands.add(new Command() {
+			commandManager.addCommand(new Command() {
 
 				final class SpecialConsoleText extends ConsoleText {
 
@@ -326,7 +326,7 @@ public class ChatRoom {
 				}
 			});
 
-			commandManager.commands.add(new Command() {
+			commandManager.addCommand(new Command() {
 
 				@Override
 				protected boolean match(String name) {
@@ -370,7 +370,7 @@ public class ChatRoom {
 			});
 
 			// /help
-			commandManager.commands.add(new Command() {
+			commandManager.addCommand(new Command() {
 
 				@Override
 				protected boolean match(String name) {
@@ -407,7 +407,7 @@ public class ChatRoom {
 			});
 
 			// /clear-screen
-			commandManager.commands.add(new Command() {
+			commandManager.addCommand(new Command() {
 
 				@Override
 				protected boolean match(String name) {
@@ -421,13 +421,13 @@ public class ChatRoom {
 			});
 
 			// /new
-			commandManager.commands.add(new Command() {
+			commandManager.addCommand(new Command() {
 
 				CommandManager argumentManager = new CommandManager();
 
 				{
 					// /new Client
-					argumentManager.commands.add(new Command() {
+					argumentManager.addCommand(new Command() {
 
 						@Override
 						protected boolean match(String name) {
@@ -499,7 +499,7 @@ public class ChatRoom {
 					});
 
 					// /new Server
-					argumentManager.commands.add(new Command() {
+					argumentManager.addCommand(new Command() {
 
 						@Override
 						protected boolean match(String name) {

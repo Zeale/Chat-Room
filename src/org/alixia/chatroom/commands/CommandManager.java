@@ -2,9 +2,17 @@ package org.alixia.chatroom.commands;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 public class CommandManager {
-	public final List<Command> commands = new LinkedList<>();
+	private final List<Command> commands = new LinkedList<>();
+
+	private Stack<CommandConsumer> consumers = new Stack<>();
+
+	public void addCommand(Command command) {
+		command.setManager(this);
+		commands.add(command);
+	}
 
 	/**
 	 * This method operates assuming the precondition that the first character of
@@ -37,6 +45,10 @@ public class CommandManager {
 	}
 
 	public boolean runCommand(String cmd, String... args) {
+		if (!consumers.isEmpty()) {
+			consumers.pop().consume(cmd, args);
+			return true;
+		}
 		for (Command c : commands)
 			if (c.match(cmd)) {
 				c.act(cmd, args);
@@ -72,5 +84,9 @@ public class CommandManager {
 			newArgs[i - 1] = args[i];
 
 		return runCommand(name, newArgs);
+	}
+
+	void pushConsumer(CommandConsumer consumer) {
+		consumers.push(consumer);
 	}
 }

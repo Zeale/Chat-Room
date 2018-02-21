@@ -2,6 +2,16 @@ package org.alixia.chatroom.commands;
 
 public abstract class Command {
 
+	private CommandManager managerRef;
+
+	public void setManager(CommandManager managerRef) {
+		this.managerRef = managerRef;
+	}
+	
+	protected final void addConsumer(CommandConsumer consumer) {
+		managerRef.pushConsumer(consumer);
+	}
+
 	protected abstract boolean match(String name);
 
 	protected abstract void act(String name, String... args);
