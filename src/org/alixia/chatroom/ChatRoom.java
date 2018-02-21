@@ -144,7 +144,12 @@ public class ChatRoom {
 					// Update the program
 
 					if (args.length > 0) {
-
+						if (args[0].equalsIgnoreCase("force") || args[0].equals("-f")) {
+							println("Forcefully updating the program.", Color.RED);
+							println("This ignores checks to see whether or not your version is the latest. If the update command is causing problems with version checking, this command is useful.",
+									Color.CYAN);
+							updateProgram();
+						}
 					} else {
 						// versions
 						int latest = 0, current = 0;
@@ -209,74 +214,9 @@ public class ChatRoom {
 
 								// Since this is a lambda expression, the object is not recreated each time.
 								text.text.setOnMouseClicked(event -> {
-									if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
+									if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2)
+										updateProgram();
 
-										TRY_DOWNLOAD: {
-											// Windows
-											if (System.getProperty("os.name").toLowerCase().startsWith("win"))
-												try (InputStream is = new URL(
-														"http://dusttoash.org/chat-room/ChatRoom.jar").openStream()) {
-													Files.copy(is,
-															new File(System.getProperty("user.home") + "\\Desktop")
-																	.toPath(),
-															StandardCopyOption.COPY_ATTRIBUTES);
-													// Success
-													println("The newest version of Chat Room was placed on your desktop.",
-															Color.GREEN);
-													break TRY_DOWNLOAD;
-												}
-												// If there is a failure, we won't get to the "break TRY_DOWNLOAD"
-												// statement, so the below try block will be run, and Chat Room will
-												// attempt to open the latest version in the default browser.
-												catch (MalformedURLException e1) {
-													println("There was an error parsing the file's web address.",
-															Color.RED);
-												} catch (IOException e2) {
-													print("There was an error while trying to retrieve the file from the address: ",
-															Color.RED);
-													println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
-													println("Attempting to open the file in your browser...",
-															Color.ORANGE);
-													println();
-												}
-
-											// Either the OS is not Windows, (and thus I don't know if their Desktop's
-											// location is their homedir +"\Desktop"), or the attempt to download the
-											// file failed.
-											try {
-												// This may throw an exception skipping the break and going to the catch
-												// blocks. right after that, we exit the try and go over the print
-												// statements for failures then we return.
-												Desktop.getDesktop().browse(
-														new URL("http://dusttoash.org/chat-room/ChatRoom.jar").toURI());
-
-												break TRY_DOWNLOAD;// And continue on to print our success.
-
-											} catch (MalformedURLException e3) {
-												println("There was an error while trying to locate the file.",
-														Color.RED);
-											} catch (IOException e4) {
-												println("There was an error while trying to download the file.",
-														Color.RED);
-											} catch (URISyntaxException e5) {
-												println("There was an error parsing the file's web address.",
-														Color.RED);
-											} catch (UnsupportedOperationException e6) {
-												print("Apparently, your operating system does not support Chat Room opening a link with your default browser. Here is the link to the file: ",
-														Color.RED);
-												println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
-											}
-
-											println();
-											println();
-											println("The latest version could not be downloaded...", Color.RED);
-
-										}
-										println("Opening the file in your browser seems to have succeeded. Please copy the file to wherever and run it for the latest version.",
-												Color.WHITE);
-										println("You can close the program and discard this file, then open the new one with the new updates.",
-												Color.WHITE);
-									}
 								});
 								text.text.setFill(Color.WHITE);
 								text.text.setUnderline(true);
@@ -689,6 +629,65 @@ public class ChatRoom {
 		}
 
 		input.setText("");
+	}
+
+	private void updateProgram() {
+
+		TRY_DOWNLOAD: {
+			// Windows
+			if (System.getProperty("os.name").toLowerCase().startsWith("win"))
+				try (InputStream is = new URL("http://dusttoash.org/chat-room/ChatRoom.jar").openStream()) {
+					Files.copy(is, new File(System.getProperty("user.home") + "\\Desktop").toPath(),
+							StandardCopyOption.COPY_ATTRIBUTES);
+					// Success
+					println("The newest version of Chat Room was placed on your desktop.", Color.GREEN);
+					break TRY_DOWNLOAD;
+				}
+				// If there is a failure, we won't get to the "break TRY_DOWNLOAD"
+				// statement, so the below try block will be run, and Chat Room will
+				// attempt to open the latest version in the default browser.
+				catch (MalformedURLException e1) {
+					println("There was an error parsing the file's web address.", Color.RED);
+				} catch (IOException e2) {
+					print("There was an error while trying to retrieve the file from the address: ", Color.RED);
+					println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
+					println("Attempting to open the file in your browser...", Color.ORANGE);
+					println();
+				}
+
+			// Either the OS is not Windows, (and thus I don't know if their Desktop's
+			// location is their homedir +"\Desktop"), or the attempt to download the
+			// file failed.
+			try {
+				// This may throw an exception skipping the break and going to the catch
+				// blocks. right after that, we exit the try and go over the print
+				// statements for failures then we return.
+				Desktop.getDesktop().browse(new URL("http://dusttoash.org/chat-room/ChatRoom.jar").toURI());
+
+				break TRY_DOWNLOAD;// And continue on to print our success.
+
+			} catch (MalformedURLException e3) {
+				println("There was an error while trying to locate the file.", Color.RED);
+			} catch (IOException e4) {
+				println("There was an error while trying to download the file.", Color.RED);
+			} catch (URISyntaxException e5) {
+				println("There was an error parsing the file's web address.", Color.RED);
+			} catch (UnsupportedOperationException e6) {
+				print("Apparently, your operating system does not support Chat Room opening a link with your default browser. Here is the link to the file: ",
+						Color.RED);
+				println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
+			}
+
+			println();
+			println();
+			println("The latest version could not be downloaded...", Color.RED);
+
+		}
+		println("Opening the file in your browser seems to have succeeded. Please copy the file to wherever and run it for the latest version.",
+				Color.WHITE);
+		println("You can close the program and discard this file, then open the new one with the new updates.",
+				Color.WHITE);
+
 	}
 
 }
