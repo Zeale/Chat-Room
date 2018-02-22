@@ -665,8 +665,8 @@ public class ChatRoom {
 			// Windows
 			if (System.getProperty("os.name").toLowerCase().startsWith("win"))
 				try (InputStream is = new URL("http://dusttoash.org/chat-room/ChatRoom.jar").openStream()) {
-					Files.copy(is, new File(System.getProperty("user.home") + "\\Desktop").toPath(),
-							StandardCopyOption.COPY_ATTRIBUTES);
+					Files.copy(is, new File(System.getProperty("user.home") + "\\Desktop\\ChatRoom.jar").toPath(),
+							StandardCopyOption.REPLACE_EXISTING);
 					// Success
 					println("The newest version of Chat Room was placed on your desktop.", SUCCESS_COLOR);
 					break TRY_DOWNLOAD;
