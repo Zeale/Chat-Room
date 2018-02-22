@@ -365,6 +365,29 @@ public class ChatRoom {
 								println(" was not found.", ERROR_COLOR);
 							}
 						}
+					} else if (subcommand.equalsIgnoreCase("select")) {
+						if (args.length < 2) {
+							println("You must specify what client you want me to select.", ERROR_COLOR);
+							println("Usage: /client select (client-name)", ERROR_COLOR);
+						} else {
+							if (args.length > 2) {
+								println("Too many arguments. Using only what is needed.", Color.GOLD);
+								println("Usage: /client select (client-name)", Color.GOLD);
+							}
+							String clientName = args[1];
+							if (clientName.equals(clients.getSelectedItem().getName()))
+								println("That client is already selected.", Color.GOLD);
+							else {
+
+								if (!clients.containsKey(clientName)) {
+									print("There isn't a client registered with the name ", ERROR_COLOR);
+									println(clientName, Color.ORANGE);
+								} else {
+									clients.selectItem(clientName);
+									println("Selected the specified client.", SUCCESS_COLOR);
+								}
+							}
+						}
 					}
 				}
 			});

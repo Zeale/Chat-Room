@@ -12,8 +12,24 @@ abstract class NamedObjectList<T extends NamedObject> {
 		return selectedItem;
 	}
 
+	public T getItem(String name) {
+		return items.get(name);
+	}
+
 	public boolean isItemSelected() {
 		return selectedItem != null;
+	}
+
+	public boolean containsKey(String name) {
+		return items.containsKey(name);
+	}
+
+	public boolean isEmpty() {
+		return items.isEmpty();
+	}
+
+	public boolean containsValue(T value) {
+		return items.containsValue(value);
 	}
 
 	/**

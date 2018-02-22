@@ -52,7 +52,7 @@ public class Client extends NamedObject {
 					return;
 				} catch (final SocketException e) {
 					socketExceptionCount++;
-					pause();
+					pauseRun();
 					if (socketExceptionCount > 3)
 						closeConnection();
 				} catch (ClassNotFoundException | IOException e1) {
@@ -99,7 +99,30 @@ public class Client extends NamedObject {
 		}
 	}
 
-	private void pause() {
+	private boolean paused;
+
+	public boolean isPaused() {
+		return paused;
+	}
+
+	public void setPaused(boolean paused) {
+		this.paused = paused;
+	}
+
+	/**
+	 * Inverts whether or not this {@link Client} is paused (meaning it won't
+	 * receive anything from the server).
+	 */
+	public void pause() {
+		if (!paused)
+			paused = true;
+		else {
+			paused = false;
+			outputThread.start();
+		}
+	}
+
+	private void pauseRun() {
 		try {
 			Thread.sleep(1000);
 		} catch (final InterruptedException e) {
