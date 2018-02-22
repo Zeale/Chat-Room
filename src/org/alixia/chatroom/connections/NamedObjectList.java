@@ -8,6 +8,14 @@ abstract class NamedObjectList<T extends NamedObject> {
 
 	private T selectedItem;
 
+	protected final void rawSetSelectedItem(T item) {
+		selectedItem = item;
+	}
+
+	protected final T rawGetSelectedItem() {
+		return selectedItem;
+	}
+
 	public T getSelectedItem() {
 		return selectedItem;
 	}
@@ -17,7 +25,7 @@ abstract class NamedObjectList<T extends NamedObject> {
 	}
 
 	public boolean isItemSelected() {
-		return selectedItem != null;
+		return getSelectedItem() != null;
 	}
 
 	public boolean containsKey(String name) {
@@ -46,14 +54,14 @@ abstract class NamedObjectList<T extends NamedObject> {
 
 	public boolean selectItem(String clientName) {
 		if (items.containsKey(clientName)) {
-			selectedItem = items.get(clientName);
+			rawSetSelectedItem(items.get(clientName));
 			return true;
 		}
 		return false;
 	}
 
 	public void unselectItem() {
-		selectedItem = null;
+		rawSetSelectedItem(null);
 	}
 
 	public boolean addItem(T client) {
