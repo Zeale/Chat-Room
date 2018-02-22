@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -330,25 +331,140 @@ public class ChatRoom {
 
 				@Override
 				protected boolean match(String name) {
-					return name.equalsIgnoreCase("client");
+					return name.equalsIgnoreCase("clients");
 				}
 
 				@Override
 				protected void act(String name, String... args) {
-					if (!(args.length > 0)) {
-						print("Usage: ", ERROR_COLOR);
-						println("/client (subcommand)", Color.ORANGE);
+					if (args.length > 0 && !args[0].equalsIgnoreCase("list"))
+						println("This command doesn’t take any arguments.", Color.GOLD);
+
+					if (clients.isEmpty()) {
+						println("You have no registered clients.", ERROR_COLOR);
+						return;
+					}
+					println("Here is a list of all the registered clients you have.", INFO_COLOR);
+					boolean first = true;
+					for (Client c : clients.values()) {
+						if (!first)
+							print(", ", SUCCESS_COLOR);
+						else
+							first = false;
+						print(c.getName(), Color.WHITE);
+					}
+					println();
+
+				}
+			});
+
+			commandManager.addCommand(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("servers");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length > 0 && !args[0].equalsIgnoreCase("list"))
+						println("This command doesn’t take any arguments.", Color.GOLD);
+
+					if (servers.isEmpty()) {
+						println("You have no registered servers.", ERROR_COLOR);
+						return;
+					}
+					println("Here is a list of all the registered servers you have.", INFO_COLOR);
+					boolean first = true;
+					for (Server s : servers.values()) {
+						if (!first)
+							print(", ", SUCCESS_COLOR);
+						else
+							first = false;
+						print(s.getName(), Color.WHITE);
+					}
+					println();
+				}
+			});
+
+			commandManager.addCommand(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("server") || name.equals("s");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length == 0) {
+						print("Too few arguments. Usage: ", ERROR_COLOR);
+						println("/" + name + " (subcommand)", Color.ORANGE);
 						return;
 					}
 
-					String subcommand = args[0];
+					final String subcommand = args[0];
 					if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
+
+						if (servers.isEmpty()) {
+							println("There are no running servers for you to close.", ERROR_COLOR);
+							return;
+						}
+						final String serverName;
+						if (args.length < 2)
+							if (!servers.isItemSelected()) {
+								print("You don't have a server selected. Did you want to close a specific server?\nUsage: ",
+										ERROR_COLOR);
+								println("/" + name + " " + subcommand + " [server-name]", Color.ORANGE);
+								return;
+							} else
+								servers.removeItem(serverName = servers.getSelectedItem().getName());
+						else {
+							serverName = args[1];
+							if (!servers.containsKey(serverName)) {
+								print("There is no server by the name of ", ERROR_COLOR);
+								print(serverName, Color.ORANGE);
+								print(".", ERROR_COLOR);
+								return;
+							}
+							servers.removeItem(serverName);
+						}
+
+						print("The server, ", SUCCESS_COLOR);
+						print(serverName, Color.WHITE);
+						print(", was removed successfully.", SUCCESS_COLOR);
+
+					}
+				}
+			});
+
+			commandManager.addCommand(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("client") || name.equals("c");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length == 0) {
+						print("Usage: ", ERROR_COLOR);
+						println("/" + name + " (subcommand)", Color.ORANGE);
+						return;
+					}
+
+					final String subcommand = args[0];
+					if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
+
+						if (clients.isEmpty()) {
+							println("There are no active clients for you to close.", ERROR_COLOR);
+							return;
+						}
+
 						if (args.length < 2) {
 							// No clientName specified. "/client stop"
 							if (!clients.isItemSelected()) {
 								print("You do not have a client selected. Did you mean to close a specific client?\nUsage: ",
 										ERROR_COLOR);
-								println("/client " + subcommand + " [client-name]", Color.ORANGE);
+								println("/" + name + " " + subcommand + " [client-name]", Color.ORANGE);
 							} else {
 								clients.removeItem(clients.getSelectedItem().getName());
 							}
@@ -388,7 +504,9 @@ public class ChatRoom {
 								}
 							}
 						}
-					}
+					} else if (subcommand.equalsIgnoreCase("list"))
+						executeCommand("/clients list");
+
 				}
 			});
 
@@ -402,9 +520,49 @@ public class ChatRoom {
 
 				@Override
 				protected void act(String name, String... args) {
+
 					if (args.length == 0) {
 						// TODO Print syntax rules first.
+						printHelp(1);
+						return;
+					} else {
+						// Check if the first arg is a number.
+						HANDLE_HELP_PAGE: {
 
+							for (char c : args[0].toCharArray())
+								if (!Character.isDigit(c))
+									break HANDLE_HELP_PAGE;
+							Integer page = Integer.parseInt(args[0]);
+
+							if (args.length > 1) {
+								print("Ignoring additional args and displaying the help for page ", Color.GOLD);
+								print("" + page, Color.WHITE);
+								print(".", Color.GOLD);
+							}
+
+							printHelp(page);
+							return;
+						}
+						// Handle help for a specific command
+						String subcommand = args[0];
+						if (subcommand.equalsIgnoreCase("new")) {
+							if (args.length == 1) {
+								// TODO Print stuff.
+							}
+						}
+					}
+
+				}
+
+				public void printBasicHelp(String syntax, String description) {
+					print(syntax, Color.CRIMSON);
+					print(" - ", Color.WHITE);
+					println(description, Color.DARKTURQUOISE);
+				}
+
+				public void printHelp(int page) {
+					switch (page) {
+					case 1:
 						// /clear-screen
 						printBasicHelp("/help [command]",
 								"Provides help for a specific command (if provided) or all commands in general.");
@@ -418,13 +576,10 @@ public class ChatRoom {
 						printBasicHelp("\tserver [port] (server-name)",
 								"Creates a new server with the given port. Do note that your router's firewall (if there is one) will likely block any incoming connections to your computer on any port, unless you port forward. The [port] is optional and defaults to "
 										+ DEFAULT_PORT + ".");
+						break;
+					default:
+						println("There is no help available for that page...", ERROR_COLOR);
 					}
-				}
-
-				public void printBasicHelp(String syntax, String description) {
-					print(syntax, Color.CRIMSON);
-					print(" - ", Color.WHITE);
-					println(description, Color.DARKTURQUOISE);
 				}
 
 			});
@@ -473,17 +628,17 @@ public class ChatRoom {
 								print("/help ", Color.ORANGE);
 								println("for more information.", ERROR_COLOR);
 							} else {
+
+								final String hostname = args[0];
+								int port = DEFAULT_PORT;
+								final String clientName;
+
 								try {
 
 									Client client;
 
-									final String hostname = args[0];
-									final int port;
-									final String clientName;
-
 									// No port
 									if (args.length == 2) {
-										port = DEFAULT_PORT;
 										clientName = args[1];
 									} else {
 										if (args.length > 3)
@@ -512,6 +667,11 @@ public class ChatRoom {
 								} catch (UnknownHostException e) {
 									println("The address could not be parsed as a valid server address, or the ip address of the host could not be determined.",
 											ERROR_COLOR);
+								} catch (ConnectException e) {
+									print("There is no server listening for connections on the address ", ERROR_COLOR);
+									print(hostname, Color.DARKRED);
+									print(" and the port ", ERROR_COLOR);
+									print("" + port, Color.DARKRED);
 								} catch (IOException e) {
 									println("Some kind of unknown error occurred while trying to connect.",
 											ERROR_COLOR);
@@ -526,7 +686,7 @@ public class ChatRoom {
 
 						@Override
 						protected boolean match(String name) {
-							return name.equalsIgnoreCase("Server") || name.equals("s");
+							return name.equalsIgnoreCase("server") || name.equals("s");
 						}
 
 						@Override
@@ -716,6 +876,10 @@ public class ChatRoom {
 		println("You can close the program and discard this file, then open the new one with the new updates.",
 				Color.WHITE);
 
+	}
+
+	private void executeCommand(String command) {
+		commandManager.runCommand(command);
 	}
 
 }

@@ -1,5 +1,6 @@
 package org.alixia.chatroom.connections;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 abstract class NamedObjectList<T extends NamedObject> {
@@ -18,6 +19,10 @@ abstract class NamedObjectList<T extends NamedObject> {
 
 	public T getSelectedItem() {
 		return selectedItem;
+	}
+	
+	public Collection<T> values(){
+		return items.values();
 	}
 
 	public T getItem(String name) {
