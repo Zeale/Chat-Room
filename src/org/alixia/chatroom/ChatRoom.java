@@ -32,6 +32,7 @@ import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
 
 import javafx.application.Platform;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -222,6 +223,23 @@ public class ChatRoom {
 			}
 
 		}
+
+		close.setOnMouseClicked(event -> {
+			if (event.getButton().equals(MouseButton.PRIMARY)) {
+				stage.close();
+				Platform.exit();
+			}
+		});
+
+		expand.setOnMouseClicked(event -> {
+			if (event.getButton().equals(MouseButton.PRIMARY))
+				stage.setMaximized(!stage.isMaximized());
+		});
+
+		minimize.setOnMouseClicked(event -> {
+			if (event.getButton().equals(MouseButton.PRIMARY))
+				stage.setIconified(true);
+		});
 
 		// Menu bar
 		HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
