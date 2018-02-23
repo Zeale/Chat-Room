@@ -81,7 +81,7 @@ public class ChatRoom {
 	// Some of these fields have aliases.
 	private final TextFlow flow = new TextFlow();
 	private final TextArea input = new TextArea();
-	private final Button sendButton = new Button("Send");
+	private final Button sendButton = new PopButton("Send");
 	private final ScrollPane flowWrapper = new ScrollPane(flow);
 	private final AnchorPane contentWrapper = new AnchorPane(flowWrapper, input, sendButton);
 	private final BorderPane root = new BorderPane();
