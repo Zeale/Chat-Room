@@ -109,10 +109,12 @@ class ServerClient {
 		sendObject(message);
 	}
 
-	public void sendObject(final Serializable object) throws RuntimeException {
+	public void sendObject(final Serializable object) throws SocketException, RuntimeException {
 		try {
 			objOut.writeObject(object);
 			objOut.flush();
+		} catch (SocketException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
