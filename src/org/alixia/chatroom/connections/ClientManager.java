@@ -1,6 +1,13 @@
 package org.alixia.chatroom.connections;
 
 public class ClientManager extends NamedObjectList<Client> {
+
+	private final ConnectionListener listener;
+
+	public ClientManager(ConnectionListener clientListener) {
+		listener = clientListener;
+	}
+
 	@Override
 	public boolean removeItem(String name) {
 		Client c = items.remove(name);
@@ -13,6 +20,7 @@ public class ClientManager extends NamedObjectList<Client> {
 	@Override
 	public boolean addItem(Client client) {
 		client.setPaused(true);
+		client.setListener(listener);
 		return super.addItem(client);
 	}
 

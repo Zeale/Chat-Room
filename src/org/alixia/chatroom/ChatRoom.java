@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Serializable;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -18,15 +19,18 @@ import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
 import org.alixia.chatroom.connections.ClientManager;
+import org.alixia.chatroom.connections.ConnectionListener;
 import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
+import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -65,8 +69,22 @@ public class ChatRoom {
 	private final Scene scene = new Scene(root);
 	private final Stage stage;
 
+	private final ConnectionListener clientListener = new ConnectionListener() {
+
+		@Override
+		public void objectReceived(Serializable object) {
+			if (object instanceof UserMessage)
+				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(flow));
+		}
+
+		@Override
+		public void connectionClosed() {
+			clients.unselectItem();
+		}
+	};
+
 	private final CommandManager commandManager = new CommandManager();
-	private final ClientManager clients = new ClientManager();
+	private final ClientManager clients = new ClientManager(clientListener);
 	private final ServerManager servers = new ServerManager();
 
 	ChatRoom(Stage stage) {
