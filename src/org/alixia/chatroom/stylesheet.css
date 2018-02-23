@@ -1,3 +1,11 @@
 .scroll-pane > .viewport {
 	-fx-background-color: transparent;
 }
+
+.text-area .content {
+	-fx-background-color: transparent;
+}
+
+.text-area {
+	-fx-background-color: rgba(0.3, 0.3, 0.3, 0.5);
+}

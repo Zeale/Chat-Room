@@ -24,6 +24,7 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.ConsoleText;
@@ -31,6 +32,7 @@ import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -50,7 +52,9 @@ import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -112,7 +116,7 @@ public class ChatRoom {
 
 		flow.setBackground(getBackground(NODE_OUTPUT_COLOR));
 		input.setBackground(getBackground(NODE_OUTPUT_COLOR));
-		input.setStyle("-fx-text-fill: darkgray");
+		input.setStyle("-fx-text-fill: darkgray; ");
 
 		AnchorPane.setLeftAnchor(flowWrapper, 50d);
 		AnchorPane.setRightAnchor(flowWrapper, 50d);
@@ -153,9 +157,6 @@ public class ChatRoom {
 		StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
 
 		Border border = new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2)));
-		close.setBorder(border);
-		minimize.setBorder(border);
-		expand.setBorder(border);
 
 		close.setPrefSize(26, 26);
 		minimize.setPrefSize(26, 26);
@@ -166,43 +167,66 @@ public class ChatRoom {
 		minimize.setBackground(background);
 		expand.setBackground(background);
 
-		// Pos is the rect with a positive slope, neg is the negative sloped rect.
-		Rectangle pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
-		neg.setRotate(45);
-		pos.setRotate(-45);
-		pos.setFill(ITEM_COLOR);
-		neg.setFill(ITEM_COLOR);
+		final double size = 28;
+		{
+			if (OS.getOS() == OS.WINDOWS) {
 
-		neg.setStroke(ITEM_COLOR);
-		neg.setStrokeWidth(1);
-		pos.setStroke(ITEM_COLOR);
-		pos.setStrokeWidth(1);
+				// Pos is the rect with a positive slope, neg is the negative sloped rect.
+				Shape pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
+				neg.setRotate(45);
+				pos.setRotate(-45);
+				pos.setFill(ITEM_COLOR);
+				neg.setFill(ITEM_COLOR);
 
-		StackPane.setAlignment(neg, Pos.CENTER);
-		StackPane.setAlignment(pos, Pos.CENTER);
+				neg.setStroke(ITEM_COLOR);
+				neg.setStrokeWidth(1);
+				pos.setStroke(ITEM_COLOR);
+				pos.setStrokeWidth(1);
 
-		close.getChildren().addAll(pos, neg);
+				StackPane.setAlignment(neg, Pos.CENTER);
+				StackPane.setAlignment(pos, Pos.CENTER);
 
-		// Expand/Maximize
-		Rectangle max = new Rectangle(20, 20);
-		max.setFill(Color.TRANSPARENT);
-		max.setStroke(ITEM_COLOR);
-		max.setStrokeWidth(2.5);
+				close.getChildren().addAll(pos, neg);
 
-		StackPane.setAlignment(max, Pos.CENTER);
+				// Expand/Maximize
+				Rectangle max = new Rectangle(20, 20);
+				max.setFill(Color.TRANSPARENT);
+				max.setStroke(ITEM_COLOR);
+				max.setStrokeWidth(2.5);
 
-		expand.getChildren().add(max);
+				StackPane.setAlignment(max, Pos.CENTER);
 
-		// Minimize
-		Rectangle min = new Rectangle(24, 2);
-		StackPane.setAlignment(min, Pos.BOTTOM_CENTER);
-		min.setFill(ITEM_COLOR);
-		min.setStroke(ITEM_COLOR);
-		min.setStrokeWidth(1);
-		minimize.getChildren().add(min);
+				expand.getChildren().add(max);
+
+				// Minimize
+				Rectangle min = new Rectangle(22, 2);
+				StackPane.setAlignment(min, Pos.BOTTOM_CENTER);
+				min.setFill(ITEM_COLOR);
+				min.setStroke(ITEM_COLOR);
+				min.setStrokeWidth(1);
+				minimize.setPadding(new Insets(0, 0, 2, 0));
+				minimize.getChildren().add(min);
+			} else {
+
+				Shape closeFill, minimizeFill, expandFill;
+				closeFill = new Circle(size / 5);
+				minimizeFill = new Circle(size / 5);
+				expandFill = new Circle(size / 5);
+				closeFill.setFill(Color.CORAL);
+				expandFill.setFill(Color.GOLD);
+				minimizeFill.setFill(Color.LIMEGREEN);
+				close.getChildren().add(closeFill);
+				minimize.getChildren().add(minimizeFill);
+				expand.getChildren().add(expandFill);
+
+			}
+
+		}
 
 		// Menu bar
-		HBox menuBar = new HBox(minimize, expand, close);
+		HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
+				OS.getOS() == OS.WINDOWS ? close : minimize);
+
 		menuBar.setBorder(new Border(new BorderStroke(null, null, BACKGROUND_COLOR, null, null, null,
 				BorderStrokeStyle.SOLID, null, null, new BorderWidths(2), null)));
 		menuBar.setBackground(background);
@@ -210,7 +234,10 @@ public class ChatRoom {
 		menuBar.setPrefHeight(30);
 		menuBar.setMinHeight(30);
 		menuBar.setSpacing(2);
-		menuBar.setAlignment(Pos.CENTER_RIGHT);
+		if (OS.getOS() == OS.WINDOWS)
+			menuBar.setAlignment(Pos.CENTER_RIGHT);
+		else
+			menuBar.setAlignment(Pos.CENTER_LEFT);
 		// Root
 		root.setBorder(border);
 		root.setTop(menuBar);
@@ -224,7 +251,7 @@ public class ChatRoom {
 		root.setCenter(contentWrapper);
 		stage.show();
 
-		flowWrapper.getStylesheets().add("org/alixia/chatroom/stylesheet.css");
+		scene.getStylesheets().add("org/alixia/chatroom/stylesheet.css");
 		flowWrapper.setBackground(null);
 		flowWrapper.setFitToWidth(true);
 		flow.setMinHeight(200);
