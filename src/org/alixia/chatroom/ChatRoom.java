@@ -31,6 +31,7 @@ import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
 
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -41,19 +42,33 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class ChatRoom {
 
 	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN;
 
-	private final static Background DEFAULT_NODE_BACKGROUND = new Background(
-			new BackgroundFill(new Color(0.4, 0.4, 0.4, 0.7), null, null));
+	private static final Color WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
+			NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), NODE_ITEM_COLOR = Color.DARKGRAY,
+			WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
+
+	private static final Background getBackground(Color color) {
+		return new Background(new BackgroundFill(color, null, null));
+	}
 
 	private static final int DEFAULT_PORT = 25000;
 
@@ -64,9 +79,10 @@ public class ChatRoom {
 	private final TextArea input = new TextArea();
 	private final Button sendButton = new Button("Send");
 	private final ScrollPane flowWrapper = new ScrollPane(flow);
-	private final AnchorPane root = new AnchorPane(flowWrapper, input, sendButton);
+	private final AnchorPane contentWrapper = new AnchorPane(flowWrapper, input, sendButton);
+	private final BorderPane root = new BorderPane();
 
-	private final Scene scene = new Scene(root);
+	private final Scene scene;
 	private final Stage stage;
 
 	private final ConnectionListener clientListener = new ConnectionListener() {
@@ -75,6 +91,7 @@ public class ChatRoom {
 		public void objectReceived(Serializable object) {
 			if (object instanceof UserMessage)
 				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(flow));
+
 		}
 
 		@Override
@@ -92,10 +109,10 @@ public class ChatRoom {
 
 		stage.setWidth(800);
 		stage.setHeight(600);
-		stage.show();
 
-		flow.setBackground(DEFAULT_NODE_BACKGROUND);
-		input.setBackground(DEFAULT_NODE_BACKGROUND);
+		flow.setBackground(getBackground(NODE_OUTPUT_COLOR));
+		input.setBackground(getBackground(NODE_OUTPUT_COLOR));
+		input.setStyle("-fx-text-fill: darkgray");
 
 		AnchorPane.setLeftAnchor(flowWrapper, 50d);
 		AnchorPane.setRightAnchor(flowWrapper, 50d);
@@ -112,7 +129,9 @@ public class ChatRoom {
 		input.setMaxHeight(200);
 
 		// Add a ScrollPane to wrap flow
-		root.setBackground(DEFAULT_NODE_BACKGROUND);
+		contentWrapper.setBackground(getBackground(WINDOW_BACKGROUND_COLOR));
+
+		scene = new Scene(root);
 
 		stage.setScene(scene);
 
@@ -128,7 +147,82 @@ public class ChatRoom {
 		}
 	}
 
+	private void addBorder() {
+		final Color ITEM_COLOR = ChatRoom.NODE_ITEM_COLOR, BACKGROUND_COLOR = WINDOW_BORDER_COLOR;
+
+		StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
+
+		Border border = new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2)));
+		close.setBorder(border);
+		minimize.setBorder(border);
+		expand.setBorder(border);
+
+		close.setPrefSize(26, 26);
+		minimize.setPrefSize(26, 26);
+		expand.setPrefSize(26, 26);
+
+		Background background = new Background(new BackgroundFill(BACKGROUND_COLOR, null, null));
+		close.setBackground(background);
+		minimize.setBackground(background);
+		expand.setBackground(background);
+
+		// Pos is the rect with a positive slope, neg is the negative sloped rect.
+		Rectangle pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
+		neg.setRotate(45);
+		pos.setRotate(-45);
+		pos.setFill(ITEM_COLOR);
+		neg.setFill(ITEM_COLOR);
+
+		neg.setStroke(ITEM_COLOR);
+		neg.setStrokeWidth(1);
+		pos.setStroke(ITEM_COLOR);
+		pos.setStrokeWidth(1);
+
+		StackPane.setAlignment(neg, Pos.CENTER);
+		StackPane.setAlignment(pos, Pos.CENTER);
+
+		close.getChildren().addAll(pos, neg);
+
+		// Expand/Maximize
+		Rectangle max = new Rectangle(20, 20);
+		max.setFill(Color.TRANSPARENT);
+		max.setStroke(ITEM_COLOR);
+		max.setStrokeWidth(2.5);
+
+		StackPane.setAlignment(max, Pos.CENTER);
+
+		expand.getChildren().add(max);
+
+		// Minimize
+		Rectangle min = new Rectangle(24, 2);
+		StackPane.setAlignment(min, Pos.BOTTOM_CENTER);
+		min.setFill(ITEM_COLOR);
+		min.setStroke(ITEM_COLOR);
+		min.setStrokeWidth(1);
+		minimize.getChildren().add(min);
+
+		// Menu bar
+		HBox menuBar = new HBox(minimize, expand, close);
+		menuBar.setBorder(new Border(new BorderStroke(null, null, BACKGROUND_COLOR, null, null, null,
+				BorderStrokeStyle.SOLID, null, null, new BorderWidths(2), null)));
+		menuBar.setBackground(background);
+		menuBar.setMaxHeight(30);
+		menuBar.setPrefHeight(30);
+		menuBar.setMinHeight(30);
+		menuBar.setSpacing(2);
+		menuBar.setAlignment(Pos.CENTER_RIGHT);
+		// Root
+		root.setBorder(border);
+		root.setTop(menuBar);
+		stage.initStyle(StageStyle.TRANSPARENT);
+	}
+
 	private void tryInit() {
+
+		stage.initStyle(StageStyle.DECORATED);
+		addBorder();
+		root.setCenter(contentWrapper);
+		stage.show();
 
 		flowWrapper.getStylesheets().add("org/alixia/chatroom/stylesheet.css");
 		flowWrapper.setBackground(null);
