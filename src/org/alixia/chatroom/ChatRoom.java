@@ -232,8 +232,16 @@ public class ChatRoom {
 		});
 
 		expand.setOnMouseClicked(event -> {
-			if (event.getButton().equals(MouseButton.PRIMARY))
-				stage.setMaximized(!stage.isMaximized());
+			if (event.getButton().equals(MouseButton.MIDDLE)) {
+				stage.setMaximized(false);
+				stage.setFullScreen(!stage.isFullScreen());
+			} else if (event.getButton().equals(MouseButton.PRIMARY)) {
+				if (stage.isFullScreen()) {
+					stage.setMaximized(false);
+					stage.setFullScreen(false);
+				} else
+					stage.setMaximized(!stage.isMaximized());
+			}
 		});
 
 		minimize.setOnMouseClicked(event -> {
