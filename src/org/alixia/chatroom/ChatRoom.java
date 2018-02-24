@@ -400,6 +400,8 @@ public class ChatRoom {
 
 					@Override
 					public void handle(MouseEvent event) {
+						if (stage.isMaximized() || stage.isFullScreen())
+							return;
 						dx = stage.getX() - event.getScreenX();
 						dy = stage.getY() - event.getScreenY();
 						event.consume();
@@ -410,6 +412,8 @@ public class ChatRoom {
 
 					@Override
 					public void handle(MouseEvent event) {
+						if (stage.isMaximized() || stage.isFullScreen())
+							return;
 						stage.setX(event.getScreenX() + dx);
 						stage.setY(event.getScreenY() + dy);
 						event.consume();
