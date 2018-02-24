@@ -31,7 +31,6 @@ import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
 
-import javafx.animation.FadeTransition;
 import javafx.animation.FillTransition;
 import javafx.animation.StrokeTransition;
 import javafx.application.Platform;
@@ -44,6 +43,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -302,7 +302,7 @@ public class ChatRoom {
 
 				}
 			} else {
-
+				final double animationDuration = 0.3;
 				Shape closeFill, minimizeFill, expandFill;
 				closeFill = new Circle(size / 5);
 				minimizeFill = new Circle(size / 5);
@@ -313,6 +313,52 @@ public class ChatRoom {
 				close.getChildren().add(closeFill);
 				minimize.getChildren().add(minimizeFill);
 				expand.getChildren().add(expandFill);
+
+				FillTransition ftclose = new FillTransition(Duration.seconds(animationDuration), closeFill),
+						ftminimize = new FillTransition(Duration.seconds(animationDuration), minimizeFill),
+						ftexpand = new FillTransition(Duration.seconds(animationDuration), expandFill);
+
+				close.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> {
+					ftclose.stop();
+					ftclose.setFromValue((Color) closeFill.getFill());
+					ftclose.setToValue(Color.WHITE);
+					ftclose.play();
+				});
+
+				close.addEventHandler(MouseEvent.MOUSE_EXITED, event -> {
+					ftclose.stop();
+					ftclose.setFromValue((Color) closeFill.getFill());
+					ftclose.setToValue(Color.CORAL);
+					ftclose.play();
+				});
+
+				expand.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> {
+					ftexpand.stop();
+					ftexpand.setFromValue((Color) expandFill.getFill());
+					ftexpand.setToValue(Color.WHITE);
+					ftexpand.play();
+				});
+
+				expand.addEventHandler(MouseEvent.MOUSE_EXITED, event -> {
+					ftexpand.stop();
+					ftexpand.setFromValue((Color) expandFill.getFill());
+					ftexpand.setToValue(Color.GOLD);
+					ftexpand.play();
+				});
+
+				minimize.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> {
+					ftminimize.stop();
+					ftminimize.setFromValue((Color) minimizeFill.getFill());
+					ftminimize.setToValue(Color.WHITE);
+					ftminimize.play();
+				});
+
+				minimize.addEventHandler(MouseEvent.MOUSE_EXITED, event -> {
+					ftminimize.stop();
+					ftminimize.setFromValue((Color) minimizeFill.getFill());
+					ftminimize.setToValue(Color.LIMEGREEN);
+					ftminimize.play();
+				});
 
 			}
 
