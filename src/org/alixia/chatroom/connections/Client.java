@@ -67,10 +67,14 @@ public class Client extends NamedObject {
 			}
 
 			outputThread = new Thread(this);
+			outputThread.setDaemon(true);
 
 			return;
 		}
 	});
+	{
+		outputThread.setDaemon(true);
+	}
 
 	public Client(final Socket socket, String name) throws IOException {
 		super(name);
