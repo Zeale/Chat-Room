@@ -7,7 +7,7 @@ public abstract class Command {
 	public void setManager(CommandManager managerRef) {
 		this.managerRef = managerRef;
 	}
-	
+
 	protected final void addConsumer(CommandConsumer consumer) {
 		managerRef.pushConsumer(consumer);
 	}
@@ -15,6 +15,19 @@ public abstract class Command {
 	protected abstract boolean match(String name);
 
 	protected abstract void act(String name, String... args);
+
+	/**
+	 * Returns <code>true</code> if <code>text</code> would classify as what should
+	 * be called "help."
+	 * 
+	 * @param text
+	 *            The text to check.
+	 * @return <code>true</code> if <code>text</code> qualifies, <code>false</code>
+	 *         otherwise.
+	 */
+	protected final boolean equalsHelp(String text) {
+		return text.equalsIgnoreCase("help") || text.equals("?");
+	}
 
 	/**
 	 * Returns <code>true</code> if <code>arg</code> equals any of the possible

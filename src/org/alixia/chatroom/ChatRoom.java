@@ -70,7 +70,8 @@ import javafx.util.Duration;
 
 public class ChatRoom {
 
-	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN;
+	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
+			WARNING_COLOR = Color.GOLD;
 
 	private static final Color WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
 			NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), NODE_ITEM_COLOR = Color.DARKGRAY,
@@ -306,7 +307,7 @@ public class ChatRoom {
 				minimizeFill = new Circle(size / 5);
 				expandFill = new Circle(size / 5);
 				closeFill.setFill(Color.CORAL);
-				expandFill.setFill(Color.GOLD);
+				expandFill.setFill(WARNING_COLOR);
 				minimizeFill.setFill(Color.LIMEGREEN);
 				close.getChildren().add(closeFill);
 				minimize.getChildren().add(minimizeFill);
@@ -340,7 +341,7 @@ public class ChatRoom {
 				expand.addEventHandler(MouseEvent.MOUSE_EXITED, event -> {
 					ftexpand.stop();
 					ftexpand.setFromValue((Color) expandFill.getFill());
-					ftexpand.setToValue(Color.GOLD);
+					ftexpand.setToValue(WARNING_COLOR);
 					ftexpand.play();
 				});
 
@@ -470,7 +471,16 @@ public class ChatRoom {
 		println("Setting up commands...", Color.BISQUE);
 		{
 
-			commandManager.addCommand(new Command() {
+			abstract class ChatRoomCommand extends Command {
+				protected void printHelp(String usage, String... descriptions) {
+					print("Usage: " + usage, INFO_COLOR);
+					print(" - ", Color.WHITE);
+					for (String s : descriptions)
+						println(s, SUCCESS_COLOR);
+				}
+			}
+
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -482,11 +492,20 @@ public class ChatRoom {
 					// Update the program
 
 					if (args.length > 0) {
-						if (args[0].equalsIgnoreCase("force") || args[0].equals("-f")) {
+
+						String argument = args[0];
+						if (argument.equalsIgnoreCase("force") || argument.equals("-f")) {
 							println("Forcefully updating the program.", ERROR_COLOR);
 							println("This ignores checks to see whether or not your version is the latest. If the update command is causing problems with version checking, this command is useful.",
 									Color.CYAN);
 							updateProgram();
+							return;
+						} else if (equalsHelp(argument)) {
+							printHelp("/update [arg]",
+									"The update command. Used to check for updates to ChatRoom or to update actually update ChatRoom. Use the \"force\" or \"-f\" arguments to force an \"update\" regardless of whether or not the server's version is newer.",
+									"Running this command without arguments will check for an update and, if one is found, give you the option to install it by double clicking a link.");
+
+							return;
 						}
 					} else {
 						// versions
@@ -583,7 +602,7 @@ public class ChatRoom {
 			});
 
 			// /set-name
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				final class SpecialConsoleText extends ConsoleText {
 
@@ -632,6 +651,14 @@ public class ChatRoom {
 						print("Usage: ", ERROR_COLOR);
 						println("/set-name (name)", Color.ORANGE);
 					} else {
+
+						String arg = args[0];
+						if (equalsHelp(arg)) {
+							printHelp("/set-name (name)",
+									"Sets your username in chat. This can be set anywhere and will take effect once you connect to a server with a client and send a message.");
+							return;
+						}
+
 						if (args.length > 1)
 							println("You gave me too many arguments, so I'll just use the first one... That will be your name.....",
 									ERROR_COLOR);
@@ -661,7 +688,7 @@ public class ChatRoom {
 				}
 			});
 
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -670,8 +697,16 @@ public class ChatRoom {
 
 				@Override
 				protected void act(String name, String... args) {
-					if (args.length > 0 && !args[0].equalsIgnoreCase("list"))
-						println("This command doesn’t take any arguments.", Color.GOLD);
+					if (args.length > 0)
+
+						if (equalsHelp(args[0])) {
+							printHelp("/clients ['list']",
+									"Lists out all the clients you have available, by their names. The ['list'] option is optional and does nothing more. It must be typed literally, however, such as in ");
+							print("/clients list", WARNING_COLOR);
+							print(".", SUCCESS_COLOR);
+							return;
+						} else if (!args[0].equalsIgnoreCase("list"))
+							println("This command doesn’t take any arguments.", WARNING_COLOR);
 
 					if (clients.isEmpty()) {
 						println("You have no registered clients.", ERROR_COLOR);
@@ -691,7 +726,7 @@ public class ChatRoom {
 				}
 			});
 
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -700,8 +735,15 @@ public class ChatRoom {
 
 				@Override
 				protected void act(String name, String... args) {
-					if (args.length > 0 && !args[0].equalsIgnoreCase("list"))
-						println("This command doesn’t take any arguments.", Color.GOLD);
+					if (args.length > 0)
+						if (equalsHelp(args[0])) {
+							printHelp("/servers ['list']",
+									"Lists out all the servers you have available, by their names. The ['list'] option is optional and does nothing more. It must be typed literally, however, such as in ");
+							print("/servers list", WARNING_COLOR);
+							print(".", SUCCESS_COLOR);
+							return;
+						} else if (!args[0].equalsIgnoreCase("list"))
+							println("This command doesn’t take any arguments.", WARNING_COLOR);
 
 					if (servers.isEmpty()) {
 						println("You have no registered servers.", ERROR_COLOR);
@@ -720,7 +762,7 @@ public class ChatRoom {
 				}
 			});
 
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -736,7 +778,16 @@ public class ChatRoom {
 					}
 
 					final String subcommand = args[0];
-					if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
+					if (equalsHelp(subcommand)) {
+						printHelp("/" + name + " (subcommand)",
+								"Allows you to modify or edit a server. You can edit the server that you have selected right now or you can modify a specific server by giving its name along with your command. If there is no selected server, you will need to provide a name.");
+					} else if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close",
+							"disconnect")) {
+
+						if (args.length > 1 && equalsHelp(args[1])) {
+							printHelp("/server " + subcommand, "Stops a specific, or the currently selected server.");
+							return;
+						}
 
 						if (servers.isEmpty()) {
 							println("There are no running servers for you to close.", ERROR_COLOR);
@@ -770,7 +821,7 @@ public class ChatRoom {
 				}
 			});
 
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -788,8 +839,9 @@ public class ChatRoom {
 					final String subcommand = args[0];
 					if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
 
-						if (clients.isEmpty()) {
-							println("There are no active clients for you to close.", ERROR_COLOR);
+						if (equalsHelp(args[1])) {
+							printHelp("/" + name + " " + subcommand + " [client-name]",
+									"Stops a client and deletes it.");
 							return;
 						}
 
@@ -804,6 +856,10 @@ public class ChatRoom {
 							}
 
 						} else {
+							if (clients.isEmpty()) {
+								println("There are no active clients for you to close.", ERROR_COLOR);
+								return;
+							}
 							String clientName = args[1];
 							if (clients.removeItem(clientName)) {
 								print("The client with the name ", SUCCESS_COLOR);
@@ -820,13 +876,18 @@ public class ChatRoom {
 							println("You must specify what client you want me to select.", ERROR_COLOR);
 							println("Usage: /client select (client-name)", ERROR_COLOR);
 						} else {
+							if (equalsHelp(args[1])) {
+								printHelp("/" + name + " " + subcommand + " (client-name)",
+										"Selects one of your registered clients given its name.");
+								return;
+							}
 							if (args.length > 2) {
-								println("Too many arguments. Using only what is needed.", Color.GOLD);
-								println("Usage: /client select (client-name)", Color.GOLD);
+								println("Too many arguments. Using only what is needed.", WARNING_COLOR);
+								println("Usage: /" + name + " " + subcommand + " (client-name)", WARNING_COLOR);
 							}
 							String clientName = args[1];
 							if (clientName.equals(clients.getSelectedItem().getName()))
-								println("That client is already selected.", Color.GOLD);
+								println("That client is already selected.", WARNING_COLOR);
 							else {
 
 								if (!clients.containsKey(clientName)) {
@@ -838,14 +899,30 @@ public class ChatRoom {
 								}
 							}
 						}
-					} else if (subcommand.equalsIgnoreCase("list"))
+					} else if (subcommand.equalsIgnoreCase("list")) {
+						if (equalsHelp(args[1])) {
+							printHelp("/" + name + " " + subcommand,
+									"Lists your registered clients. This command takes no arguments.");
+							return;
+						}
 						executeCommand("/clients list");
+					} else if (equalsHelp(subcommand)) {
+						printHelp("/" + name + " (subcommand)",
+								"Allows you to see information about or manipulate clients.");
+						print("Possible subcommands: ", SUCCESS_COLOR);
+						print("list", Color.WHITE);
+						print(", ", SUCCESS_COLOR);
+						print("select", Color.WHITE);
+						print(", and ", SUCCESS_COLOR);
+						print("stop", Color.WHITE);
+						println(".", SUCCESS_COLOR);
+					}
 
 				}
 			});
 
 			// /help
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -856,7 +933,11 @@ public class ChatRoom {
 				protected void act(String name, String... args) {
 
 					if (args.length == 0) {
-						// TODO Print syntax rules first.
+
+						println("Parentheses indicate a necessary parameter.", Color.PURPLE);
+						println("Brackets indicate an unnecessary parameter.", Color.PURPLE);
+						println("Elipses denote that a command has subcommands.", Color.PURPLE);
+
 						printHelp(1);
 						return;
 					} else {
@@ -869,19 +950,21 @@ public class ChatRoom {
 							Integer page = Integer.parseInt(args[0]);
 
 							if (args.length > 1) {
-								print("Ignoring additional args and displaying the help for page ", Color.GOLD);
+								print("Ignoring additional args and displaying the help for page ", WARNING_COLOR);
 								print("" + page, Color.WHITE);
-								print(".", Color.GOLD);
+								print(".", WARNING_COLOR);
 							}
 
 							printHelp(page);
 							return;
 						}
 						// Handle help for a specific command
+						// This isn't supported by all commands
 						String subcommand = args[0];
 						if (subcommand.equalsIgnoreCase("new")) {
 							if (args.length == 1) {
-								// TODO Print stuff.
+								printBasicHelp("/new (item)",
+										"Creates a new (item). Some different types of (items) may require different arguments.");
 							}
 						}
 					}
@@ -919,7 +1002,7 @@ public class ChatRoom {
 			});
 
 			// /clear-screen
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -928,18 +1011,23 @@ public class ChatRoom {
 
 				@Override
 				protected void act(String name, String... args) {
+					if (args.length > 0 && equalsHelp(args[0])) {
+						printHelp("/" + name,
+								"This simply clears all the items inside your console. Any text from commands or other users will be cleared.");
+						return;
+					}
 					flow.getChildren().clear();
 				}
 			});
 
 			// /new
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				CommandManager argumentManager = new CommandManager();
 
 				{
 					// /new Client
-					argumentManager.addCommand(new Command() {
+					argumentManager.addCommand(new ChatRoomCommand() {
 
 						@Override
 						protected boolean match(String name) {
@@ -948,16 +1036,21 @@ public class ChatRoom {
 
 						@Override
 						protected void act(String name, String... args) {
+							if (args.length > 0 && equalsHelp(args[0])) {
+								printHelp("/new " + name + " (host-name) [port] (client-name)", "Creates a new " + name
+										+ " given a (host-name), optionally a [port], and a (client-name).");
+								return;
+							}
 							if (args.length < 2) {
 								print("Not enough arguments. Please input a server address and a name for the client. E.g., ",
 										ERROR_COLOR);
 								// Using 'name', we can get the exact command name that they put in, whether
 								// they did /new client, or /new c.
-								println("/new " + name + " dusttoash.org Test 25000", Color.ORANGE);
+								println("/new " + name + " dusttoash.org 25000 MyClient", Color.ORANGE);
 								print("dusttoash.org ", Color.ORANGE);
 								print("would be the server address, and ", ERROR_COLOR);
-								print("Test ", Color.ORANGE);
-								println("would be the client's name.", ERROR_COLOR);
+								print("MyClient ", Color.ORANGE);
+								println("would be this new client's name.", ERROR_COLOR);
 								print("See ", ERROR_COLOR);
 								print("/help ", Color.ORANGE);
 								println("for more information.", ERROR_COLOR);
@@ -977,8 +1070,8 @@ public class ChatRoom {
 									} else {
 										if (args.length > 3)
 											println("Too many arguments... Parsing only what is needed: (the first three args).",
-													Color.GOLD);
-										port = Integer.parseInt(args[2]);
+													WARNING_COLOR);
+										port = Integer.parseInt(args[1]);
 										clientName = args[2];
 
 									}
@@ -996,7 +1089,7 @@ public class ChatRoom {
 										clients.selectItem(clientName);
 									}
 								} catch (NumberFormatException e) {
-									println("The third argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
+									println("The second argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
 											ERROR_COLOR);
 								} catch (UnknownHostException e) {
 									println("The address could not be parsed as a valid server address, or the ip address of the host could not be determined.",
@@ -1016,7 +1109,7 @@ public class ChatRoom {
 					});
 
 					// /new Server
-					argumentManager.addCommand(new Command() {
+					argumentManager.addCommand(new ChatRoomCommand() {
 
 						@Override
 						protected boolean match(String name) {
@@ -1028,7 +1121,7 @@ public class ChatRoom {
 
 							if (args.length < 1) {
 								print("Too few arguments. See ", ERROR_COLOR);
-								print("/help new " + name + " ", Color.ORANGE);
+								print("/new " + name + " help", Color.ORANGE);
 								println("for more info.", ERROR_COLOR);
 								return;
 							}
@@ -1040,11 +1133,17 @@ public class ChatRoom {
 
 								Server server;
 
+								if (args.length > 0 && equalsHelp(args[0])) {
+									printHelp("/new " + name + " [port] (server-name)",
+											"This command creates a new server with an optional [port] parameter and a (server-name). The (server-name) is just for you to modify the server later with the /server command. It does not appear to any users who connect or serve any purpose apart from reference.");
+									return;
+								}
+
 								// Handle 2+ args (name and port)
 								if (args.length > 1) {
 									if (args.length > 2)
 										println("Too many arguments... Using only what is needed: (args 1 & 2).",
-												Color.GOLD);
+												WARNING_COLOR);
 									serverName = args[1];
 									port = Integer.parseInt(args[1]);
 
@@ -1088,6 +1187,10 @@ public class ChatRoom {
 						print("No arguments specified. Do ", ERROR_COLOR);
 						print("/new help ", Color.ORANGE);
 						println("for help.", ERROR_COLOR);
+					} else if (equalsHelp(args[0])) {
+						printHelp("/" + name + " (item)",
+								"This command lets you create new (items), (such as clients or servers).");
+						return;
 					} else if (!argumentManager.runCommand(args)) {
 						print("Unknown argument: ", ERROR_COLOR);
 						println(args[0], Color.ORANGE);
@@ -1098,10 +1201,13 @@ public class ChatRoom {
 		}
 		println("Done!", SUCCESS_COLOR);
 
-		print("Connect to a server with ", ERROR_COLOR);
-		print("/connect (URL:Hostname) [Int:Port] ", Color.CRIMSON);
-		print("to get started!", ERROR_COLOR);
+		print("Connect to a server with ", Color.RED);
+		print("/new client (hostname) [port] (client-name) ", Color.GREEN);
+		print("to get started!", Color.RED);
 		println();
+		print("To start hosting a server, do ", Color.RED);
+		print("/new server [port] (server-name)", Color.GREEN);
+		println(".", Color.RED);
 		print("Do ", Color.PURPLE);
 		print("/help ", Color.WHITE);
 		println("for more help.", Color.PURPLE);
