@@ -24,6 +24,7 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.resources.fxnodes.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
@@ -75,10 +76,6 @@ public class ChatRoom {
 			NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), NODE_ITEM_COLOR = Color.DARKGRAY,
 			WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
 
-	private static final Background getBackground(Color color) {
-		return new Background(new BackgroundFill(color, null, null));
-	}
-
 	private static final int DEFAULT_PORT = 25000;
 
 	private String username = "Unnamed";
@@ -119,8 +116,8 @@ public class ChatRoom {
 		stage.setWidth(800);
 		stage.setHeight(600);
 
-		flow.setBackground(getBackground(NODE_OUTPUT_COLOR));
-		input.setBackground(getBackground(NODE_OUTPUT_COLOR));
+		flow.setBackground(FXTools.getBackgroundFromColor(NODE_OUTPUT_COLOR));
+		input.setBackground(FXTools.getBackgroundFromColor(NODE_OUTPUT_COLOR));
 		input.setStyle("-fx-text-fill: darkgray; ");
 
 		AnchorPane.setLeftAnchor(flowWrapper, 50d);
@@ -138,7 +135,7 @@ public class ChatRoom {
 		input.setMaxHeight(200);
 
 		// Add a ScrollPane to wrap flow
-		contentWrapper.setBackground(getBackground(WINDOW_BACKGROUND_COLOR));
+		contentWrapper.setBackground(FXTools.getBackgroundFromColor(WINDOW_BACKGROUND_COLOR));
 
 		scene = new Scene(root);
 
