@@ -34,6 +34,7 @@ import org.alixia.chatroom.texts.SimpleText;
 import javafx.animation.FillTransition;
 import javafx.animation.StrokeTransition;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -392,6 +393,33 @@ public class ChatRoom {
 		// Menu bar
 		HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
 				OS.getOS() == OS.WINDOWS ? close : minimize);
+
+		new Object() {
+
+			private double dx, dy;
+
+			{
+				menuBar.setOnMousePressed(new EventHandler<MouseEvent>() {
+
+					@Override
+					public void handle(MouseEvent event) {
+						dx = stage.getX() - event.getScreenX();
+						dy = stage.getY() - event.getScreenY();
+						event.consume();
+					}
+				});
+
+				menuBar.setOnMouseDragged(new EventHandler<MouseEvent>() {
+
+					@Override
+					public void handle(MouseEvent event) {
+						stage.setX(event.getScreenX() + dx);
+						stage.setY(event.getScreenY() + dy);
+						event.consume();
+					}
+				});
+			}
+		};
 
 		menuBar.setBorder(new Border(new BorderStroke(null, null, BACKGROUND_COLOR, null, null, null,
 				BorderStrokeStyle.SOLID, null, null, new BorderWidths(2), null)));
