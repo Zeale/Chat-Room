@@ -31,8 +31,10 @@ import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.FillTransition;
+import javafx.animation.StrokeTransition;
 import javafx.application.Platform;
-import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -62,6 +64,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 public class ChatRoom {
 
@@ -172,41 +175,132 @@ public class ChatRoom {
 		{
 			if (OS.getOS() == OS.WINDOWS) {
 
-				// Pos is the rect with a positive slope, neg is the negative sloped rect.
-				Shape pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
-				neg.setRotate(45);
-				pos.setRotate(-45);
-				pos.setFill(ITEM_COLOR);
-				neg.setFill(ITEM_COLOR);
+				final double animationDuration = 0.2;
 
-				neg.setStroke(ITEM_COLOR);
-				neg.setStrokeWidth(1);
-				pos.setStroke(ITEM_COLOR);
-				pos.setStrokeWidth(1);
+				{
+					// Pos is the rect with a positive slope, neg is the negative sloped rect.
+					Shape cross;
+					{
+						Shape pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
+						neg.setRotate(45);
+						pos.setRotate(-45);
+						cross = Shape.union(pos, neg);
+					}
 
-				StackPane.setAlignment(neg, Pos.CENTER);
-				StackPane.setAlignment(pos, Pos.CENTER);
+					cross.setFill(ITEM_COLOR);
+					cross.setStroke(ITEM_COLOR);
+					cross.setStrokeWidth(1);
 
-				close.getChildren().addAll(pos, neg);
+					StackPane.setAlignment(cross, Pos.CENTER);
 
-				// Expand/Maximize
-				Rectangle max = new Rectangle(20, 20);
-				max.setFill(Color.TRANSPARENT);
-				max.setStroke(ITEM_COLOR);
-				max.setStrokeWidth(2.5);
+					close.getChildren().add(cross);
 
-				StackPane.setAlignment(max, Pos.CENTER);
+					StrokeTransition stcross = new StrokeTransition(Duration.seconds(animationDuration), cross);
+					FillTransition ftcross = new FillTransition(Duration.seconds(animationDuration), cross);
 
-				expand.getChildren().add(max);
+					close.setOnMouseEntered(event -> {
+						stcross.stop();
+						ftcross.stop();
 
-				// Minimize
-				Rectangle min = new Rectangle(22, 2);
-				StackPane.setAlignment(min, Pos.BOTTOM_CENTER);
-				min.setFill(ITEM_COLOR);
-				min.setStroke(ITEM_COLOR);
-				min.setStrokeWidth(1);
-				minimize.setPadding(new Insets(0, 0, 2, 0));
-				minimize.getChildren().add(min);
+						stcross.setFromValue((Color) cross.getStroke());
+						stcross.setToValue(Color.RED);
+						ftcross.setFromValue((Color) cross.getFill());
+						ftcross.setToValue(Color.RED);
+
+						stcross.play();
+						ftcross.play();
+
+					});
+
+					close.setOnMouseExited(event -> {
+						stcross.stop();
+						ftcross.stop();
+
+						stcross.setFromValue((Color) cross.getStroke());
+						stcross.setToValue(ITEM_COLOR);
+						ftcross.setFromValue((Color) cross.getFill());
+						ftcross.setToValue(ITEM_COLOR);
+
+						stcross.play();
+						ftcross.play();
+
+					});
+				}
+
+				{
+					// Expand/Maximize
+					Rectangle max = new Rectangle(20, 20);
+					max.setFill(Color.TRANSPARENT);
+					max.setStroke(ITEM_COLOR);
+					max.setStrokeWidth(2.5);
+
+					StackPane.setAlignment(max, Pos.CENTER);
+
+					expand.getChildren().add(max);
+
+					StrokeTransition stexp = new StrokeTransition(Duration.seconds(animationDuration), max);
+
+					expand.setOnMouseMoved(event -> {
+						stexp.stop();
+
+						stexp.setFromValue((Color) max.getStroke());
+						stexp.setToValue(Color.GREEN);
+
+						stexp.play();
+					});
+
+					expand.setOnMouseExited(event -> {
+						stexp.stop();
+
+						stexp.setFromValue((Color) max.getStroke());
+						stexp.setToValue(ITEM_COLOR);
+
+						stexp.play();
+					});
+
+				}
+
+				{
+					// Minimize
+					Rectangle min = new Rectangle(22, 2);
+					StackPane.setAlignment(min, Pos.BOTTOM_CENTER);
+					min.setFill(ITEM_COLOR);
+					min.setStroke(ITEM_COLOR);
+					min.setStrokeWidth(1);
+					minimize.setPadding(new Insets(0, 0, 2, 0));
+					minimize.getChildren().add(min);
+
+					StrokeTransition stmin = new StrokeTransition(Duration.seconds(animationDuration), min);
+					FillTransition ftmin = new FillTransition(Duration.seconds(animationDuration), min);
+
+					minimize.setOnMouseEntered(event -> {
+						stmin.stop();
+						ftmin.stop();
+
+						Color darkGold = new Color(1, 190d / 255, 0, 1);
+						stmin.setFromValue((Color) min.getStroke());
+						stmin.setToValue(darkGold);
+						ftmin.setFromValue((Color) min.getFill());
+						ftmin.setToValue(darkGold);
+
+						stmin.play();
+						stmin.play();
+					});
+
+					minimize.setOnMouseExited(event -> {
+						stmin.stop();
+						ftmin.stop();
+
+						stmin.setFromValue((Color) min.getStroke());
+						stmin.setToValue(ITEM_COLOR);
+						ftmin.setFromValue((Color) min.getFill());
+						ftmin.setToValue(ITEM_COLOR);
+
+						stmin.play();
+						stmin.play();
+					});
+
+				}
 			} else {
 
 				Shape closeFill, minimizeFill, expandFill;
