@@ -480,6 +480,39 @@ public class ChatRoom {
 				}
 			}
 
+			commandManager.addCommand(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.startsWith("/");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					String text = name.substring(1);
+					for (String s : args)
+						text += " " + s;
+					sendText(text);
+				}
+			});
+
+			commandManager.addCommand(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("escape");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					String text = "";
+					for (String s : args)
+						text += s + " ";
+					sendText(text);
+
+				}
+			});
+
 			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
@@ -681,9 +714,12 @@ public class ChatRoom {
 							println("Args.....", Color.WHITE);
 							println();
 							println("By the way, I didn't set your name. :)", ERROR_COLOR);
+							return;
 						}
 						String username = args[0];
 						ChatRoom.this.username = username;
+						print("Your name was changed to ", INFO_COLOR);
+						println(username, Color.CHARTREUSE);
 					}
 				}
 			});
@@ -1121,7 +1157,7 @@ public class ChatRoom {
 
 							if (args.length < 1) {
 								print("Too few arguments. See ", ERROR_COLOR);
-								print("/new " + name + " help", Color.ORANGE);
+								print("/new " + name + " help ", Color.ORANGE);
 								println("for more info.", ERROR_COLOR);
 								return;
 							}
@@ -1189,7 +1225,12 @@ public class ChatRoom {
 						println("for help.", ERROR_COLOR);
 					} else if (equalsHelp(args[0])) {
 						printHelp("/" + name + " (item)",
-								"This command lets you create new (items), (such as clients or servers).");
+								"This command lets you create new (items), such as clients or servers.",
+								"Clients let you connect to a server and send or receive messages.",
+								"Servers are what other people connect to using clients.",
+								"To find more information about making/hosting a server, do /" + name + " server help",
+								"To find more information about connecting to a server with a client, do /" + name
+										+ " client help");
 						return;
 					} else if (!argumentManager.runCommand(args)) {
 						print("Unknown argument: ", ERROR_COLOR);
@@ -1229,6 +1270,9 @@ public class ChatRoom {
 		println();
 	}
 
+	/**
+	 * Called when user pushes send.
+	 */
 	private void onUserSubmit() {
 		String text = input.getText();
 
@@ -1244,19 +1288,29 @@ public class ChatRoom {
 		}
 		// Given message.
 		else {
-
-			if (clients.isItemSelected()) {
-				clients.getSelectedItem().sendObject(new BasicUserMessage(username, text));
-				new BasicUserText(username, text).print(flow);
-			} else {
-				print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
-				print("/new help ", Color.ORANGERED);
-				println("For help with connections.", ERROR_COLOR);
-			}
-
+			sendText(text);
 		}
 
 		input.setText("");
+	}
+
+	/**
+	 * Sends text as the user.
+	 * 
+	 * @param text
+	 *            The text.
+	 */
+	private void sendText(String text) {
+
+		if (clients.isItemSelected()) {
+			clients.getSelectedItem().sendObject(new BasicUserMessage(username, text));
+			new BasicUserText(username, text).print(flow);
+		} else {
+			print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
+			print("/new help ", Color.ORANGERED);
+			println("For help with connections.", ERROR_COLOR);
+		}
+
 	}
 
 	private void updateProgram() {
