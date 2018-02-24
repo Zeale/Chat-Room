@@ -6,9 +6,9 @@ import javafx.scene.text.TextFlow;
 
 public abstract class ConsoleText {
 
-	private final static String DEFAULT_FAMLIY = Font.getDefault().getFamily();
-	private final static double DEFAULT_SIZE = 16;
-	private static final Font DEFAULT_FONT = Font.font(DEFAULT_FAMLIY, DEFAULT_SIZE);
+	protected final static String DEFAULT_FAMLIY = Font.getDefault().getFamily();
+	protected final static double DEFAULT_SIZE = 16;
+	protected static final Font DEFAULT_FONT = Font.font(DEFAULT_FAMLIY, DEFAULT_SIZE);
 
 	protected final void formatText(Text... texts) {
 		for (Text t : texts)

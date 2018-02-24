@@ -1,6 +1,7 @@
 package org.alixia.chatroom.texts;
 
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
@@ -23,7 +24,12 @@ public class BasicUserText extends ConsoleText {
 	public void print(TextFlow flow) {
 		Text name = new Text(username), arrow = new Text(" > "), msg = new Text(message);
 		formatText(name, arrow, msg);
-		name.setFill(Color.RED);
+
+		boolean specialName = username.equals("Kröw") || username.equals("Zeale");
+		name.setFill(specialName ? Color.DARKGRAY : Color.RED);
+		if (specialName)
+			name.setFont(Font.font("Brush Script MT", DEFAULT_SIZE + 8));
+
 		arrow.setFill(Color.WHITE);
 		msg.setFill(Color.BLUE);
 		flow.getChildren().addAll(name, arrow, msg, println());
