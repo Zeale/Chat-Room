@@ -83,6 +83,49 @@ public class ChangelogParser {
 		}
 	}
 
+	/**
+	 * Gets the next change. This method returns <code>null</code> if there are no
+	 * more changes.
+	 * 
+	 * @return The next change in the change log as a {@link Change} object, or
+	 *         <code>null</code> if there are no more changes.
+	 */
+	public Change getNextChange() {
+		try {
+
+			String change = "";
+			int c;
+			ChangeType type;
+
+			// Checks for whitespace
+			while (Character.isWhitespace(c = reader.read()))
+				;
+			if (c == -1)
+				return null;
+			// Leaves us on the first change type character.
+
+			// For this version, each change type is only represented by a single character.
+			// This means that whatever character we're on after we've cleared out
+			// whitespace is our change type character, (either +, -, or ~).
+			type = ChangeType.valueOfChar("" + (char) c);
+			if (type == null)
+				throw new ParseException("The type of a change could not be ascertained.");
+
+			while (reader.ready()) {
+				c = reader.read();
+				if (c == -1 || !("" + (char) c).matches("."))
+					return new Change(type, change);
+				change += (char) c;
+			}
+
+			return new Change(type, change);
+
+		} catch (Exception e) {
+			throw new ParseException(e);
+		}
+
+	}
+
 	public String getUpdateName() {
 		if (updateName == null) {
 			parseUpdateHeader();
