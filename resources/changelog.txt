@@ -1,0 +1,11 @@
+
+Test update (V0.1.1):
+
++ Added something
++ Added another thing
+~ Changed something
+- Removed something
+~ Changed another thing
+~ Changed another thing
+- Removed something
+
