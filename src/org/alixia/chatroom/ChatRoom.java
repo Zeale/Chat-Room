@@ -15,6 +15,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.alixia.chatroom.changelogparser.Change;
+import org.alixia.chatroom.changelogparser.ChangeType;
+import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
@@ -469,6 +472,7 @@ public class ChatRoom {
 		});
 
 		println("Setting up commands...", Color.BISQUE);
+		// COMMANDS
 		{
 
 			abstract class ChatRoomCommand extends Command {
@@ -509,6 +513,34 @@ public class ChatRoom {
 					for (String s : args)
 						text += s + " ";
 					sendText(text);
+
+				}
+			});
+
+			commandManager.addCommand(new Command() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("changelog");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					ChangelogParser parser = new ChangelogParser("/changelog.txt");
+					print("Version: ", Color.MEDIUMAQUAMARINE);
+					println(parser.getUpdateName(), Color.WHITE);
+					println();
+					Change change;
+					while ((change = parser.getNextChange()) != null) {
+						print(change.type.toChar() + " ", Color.WHITE);
+						if (change.type == ChangeType.ADDITION)
+							println(change.text, SUCCESS_COLOR);
+						else if (change.type == ChangeType.CHANGE)
+							println(change.text, Color.ORANGE);
+						else
+							println(change.text, ERROR_COLOR);
+					}
+					println();
 
 				}
 			});

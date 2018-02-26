@@ -15,4 +15,17 @@ public enum ChangeType {
 			return null;
 		}
 	}
+
+	public String toChar() {
+		switch (this) {
+		case ADDITION:
+			return "+";
+		case CHANGE:
+			return "~";
+		case DELETION:
+			return "-";
+		default:
+			return null;
+		}
+	}
 }
