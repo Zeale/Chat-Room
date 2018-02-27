@@ -1,5 +1,7 @@
 package org.alixia.chatroom.texts;
 
+import org.alixia.chatroom.api.Console;
+
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -27,6 +29,9 @@ public abstract class ConsoleText {
 		return linebreak;
 	}
 
+	@Deprecated
 	public abstract void print(TextFlow flow);
+
+	public abstract void print(Console console);
 
 }

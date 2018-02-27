@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.changelogparser.Change;
 import org.alixia.chatroom.changelogparser.ChangeType;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
