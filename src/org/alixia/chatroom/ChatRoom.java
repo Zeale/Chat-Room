@@ -15,6 +15,8 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.alixia.chatroom.api.Console;
+import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.changelogparser.Change;
 import org.alixia.chatroom.changelogparser.ChangeType;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
@@ -25,6 +27,7 @@ import org.alixia.chatroom.connections.ClientManager;
 import org.alixia.chatroom.connections.ConnectionListener;
 import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
+import org.alixia.chatroom.connections.messages.Message;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
@@ -71,10 +74,47 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-//TODO Make this class implement a "Printable" interface or make a "Printable" object (which is an instance of said interface) that can be passed to things like the ChangelogParser in some convenience methods. These methods will be able to print a changelog out. This way, the syntax and format for printing will stay consistent since all changelog printing will make use of those methods, and there won't be duplicate chunks of code in each place that we want to print a changelog.
+//TODO Later, I MIGHT put all the GUI nodes into a local class which in turn would go in the tryInit method (or something similar) and instantiate the console object when it has visibility of the nodes. Although this would severly decrease the clutter in my IDE, it would pose the problem of having GUI nodes not be accessible by the rest of the ChatRoom class, as they would be hidden in the local class, so commands will not be able to manipulate the nodes in the future without some serious remodeling.
+//Also, this class is about 1530 lines. 90% of that is probably the commands...
+/**
+ * <p>
+ * This class is the framework for the main object of this program. It defines
+ * most of the features of the program and makes use of API classes, such as
+ * {@link Client}s, {@link Server}s, {@link Message}s, {@link ConsoleText}s, and
+ * {@link ChangelogParser}s in providing features.
+ * <p>
+ * This class is not meant to be accessible by other objects and is not meant to
+ * expose any of its internal data (such as the nodes making the GUI) to other
+ * classes. This is the main reason that most of the fields are private.
+ * <p>
+ * The single object that gets instantiated by the {@link Launch} class when the
+ * program starts calls methods on other objects rather than having other
+ * objects call methods on it to provide features. This (probably?) limits the
+ * ability of other code to reflectively access this class's fields.
+ * <p>
+ * Since, however, other classes may sometimes need to access basic
+ * functionality such as printing colored text to the console, (a practical
+ * necessity [o/si]nce the program is large enough), this class will store
+ * instances of things like {@link Printable} and will pass those instances to
+ * API classes that need to print things or access other functionality of this
+ * class.
+ * <p>
+ * This way, since the {@link ChatRoom} is calling other classes, other classes
+ * will have no reference to the ChatRoom object (and (probably?) can't
+ * reflectively access its fields). This sounded like it would pose some
+ * benefits in my head. API classes won't be able to do anything unless this
+ * class calls upon them to do so either.
+ * <p>
+ * I forgot basically everything else that I was gonna write out here, so I'm
+ * just gonna go ahead and implement this.
+ * 
+ * 
+ * @author Zeale
+ *
+ */
 public class ChatRoom {
 
-	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
+	public static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
 			WARNING_COLOR = Color.GOLD;
 
 	private static final Color WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
@@ -84,6 +124,29 @@ public class ChatRoom {
 	private static final int DEFAULT_PORT = 25000;
 
 	private String username = "Unnamed";
+
+	private final Printable printer = new Printable() {
+
+		@Override
+		public void print(String text, Color color) {
+			ChatRoom.this.print(text, color);
+		}
+
+		@Override
+		public void println() {
+			// ChatRoom's impl of println is different from the default impl by the
+			// interface.
+			ChatRoom.this.println();
+		}
+	};
+
+	private final Console console = new Console() {
+
+		@Override
+		public void printText(Text text) {
+			flow.getChildren().add(text);
+		}
+	};
 
 	// Some of these fields have aliases.
 	private final TextFlow flow = new TextFlow();
@@ -101,7 +164,7 @@ public class ChatRoom {
 		@Override
 		public void objectReceived(Serializable object) {
 			if (object instanceof UserMessage)
-				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(flow));
+				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(console));
 
 		}
 
@@ -531,20 +594,7 @@ public class ChatRoom {
 					if (args.length == 0) {
 						// TODO Remove duplicate code once we make the printable interface thing.
 						ChangelogParser parser = new ChangelogParser("/changelog.txt");
-						print("Version: ", Color.MEDIUMAQUAMARINE);
-						println(parser.getUpdateName(), Color.WHITE);
-						println();
-						Change change;
-						while ((change = parser.getNextChange()) != null) {
-							print(change.type.toChar() + " ", Color.WHITE);
-							if (change.type == ChangeType.ADDITION)
-								println(change.text, SUCCESS_COLOR);
-							else if (change.type == ChangeType.CHANGE)
-								println(change.text, Color.ORANGE);
-							else
-								println(change.text, ERROR_COLOR);
-						}
-						println();
+						parser.printChangelog(printer);
 
 					} else {
 						if (args.length > 1)
@@ -566,19 +616,7 @@ public class ChatRoom {
 
 								ChangelogParser parser = new ChangelogParser(location.openStream());
 								print("Version: ", Color.MEDIUMAQUAMARINE);
-								println(parser.getUpdateName(), Color.WHITE);
-								println();
-								Change change;
-								while ((change = parser.getNextChange()) != null) {
-									print(change.type.toChar() + " ", Color.WHITE);
-									if (change.type == ChangeType.ADDITION)
-										println(change.text, SUCCESS_COLOR);
-									else if (change.type == ChangeType.CHANGE)
-										println(change.text, Color.ORANGE);
-									else
-										println(change.text, ERROR_COLOR);
-								}
-								println();
+								parser.printChangelog(printer);
 
 							} catch (NumberFormatException e) {
 								println("Failed to parse your argument, " + arg + " as a number.", ERROR_COLOR);
@@ -699,7 +737,7 @@ public class ChatRoom {
 								text.text.setText("Double click here");
 								// I think TextFlows disable click on bounds, but whatever.
 								text.text.setPickOnBounds(true);
-								text.print(flow);
+								text.print(console);
 
 								println(" to download the update.", Color.ORANGE);
 							} else
@@ -731,8 +769,9 @@ public class ChatRoom {
 					}
 
 					@Override
-					public void print(TextFlow flow) {
-						flow.getChildren().addAll(println(), println(), println());
+					public void print(Console console) {
+
+						console.printAll(println(), println(), println());
 						for (char c : text.toCharArray()) {
 							// The text
 							Text t = new Text("" + c);
@@ -750,9 +789,10 @@ public class ChatRoom {
 							t.setEffect(ds);
 
 							// Add it to the console.
-							flow.getChildren().add(t);
+							console.printText(t);
 						}
-						flow.getChildren().addAll(println(), println(), println());
+						console.printAll(println(), println(), println());
+
 					}
 
 				}
@@ -792,7 +832,7 @@ public class ChatRoom {
 							for (int i = 15; i < args.length; i++)
 								chill += "I";
 							chill += "LL";
-							new SpecialConsoleText(chill).print(flow);
+							new SpecialConsoleText(chill).print(console);
 
 							println("With", Color.WHITE);
 							println("The", Color.WHITE);
@@ -1343,11 +1383,11 @@ public class ChatRoom {
 	}
 
 	private void print(String text, Color color) {
-		new BasicInfoText(text, color).print(flow);
+		new BasicInfoText(text, color).print(console);
 	}
 
 	private void println() {
-		new Println(flow);
+		new Println(console);
 	}
 
 	private void println(String text, Color color) {
@@ -1389,7 +1429,7 @@ public class ChatRoom {
 
 		if (clients.isItemSelected()) {
 			clients.getSelectedItem().sendObject(new BasicUserMessage(username, text));
-			new BasicUserText(username, text).print(flow);
+			new BasicUserText(username, text).print(console);
 		} else {
 			print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
 			print("/new help ", Color.ORANGERED);

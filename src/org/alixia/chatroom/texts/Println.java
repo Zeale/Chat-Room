@@ -1,5 +1,7 @@
 package org.alixia.chatroom.texts;
 
+import org.alixia.chatroom.api.Console;
+
 import javafx.scene.text.TextFlow;
 
 /**
@@ -13,11 +15,6 @@ import javafx.scene.text.TextFlow;
  */
 public class Println extends ConsoleText {
 
-	@Override
-	public void print(TextFlow flow) {
-		flow.getChildren().add(println());
-	}
-
 	/**
 	 * Prints a linebreak to the specified {@link TextFlow}. The linebreak is
 	 * formatted.
@@ -25,8 +22,13 @@ public class Println extends ConsoleText {
 	 * @param flow
 	 *            The {@link TextFlow} to print a linebreak to.
 	 */
-	public Println(TextFlow flow) {
-		print(flow);
+	public Println(Console console) {
+		print(console);
+	}
+
+	@Override
+	public void print(Console console) {
+		console.printText(println());
 	}
 
 }
