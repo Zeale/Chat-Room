@@ -15,6 +15,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.alixia.chatroom.changelogparser.Change;
+import org.alixia.chatroom.changelogparser.ChangeType;
+import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
@@ -68,6 +71,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+//TODO Make this class implement a "Printable" interface or make a "Printable" object (which is an instance of said interface) that can be passed to things like the ChangelogParser in some convenience methods. These methods will be able to print a changelog out. This way, the syntax and format for printing will stay consistent since all changelog printing will make use of those methods, and there won't be duplicate chunks of code in each place that we want to print a changelog.
 public class ChatRoom {
 
 	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
@@ -469,6 +473,7 @@ public class ChatRoom {
 		});
 
 		println("Setting up commands...", Color.BISQUE);
+		// COMMANDS
 		{
 
 			abstract class ChatRoomCommand extends Command {
@@ -510,6 +515,86 @@ public class ChatRoom {
 						text += s + " ";
 					sendText(text);
 
+				}
+			});
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("changelog");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+
+					if (args.length == 0) {
+						// TODO Remove duplicate code once we make the printable interface thing.
+						ChangelogParser parser = new ChangelogParser("/changelog.txt");
+						print("Version: ", Color.MEDIUMAQUAMARINE);
+						println(parser.getUpdateName(), Color.WHITE);
+						println();
+						Change change;
+						while ((change = parser.getNextChange()) != null) {
+							print(change.type.toChar() + " ", Color.WHITE);
+							if (change.type == ChangeType.ADDITION)
+								println(change.text, SUCCESS_COLOR);
+							else if (change.type == ChangeType.CHANGE)
+								println(change.text, Color.ORANGE);
+							else
+								println(change.text, ERROR_COLOR);
+						}
+						println();
+
+					} else {
+						if (args.length > 1)
+							println("Excessive args. Using only what is needed.", WARNING_COLOR);
+						String arg = args[0];
+						if (equalsHelp(arg)) {
+							// TODO Change this code when moving to better versioning.
+							printHelp("/" + name + " [version-number]",
+									"Prints the changelog for the current version of the program (if no arguments are provided in the command), or the changelog of a specific version of this program (if an argument is provided and a matching version is found on the program's website).",
+									"As of right now, versions are simply numbers, starting at one and going up. Later, versions may have more normal names, such as v0.1.7.2 or something. (The versioning format with periods is quite ubiquitous as of now.)");
+						} else {
+							int ver;
+							try {
+								// TODO Change this code when moving to better versioning.
+								// TODO Remove duplicate code once we make the printable interface thing.
+								ver = Integer.parseInt(arg);
+								URL location = new URL(
+										"http://dusttoash.org/chat-room/changelogs/changelog-" + ver + ".txt");
+
+								ChangelogParser parser = new ChangelogParser(location.openStream());
+								print("Version: ", Color.MEDIUMAQUAMARINE);
+								println(parser.getUpdateName(), Color.WHITE);
+								println();
+								Change change;
+								while ((change = parser.getNextChange()) != null) {
+									print(change.type.toChar() + " ", Color.WHITE);
+									if (change.type == ChangeType.ADDITION)
+										println(change.text, SUCCESS_COLOR);
+									else if (change.type == ChangeType.CHANGE)
+										println(change.text, Color.ORANGE);
+									else
+										println(change.text, ERROR_COLOR);
+								}
+								println();
+
+							} catch (NumberFormatException e) {
+								println("Failed to parse your argument, " + arg + " as a number.", ERROR_COLOR);
+								return;
+							} catch (MalformedURLException e) {
+								println("Something went wrong when parsing the URL that was made to try and get data on the version you specified. This isn't a connection error.",
+										ERROR_COLOR);
+								e.printStackTrace();
+								return;
+							} catch (IOException e) {
+								println("Failed to get the version data from the remote server.", ERROR_COLOR);
+								e.printStackTrace();
+							}
+
+						}
+					}
 				}
 			});
 

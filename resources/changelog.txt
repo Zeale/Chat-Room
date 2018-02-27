@@ -1,0 +1,3 @@
+0.1.5:
+
++ Added changelog viewing for different versions. Use /changelog [version-number] to view the changelog for a specific version. For example, /changelog 4, for the Test Update's changelog.
