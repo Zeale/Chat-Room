@@ -517,7 +517,7 @@ public class ChatRoom {
 				}
 			});
 
-			commandManager.addCommand(new Command() {
+			commandManager.addCommand(new ChatRoomCommand() {
 
 				@Override
 				protected boolean match(String name) {
@@ -526,22 +526,34 @@ public class ChatRoom {
 
 				@Override
 				protected void act(String name, String... args) {
-					ChangelogParser parser = new ChangelogParser("/changelog.txt");
-					print("Version: ", Color.MEDIUMAQUAMARINE);
-					println(parser.getUpdateName(), Color.WHITE);
-					println();
-					Change change;
-					while ((change = parser.getNextChange()) != null) {
-						print(change.type.toChar() + " ", Color.WHITE);
-						if (change.type == ChangeType.ADDITION)
-							println(change.text, SUCCESS_COLOR);
-						else if (change.type == ChangeType.CHANGE)
-							println(change.text, Color.ORANGE);
-						else
-							println(change.text, ERROR_COLOR);
-					}
-					println();
 
+					if (args.length == 0) {
+						ChangelogParser parser = new ChangelogParser("/changelog.txt");
+						print("Version: ", Color.MEDIUMAQUAMARINE);
+						println(parser.getUpdateName(), Color.WHITE);
+						println();
+						Change change;
+						while ((change = parser.getNextChange()) != null) {
+							print(change.type.toChar() + " ", Color.WHITE);
+							if (change.type == ChangeType.ADDITION)
+								println(change.text, SUCCESS_COLOR);
+							else if (change.type == ChangeType.CHANGE)
+								println(change.text, Color.ORANGE);
+							else
+								println(change.text, ERROR_COLOR);
+						}
+						println();
+
+					} else {
+						if (args.length > 1)
+							println("Excessive args. Using only what is needed.", WARNING_COLOR);
+						String arg = args[0];
+						if (equalsHelp(arg)) {
+							printHelp("/" + name + " [version-number]",
+									"Prints the changelog for the current version of the program (if no arguments are provided in the command), or the changelog of a specific version of this program (if an argument is provided and a matching version is found on the program's website).",
+									"As of right now, versions are simply numbers, starting at one and going up. Later, versions may have more normal names, such as v0.1.7.2 or something. (The versioning format with periods is quite ubiquitous as of now.)");
+						}
+					}
 				}
 			});
 
