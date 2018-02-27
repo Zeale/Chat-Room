@@ -1,5 +1,7 @@
 package org.alixia.chatroom.texts;
 
+import org.alixia.chatroom.api.Console;
+
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
@@ -12,8 +14,8 @@ public class SimpleText extends ConsoleText {
 	}
 
 	@Override
-	public void print(TextFlow flow) {
-		flow.getChildren().add(text);
+	public void print(Console console) {
+		console.printText(text);
 	}
 
 }

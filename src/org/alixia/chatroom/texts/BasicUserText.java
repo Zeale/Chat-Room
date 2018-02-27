@@ -1,5 +1,7 @@
 package org.alixia.chatroom.texts;
 
+import org.alixia.chatroom.api.Console;
+
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -20,8 +22,14 @@ public class BasicUserText extends ConsoleText {
 
 	public String username, message;
 
+	public BasicUserText(String username, String message) {
+		this.username = username;
+		this.message = message;
+	}
+
 	@Override
-	public void print(TextFlow flow) {
+	public void print(Console console) {
+
 		Text name = new Text(username), arrow = new Text(" > "), msg = new Text(message);
 		formatText(name, arrow, msg);
 
@@ -32,12 +40,8 @@ public class BasicUserText extends ConsoleText {
 
 		arrow.setFill(Color.WHITE);
 		msg.setFill(Color.BLUE);
-		flow.getChildren().addAll(name, arrow, msg, println());
-	}
+		console.printAll(name, arrow, msg, println());
 
-	public BasicUserText(String username, String message) {
-		this.username = username;
-		this.message = message;
 	}
 
 }

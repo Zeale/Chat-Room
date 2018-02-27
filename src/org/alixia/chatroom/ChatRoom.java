@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.changelogparser.Change;
 import org.alixia.chatroom.changelogparser.ChangeType;
@@ -73,7 +74,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-//TODO Make this class implement a "Printable" interface or make a "Printable" object (which is an instance of said interface) that can be passed to things like the ChangelogParser in some convenience methods. These methods will be able to print a changelog out. This way, the syntax and format for printing will stay consistent since all changelog printing will make use of those methods, and there won't be duplicate chunks of code in each place that we want to print a changelog.
+//TODO Later, I MIGHT put all the GUI nodes into a local class which in turn would go in the tryInit method (or something similar) and instantiate the console object when it has visibility of the nodes. Although this would severly decrease the clutter in my IDE, it would pose the problem of having GUI nodes not be accessible by the rest of the ChatRoom class, as they would be hidden in the local class, so commands will not be able to manipulate the nodes in the future without some serious remodeling.
+//Also, this class is about 1530 lines. 90% of that is probably the commands...
 /**
  * <p>
  * This class is the framework for the main object of this program. It defines
@@ -123,7 +125,7 @@ public class ChatRoom {
 
 	private String username = "Unnamed";
 
-	private Printable printer = new Printable() {
+	private final Printable printer = new Printable() {
 
 		@Override
 		public void print(String text, Color color) {
@@ -135,6 +137,14 @@ public class ChatRoom {
 			// ChatRoom's impl of println is different from the default impl by the
 			// interface.
 			ChatRoom.this.println();
+		}
+	};
+
+	private final Console console = new Console() {
+
+		@Override
+		public void printText(Text text) {
+			flow.getChildren().add(text);
 		}
 	};
 
@@ -154,7 +164,7 @@ public class ChatRoom {
 		@Override
 		public void objectReceived(Serializable object) {
 			if (object instanceof UserMessage)
-				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(flow));
+				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(console));
 
 		}
 
@@ -752,7 +762,7 @@ public class ChatRoom {
 								text.text.setText("Double click here");
 								// I think TextFlows disable click on bounds, but whatever.
 								text.text.setPickOnBounds(true);
-								text.print(flow);
+								text.print(console);
 
 								println(" to download the update.", Color.ORANGE);
 							} else
@@ -784,8 +794,9 @@ public class ChatRoom {
 					}
 
 					@Override
-					public void print(TextFlow flow) {
-						flow.getChildren().addAll(println(), println(), println());
+					public void print(Console console) {
+
+						console.printAll(println(), println(), println());
 						for (char c : text.toCharArray()) {
 							// The text
 							Text t = new Text("" + c);
@@ -803,9 +814,10 @@ public class ChatRoom {
 							t.setEffect(ds);
 
 							// Add it to the console.
-							flow.getChildren().add(t);
+							console.printText(t);
 						}
-						flow.getChildren().addAll(println(), println(), println());
+						console.printAll(println(), println(), println());
+
 					}
 
 				}
@@ -845,7 +857,7 @@ public class ChatRoom {
 							for (int i = 15; i < args.length; i++)
 								chill += "I";
 							chill += "LL";
-							new SpecialConsoleText(chill).print(flow);
+							new SpecialConsoleText(chill).print(console);
 
 							println("With", Color.WHITE);
 							println("The", Color.WHITE);
@@ -1396,11 +1408,11 @@ public class ChatRoom {
 	}
 
 	private void print(String text, Color color) {
-		new BasicInfoText(text, color).print(flow);
+		new BasicInfoText(text, color).print(console);
 	}
 
 	private void println() {
-		new Println(flow);
+		new Println(console);
 	}
 
 	private void println(String text, Color color) {
@@ -1442,7 +1454,7 @@ public class ChatRoom {
 
 		if (clients.isItemSelected()) {
 			clients.getSelectedItem().sendObject(new BasicUserMessage(username, text));
-			new BasicUserText(username, text).print(flow);
+			new BasicUserText(username, text).print(console);
 		} else {
 			print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
 			print("/new help ", Color.ORANGERED);

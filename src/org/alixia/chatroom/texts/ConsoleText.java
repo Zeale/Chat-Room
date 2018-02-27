@@ -29,9 +29,6 @@ public abstract class ConsoleText {
 		return linebreak;
 	}
 
-	@Deprecated
-	public abstract void print(TextFlow flow);
-
 	public abstract void print(Console console);
 
 }
