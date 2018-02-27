@@ -20,7 +20,6 @@ public class ClientManager extends NamedObjectList<Client> {
 	@Override
 	public boolean addItem(Client client) {
 		client.setPaused(true);
-		client.setListener(listener);
 		return super.addItem(client);
 	}
 
@@ -29,9 +28,9 @@ public class ClientManager extends NamedObjectList<Client> {
 		if (!containsKey(clientName))
 			return false;
 		if (isItemSelected())
-			getSelectedItem().setPaused(true);
+			getSelectedItem().setListener(null);
 
-		items.get(clientName).setPaused(false);
+		items.get(clientName).setListener(listener);
 		return super.selectItem(clientName);
 	}
 

@@ -17,8 +17,6 @@ import java.nio.file.StandardCopyOption;
 
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.Printable;
-import org.alixia.chatroom.changelogparser.Change;
-import org.alixia.chatroom.changelogparser.ChangeType;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandManager;
@@ -27,7 +25,6 @@ import org.alixia.chatroom.connections.ClientManager;
 import org.alixia.chatroom.connections.ConnectionListener;
 import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
-import org.alixia.chatroom.connections.messages.Message;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
@@ -77,37 +74,6 @@ import javafx.util.Duration;
 //TODO Later, I MIGHT put all the GUI nodes into a local class which in turn would go in the tryInit method (or something similar) and instantiate the console object when it has visibility of the nodes. Although this would severly decrease the clutter in my IDE, it would pose the problem of having GUI nodes not be accessible by the rest of the ChatRoom class, as they would be hidden in the local class, so commands will not be able to manipulate the nodes in the future without some serious remodeling.
 //Also, this class is about 1530 lines. 90% of that is probably the commands...
 /**
- * <p>
- * This class is the framework for the main object of this program. It defines
- * most of the features of the program and makes use of API classes, such as
- * {@link Client}s, {@link Server}s, {@link Message}s, {@link ConsoleText}s, and
- * {@link ChangelogParser}s in providing features.
- * <p>
- * This class is not meant to be accessible by other objects and is not meant to
- * expose any of its internal data (such as the nodes making the GUI) to other
- * classes. This is the main reason that most of the fields are private.
- * <p>
- * The single object that gets instantiated by the {@link Launch} class when the
- * program starts calls methods on other objects rather than having other
- * objects call methods on it to provide features. This (probably?) limits the
- * ability of other code to reflectively access this class's fields.
- * <p>
- * Since, however, other classes may sometimes need to access basic
- * functionality such as printing colored text to the console, (a practical
- * necessity [o/si]nce the program is large enough), this class will store
- * instances of things like {@link Printable} and will pass those instances to
- * API classes that need to print things or access other functionality of this
- * class.
- * <p>
- * This way, since the {@link ChatRoom} is calling other classes, other classes
- * will have no reference to the ChatRoom object (and (probably?) can't
- * reflectively access its fields). This sounded like it would pose some
- * benefits in my head. API classes won't be able to do anything unless this
- * class calls upon them to do so either.
- * <p>
- * I forgot basically everything else that I was gonna write out here, so I'm
- * just gonna go ahead and implement this.
- * 
  * 
  * @author Zeale
  *
@@ -148,7 +114,7 @@ public class ChatRoom {
 		}
 	};
 
-	// Some of these fields have aliases.
+	// Nodes are styled and manipulated in the constructor and the tryInit method.
 	private final TextFlow flow = new TextFlow();
 	private final TextArea input = new TextArea();
 	private final Button sendButton = new PopButton("Send");
@@ -592,7 +558,6 @@ public class ChatRoom {
 				protected void act(String name, String... args) {
 
 					if (args.length == 0) {
-						// TODO Remove duplicate code once we make the printable interface thing.
 						ChangelogParser parser = new ChangelogParser("/changelog.txt");
 						parser.printChangelog(printer);
 
@@ -609,7 +574,6 @@ public class ChatRoom {
 							int ver;
 							try {
 								// TODO Change this code when moving to better versioning.
-								// TODO Remove duplicate code once we make the printable interface thing.
 								ver = Integer.parseInt(arg);
 								URL location = new URL(
 										"http://dusttoash.org/chat-room/changelogs/changelog-" + ver + ".txt");
@@ -747,7 +711,7 @@ public class ChatRoom {
 							} else
 							// Above update...
 							{
-								println("Your version is above the latest, publicly released version. Congrats...?",
+								println("Your version is above the latest publicly released version. Congrats...?",
 										INFO_COLOR);
 							}
 
