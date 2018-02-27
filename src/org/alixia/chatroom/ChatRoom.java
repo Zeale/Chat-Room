@@ -25,6 +25,7 @@ import org.alixia.chatroom.connections.ClientManager;
 import org.alixia.chatroom.connections.ConnectionListener;
 import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
+import org.alixia.chatroom.connections.messages.Message;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
@@ -72,6 +73,42 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 //TODO Make this class implement a "Printable" interface or make a "Printable" object (which is an instance of said interface) that can be passed to things like the ChangelogParser in some convenience methods. These methods will be able to print a changelog out. This way, the syntax and format for printing will stay consistent since all changelog printing will make use of those methods, and there won't be duplicate chunks of code in each place that we want to print a changelog.
+/**
+ * <p>
+ * This class is the framework for the main object of this program. It defines
+ * most of the features of the program and makes use of API classes, such as
+ * {@link Client}s, {@link Server}s, {@link Message}s, {@link ConsoleText}s, and
+ * {@link ChangelogParser}s in providing features.
+ * <p>
+ * This class is not meant to be accessible by other objects and is not meant to
+ * expose any of its internal data (such as the nodes making the GUI) to other
+ * classes. This is the main reason that most of the fields are private.
+ * <p>
+ * The single object that gets instantiated by the {@link Launch} class when the
+ * program starts calls methods on other objects rather than having other
+ * objects call methods on it to provide features. This (probably?) limits the
+ * ability of other code to reflectively access this class's fields.
+ * <p>
+ * Since, however, other classes may sometimes need to access basic
+ * functionality such as printing colored text to the console, (a practical
+ * necessity [o/si]nce the program is large enough), this class will store
+ * instances of things like {@link Printable} and will pass those instances to
+ * API classes that need to print things or access other functionality of this
+ * class.
+ * <p>
+ * This way, since the {@link ChatRoom} is calling other classes, other classes
+ * will have no reference to the ChatRoom object (and (probably?) can't
+ * reflectively access its fields). This sounded like it would pose some
+ * benefits in my head. API classes won't be able to do anything unless this
+ * class calls upon them to do so either.
+ * <p>
+ * I forgot basically everything else that I was gonna write out here, so I'm
+ * just gonna go ahead and implement this.
+ * 
+ * 
+ * @author Zeale
+ *
+ */
 public class ChatRoom {
 
 	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
@@ -84,6 +121,21 @@ public class ChatRoom {
 	private static final int DEFAULT_PORT = 25000;
 
 	private String username = "Unnamed";
+
+	private Printable printer = new Printable() {
+
+		@Override
+		public void print(String text, Color color) {
+			ChatRoom.this.print(text, color);
+		}
+
+		@Override
+		public void println() {
+			// ChatRoom's impl of println is different from the default impl by the
+			// interface.
+			ChatRoom.this.println();
+		}
+	};
 
 	// Some of these fields have aliases.
 	private final TextFlow flow = new TextFlow();
