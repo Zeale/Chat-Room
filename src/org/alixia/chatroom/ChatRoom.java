@@ -114,7 +114,7 @@ import javafx.util.Duration;
  */
 public class ChatRoom {
 
-	private static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
+	public static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
 			WARNING_COLOR = Color.GOLD;
 
 	private static final Color WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
@@ -594,20 +594,7 @@ public class ChatRoom {
 					if (args.length == 0) {
 						// TODO Remove duplicate code once we make the printable interface thing.
 						ChangelogParser parser = new ChangelogParser("/changelog.txt");
-						print("Version: ", Color.MEDIUMAQUAMARINE);
-						println(parser.getUpdateName(), Color.WHITE);
-						println();
-						Change change;
-						while ((change = parser.getNextChange()) != null) {
-							print(change.type.toChar() + " ", Color.WHITE);
-							if (change.type == ChangeType.ADDITION)
-								println(change.text, SUCCESS_COLOR);
-							else if (change.type == ChangeType.CHANGE)
-								println(change.text, Color.ORANGE);
-							else
-								println(change.text, ERROR_COLOR);
-						}
-						println();
+						parser.printChangelog(printer);
 
 					} else {
 						if (args.length > 1)
@@ -629,19 +616,7 @@ public class ChatRoom {
 
 								ChangelogParser parser = new ChangelogParser(location.openStream());
 								print("Version: ", Color.MEDIUMAQUAMARINE);
-								println(parser.getUpdateName(), Color.WHITE);
-								println();
-								Change change;
-								while ((change = parser.getNextChange()) != null) {
-									print(change.type.toChar() + " ", Color.WHITE);
-									if (change.type == ChangeType.ADDITION)
-										println(change.text, SUCCESS_COLOR);
-									else if (change.type == ChangeType.CHANGE)
-										println(change.text, Color.ORANGE);
-									else
-										println(change.text, ERROR_COLOR);
-								}
-								println();
+								parser.printChangelog(printer);
 
 							} catch (NumberFormatException e) {
 								println("Failed to parse your argument, " + arg + " as a number.", ERROR_COLOR);

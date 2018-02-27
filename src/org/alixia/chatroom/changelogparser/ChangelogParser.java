@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.Printable;
+
+import javafx.scene.paint.Color;
+
 public class ChangelogParser {
 
 	private final InputStreamReader reader;
@@ -17,6 +22,23 @@ public class ChangelogParser {
 		reader = new InputStreamReader(getClass().getResourceAsStream(absolutePath));
 	}
 
+	public void printChangelog(Printable printable) {
+		printable.print("Version: ", Color.MEDIUMAQUAMARINE);
+		printable.println(getUpdateName(), Color.WHITE);
+		printable.println();
+		Change change;
+		while ((change = getNextChange()) != null) {
+			printable.print(change.type.toChar() + " ", Color.WHITE);
+			if (change.type == ChangeType.ADDITION)
+				printable.println(change.text, ChatRoom.SUCCESS_COLOR);
+			else if (change.type == ChangeType.CHANGE)
+				printable.println(change.text, Color.ORANGE);
+			else
+				printable.println(change.text, ChatRoom.ERROR_COLOR);
+		}
+		printable.println();
+	}
+
 	private void parseUpdateHeader() {
 		if (updateName != null)
 			return;
@@ -27,8 +49,7 @@ public class ChangelogParser {
 			}
 
 		int c;
-		String header = "";
-		String buffer = "";
+		String header = "", buffer = "";
 		try {
 			// Ignore any trailing whitespace.
 			while (Character.isWhitespace(c = reader.read()))
