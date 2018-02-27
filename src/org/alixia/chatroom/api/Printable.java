@@ -1,4 +1,4 @@
-package org.alixia.chatroom;
+package org.alixia.chatroom.api;
 
 import javafx.scene.paint.Color;
 
