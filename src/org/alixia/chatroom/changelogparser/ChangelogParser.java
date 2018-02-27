@@ -33,8 +33,12 @@ public class ChangelogParser {
 				printable.println(change.text, ChatRoom.SUCCESS_COLOR);
 			else if (change.type == ChangeType.CHANGE)
 				printable.println(change.text, Color.ORANGE);
-			else
+			else if (change.type == ChangeType.DELETION)
 				printable.println(change.text, ChatRoom.ERROR_COLOR);
+			else if (change.type == ChangeType.FIX)
+				printable.println(change.text, Color.CORNFLOWERBLUE);
+			else
+				printable.println(change.text, Color.DARKSALMON);
 		}
 		printable.println();
 	}

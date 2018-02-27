@@ -1,7 +1,7 @@
 package org.alixia.chatroom.changelogparser;
 
 public enum ChangeType {
-	ADDITION, CHANGE, DELETION;
+	ADDITION, CHANGE, DELETION, FIX;
 
 	public static ChangeType valueOfChar(String changePrecedent) {
 		switch (changePrecedent.toLowerCase()) {
@@ -11,6 +11,8 @@ public enum ChangeType {
 			return ChangeType.CHANGE;
 		case "-":
 			return ChangeType.DELETION;
+		case "•":
+			return ChangeType.FIX;
 		default:
 			return null;
 		}
@@ -24,6 +26,8 @@ public enum ChangeType {
 			return "~";
 		case DELETION:
 			return "-";
+		case FIX:
+			return "•";
 		default:
 			return null;
 		}
