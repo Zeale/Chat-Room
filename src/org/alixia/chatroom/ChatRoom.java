@@ -27,6 +27,7 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.fxtools.ResizeOperator;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
@@ -470,6 +471,7 @@ public class ChatRoom {
 		// Root
 		root.setBorder(border);
 		root.setTop(menuBar);
+		new ResizeOperator(root, 10);
 		stage.initStyle(StageStyle.TRANSPARENT);
 	}
 
