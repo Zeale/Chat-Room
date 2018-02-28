@@ -27,6 +27,7 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
@@ -471,7 +472,38 @@ public class ChatRoom {
 		// Root
 		root.setBorder(border);
 		root.setTop(menuBar);
-		new ResizeOperator(root, 10);
+		new ResizeOperator(root, new Resizable() {
+
+			@Override
+			public void moveY(double amount) {
+				stage.setY(stage.getY() + amount);
+			}
+
+			@Override
+			public void moveX(double amount) {
+				stage.setX(stage.getX() + amount);
+			}
+
+			@Override
+			public double getY() {
+				return stage.getY();
+			}
+
+			@Override
+			public double getX() {
+				return stage.getX();
+			}
+
+			@Override
+			public void expandVer(double amount) {
+				stage.setHeight(stage.getHeight() + amount);
+			}
+
+			@Override
+			public void expandHor(double amount) {
+				stage.setWidth(stage.getWidth() + amount);
+			}
+		}, 10);
 		stage.initStyle(StageStyle.TRANSPARENT);
 	}
 
