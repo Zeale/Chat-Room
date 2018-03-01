@@ -194,7 +194,8 @@ public class ChatRoom {
 
 		StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
 
-		Border border = new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2)));
+		Border border = new Border(
+				new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 8, 2)));
 
 		close.setPrefSize(26, 26);
 		minimize.setPrefSize(26, 26);
@@ -503,7 +504,45 @@ public class ChatRoom {
 			public void expandHor(double amount) {
 				stage.setWidth(stage.getWidth() + amount);
 			}
-		}, 10);
+		}, 10) {
+
+			public void addBar() {
+				root.setBorder(new Border(
+						new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 8, 2))));
+			}
+
+			public void removeBar() {
+				root.setBorder(
+						new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+			}
+
+			@Override
+			public void handle(MouseEvent event) {
+				super.handle(event);
+				if (event.getEventType().equals(MouseEvent.MOUSE_ENTERED) && bottom(event))
+					addBar();
+				else if (event.getEventType().equals(MouseEvent.MOUSE_EXITED))
+					removeBar();
+				else if (event.getEventType().equals(MouseEvent.MOUSE_MOVED)) {
+					if (bottom(event))
+						addBar();
+					else
+						removeBar();
+				}
+
+			}
+		};
+		// The input TextArea consumes mouse events, so we'll need to add a handler to
+		// it too.
+
+		input.addEventFilter(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				root.fireEvent(event);
+			}
+		});
+
 		stage.initStyle(StageStyle.TRANSPARENT);
 	}
 
