@@ -27,7 +27,9 @@ public class ChangelogParser {
 		printable.println(getUpdateName(), Color.WHITE);
 		printable.println();
 		Change change;
+		int i = 0;
 		while ((change = getNextChange()) != null) {
+			printable.print("" + ++i, Color.ORANGE);
 			printable.print(change.type.toChar() + " ", Color.WHITE);
 			if (change.type == ChangeType.ADDITION)
 				printable.println(change.text, ChatRoom.SUCCESS_COLOR);

@@ -6,3 +6,4 @@
 • Fixed a grammar error in a command output.
 + Changelogs can now show "Fixes."
 + Window is now resizable.
++ Changelog now numbers changes.
