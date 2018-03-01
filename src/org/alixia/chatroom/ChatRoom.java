@@ -497,12 +497,18 @@ public class ChatRoom {
 
 			@Override
 			public void expandVer(double amount) {
-				stage.setHeight(stage.getHeight() + amount);
+				if (stage.getHeight() + amount < 400)
+					stage.setHeight(400);
+				else
+					stage.setHeight(stage.getHeight() + amount);
 			}
 
 			@Override
 			public void expandHor(double amount) {
-				stage.setWidth(stage.getWidth() + amount);
+				if (stage.getWidth() + amount < 600)
+					stage.setWidth(600);
+				else
+					stage.setWidth(stage.getWidth() + amount);
 			}
 		}, 10) {
 
@@ -557,6 +563,9 @@ public class ChatRoom {
 		flowWrapper.setBackground(null);
 		flowWrapper.setFitToWidth(true);
 		flow.setMinHeight(200);
+
+		stage.setMinHeight(400);
+		stage.setMinWidth(600);
 
 		stage.setOnCloseRequest(event -> {
 			servers.close();

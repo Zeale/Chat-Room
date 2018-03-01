@@ -5,3 +5,4 @@
 • Fixed an issue with selecting clients.
 • Fixed a grammar error in a command output.
 + Changelogs can now show "Fixes."
++ Window is now resizable.
