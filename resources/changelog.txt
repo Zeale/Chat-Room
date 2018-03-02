@@ -1,9 +1,3 @@
-0.1.5:
+0.1.6:
 
-+ Added changelog viewing for different versions. Use /changelog [version-number] to view the changelog for a specific version. For example, /changelog 4, for the Test Update's changelog.
-+ Added some API changes.
-• Fixed an issue with selecting clients.
-• Fixed a grammar error in a command output.
-+ Changelogs can now show "Fixes."
-+ Window is now resizable.
-+ Changelog now numbers changes.
++ Added audio calling
