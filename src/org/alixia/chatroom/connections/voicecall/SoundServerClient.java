@@ -2,6 +2,7 @@ package org.alixia.chatroom.connections.voicecall;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 
 class SoundServerClient {
 
@@ -42,11 +43,23 @@ class SoundServerClient {
 		receiver.setDaemon(true);
 	}
 
-	public void sendData(byte[] data) throws IOException {
+	/**
+	 * @param data
+	 *            The data to send.
+	 * @throws SocketException
+	 *             If the client, that was represented by this object, disconnected.
+	 * @throws IOException
+	 *             If an {@link IOException} occurs.
+	 */
+	public void sendData(byte[] data) throws SocketException, IOException {
 		// With a sysout, we can see that data.length is 0. Sound is still sent,
 		// however...
 		socket.getOutputStream().write(data);
 		socket.getOutputStream().flush();
+	}
+
+	public Socket getSocket() {
+		return socket;
 	}
 
 }

@@ -2,6 +2,7 @@ package org.alixia.chatroom.connections.voicecall;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -40,17 +41,20 @@ public class CallClient {
 
 	}
 
+	private boolean run = true;
+
 	private Thread recorder = new Thread(new Runnable() {
 
 		@Override
 		public void run() {
-			while (!mute) {
+			while (!mute && run) {
 				byte[] data = new byte[CHUNK_SIZE];
 				int size = mic.read(data, 0, data.length);
 				try {
-					System.out.println("CALLCLIENT: Wrote " + size + " data to the server.");
 					socket.getOutputStream().write(data, 0, size);
 					socket.getOutputStream().flush();
+				} catch (SocketException e) {
+					run = false;
 				} catch (IOException e) {
 					System.err.println("FAILED TO SEND SOME SOUND TO THE SERVER.");
 					e.printStackTrace();
@@ -68,7 +72,7 @@ public class CallClient {
 			byte[] buffer = new byte[65000];
 			int cnt;
 			try {
-				while (true) {
+				while (run) {
 					// If we're deaf, trash the sound; we don't play it to the speaker.
 					cnt = ais.read(deaf ? new byte[buffer.length] : buffer, 0, buffer.length);
 					if (cnt == -1) {

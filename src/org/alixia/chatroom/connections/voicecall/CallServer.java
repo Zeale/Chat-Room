@@ -65,14 +65,23 @@ public class CallServer {
 	}
 
 	void sendSound(byte[] data, SoundServerClient sender) {
-		for (int i = 0; i < connections.size(); i++) {
-			SoundServerClient ssc = connections.get(i);
-			if (ssc != sender)
-				try {
-					ssc.sendData(data);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		sendToAll(data, sender);
+	}
+
+	private void sendToAll(byte[] data, SoundServerClient... exceptedClients) {
+		DATA_LOOP: for (SoundServerClient ssc : connections) {
+			for (SoundServerClient essc : exceptedClients)
+				if (ssc == essc)
+					continue DATA_LOOP;
+			try {
+				ssc.sendData(data);
+			} catch (SocketException e) {
+				System.out.println(ssc);
+				connections.remove(ssc);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException();
+			}
 		}
 	}
 
