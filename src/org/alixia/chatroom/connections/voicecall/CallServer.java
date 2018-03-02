@@ -65,13 +65,15 @@ public class CallServer {
 	}
 
 	void sendSound(byte[] data, SoundServerClient sender) {
-		for (SoundServerClient ssc : connections)
+		for (int i = 0; i < connections.size(); i++) {
+			SoundServerClient ssc = connections.get(i);
 			if (ssc != sender)
 				try {
 					ssc.sendData(data);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+		}
 	}
 
 }
