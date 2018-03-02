@@ -15,6 +15,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.LineUnavailableException;
+
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
@@ -27,6 +30,8 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.connections.voicecall.CallClient;
+import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
@@ -595,6 +600,46 @@ public class ChatRoom {
 						println(s, SUCCESS_COLOR);
 				}
 			}
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					return equalsAnyIgnoreCase(name, "host-call", "hostcall");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					try {
+						new CallServer(25369);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			});
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("call");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+
+					if (args.length < 1)
+						println("Please enter an address...", ERROR_COLOR);
+					try {
+						new CallClient(args[0], 25369, new AudioFormat(96000, 16, 1, true, true));
+					} catch (LineUnavailableException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+				}
+			});
 
 			commandManager.addCommand(new Command() {
 
