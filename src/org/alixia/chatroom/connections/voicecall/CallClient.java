@@ -115,4 +115,12 @@ public class CallClient {
 		mute = true;
 	}
 
+	public void disconnect() throws IOException {
+		run = false;
+		ais.close();
+		socket.close();
+		speaker.close();
+		mic.close();
+	}
+
 }

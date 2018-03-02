@@ -85,4 +85,10 @@ public class CallServer {
 		}
 	}
 
+	public void stop() throws IOException {
+		run = false;
+		for(SoundServerClient ssc:connections)
+			ssc.close();
+	}
+
 }

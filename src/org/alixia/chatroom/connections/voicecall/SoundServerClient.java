@@ -9,6 +9,7 @@ class SoundServerClient {
 	private final Socket socket;
 
 	private final CallServer owner;
+	private boolean run = true;
 
 	public SoundServerClient(Socket socket, CallServer owner) throws IOException {
 
@@ -22,7 +23,7 @@ class SoundServerClient {
 
 		@Override
 		public void run() {
-			while (true) {
+			while (run) {
 				try {
 					byte[] data = new byte[socket.getInputStream().available()];
 					socket.getInputStream().read(data);
@@ -60,6 +61,11 @@ class SoundServerClient {
 
 	public Socket getSocket() {
 		return socket;
+	}
+
+	public void close() throws IOException {
+		run = false;
+		socket.close();
 	}
 
 }
