@@ -616,10 +616,26 @@ public class ChatRoom {
 				@Override
 				protected void act(String name, String... args) {
 
+					if (args[0].equalsIgnoreCase("close")) {
+						if (callServer != null) {
+							try {
+								callServer.stop();
+							} catch (IOException e) {
+								println("A data streaming exception occurred while trying to close the server.",
+										ERROR_COLOR);
+								e.printStackTrace();
+							}
+							callServer = null;
+						} else
+							println("You aren't hosting a call...", ERROR_COLOR);
+						return;
+					}
+
 					if (callServer != null) {
 						print("There is already an active server. Do ", ERROR_COLOR);
 						print("/" + name + " close ", Color.ORANGE);
 						println("to close the current call server.", ERROR_COLOR);
+						return;
 					}
 
 					if (args.length > 0) {
@@ -627,19 +643,6 @@ public class ChatRoom {
 							printHelp("/" + name + " [port]",
 									"Starts a call server. This is a voice chatting server that others can join.",
 									"Running this command does not put you in the server; you must run   /call self   to join your own call.");
-							return;
-						} else if (args[0].equalsIgnoreCase("close")) {
-							if (callServer != null) {
-								try {
-									callServer.stop();
-								} catch (IOException e) {
-									println("A data streaming exception occurred while trying to close the server.",
-											ERROR_COLOR);
-									e.printStackTrace();
-								}
-								callServer = null;
-							} else
-								println("You aren't hosting a call...", ERROR_COLOR);
 							return;
 						}
 					}
@@ -654,6 +657,8 @@ public class ChatRoom {
 						println("The port you entered could not be parsed as a number.", ERROR_COLOR);
 						return;
 					}
+
+					println("Successfully started hosting a call.", SUCCESS_COLOR);
 				}
 
 			});
@@ -667,6 +672,21 @@ public class ChatRoom {
 
 				@Override
 				protected void act(String name, String... args) {
+
+					if (args[0].equalsIgnoreCase("disconnect")) {
+						try {
+							if (callClient == null) {
+								print("There is no active call for you to disconnect...", ERROR_COLOR);
+							}
+							callClient.disconnect();
+							callClient = null;
+						} catch (IOException e) {
+							e.printStackTrace();
+							println("A data streaming error occurred while trying to disconnect the client.",
+									ERROR_COLOR);
+						}
+						return;
+					}
 
 					if (callClient != null) {
 						print("There is already a call active. Do ", ERROR_COLOR);
@@ -690,18 +710,6 @@ public class ChatRoom {
 								"\"l2\"", "\"l1\"", "\"l6\"",
 								"You can also directly specify the audio level by simply entering a number without an \"l\" infront of it.",
 								"The audio level is the sample rate of the sound data streamed to others in the call.");
-						return;
-					}
-
-					if (args[0].equalsIgnoreCase("disconnect")) {
-						try {
-							callClient.disconnect();
-							callClient = null;
-						} catch (IOException e) {
-							e.printStackTrace();
-							println("A data streaming error occurred while trying to disconnect the client.",
-									ERROR_COLOR);
-						}
 						return;
 					}
 
@@ -736,7 +744,7 @@ public class ChatRoom {
 										break;
 									}
 								} catch (NumberFormatException e) {
-									println("Could not parse an audio level...", ERROR_COLOR);
+									println("Could not parse an audio level preset...", ERROR_COLOR);
 									println("Usage: /" + name + " " + args[0] + " l[level]", Color.ORANGE);
 									return;
 								}
@@ -751,7 +759,8 @@ public class ChatRoom {
 							}
 						}
 
-						new CallClient(location, DEFAULT_CALL_PORT, new AudioFormat(sampleRate, 16, 1, true, true));
+						callClient = new CallClient(location, DEFAULT_CALL_PORT,
+								new AudioFormat(sampleRate, 16, 1, true, true));
 					} catch (LineUnavailableException e) {
 						println("Failed to make the call client. Your microphone could not be accessed...",
 								ERROR_COLOR);
