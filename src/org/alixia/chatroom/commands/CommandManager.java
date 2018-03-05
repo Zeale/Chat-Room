@@ -10,6 +10,8 @@ public class CommandManager {
 	private Stack<CommandConsumer> consumers = new Stack<>();
 
 	public void addCommand(Command command) {
+		if (commands.contains(command))
+			return;
 		command.setManager(this);
 		commands.add(command);
 	}
@@ -87,6 +89,8 @@ public class CommandManager {
 	}
 
 	void pushConsumer(CommandConsumer consumer) {
+		// Stack can have dupes, in case consumption is wanted twice. Command list can't
+		// have dupes.
 		consumers.push(consumer);
 	}
 }
