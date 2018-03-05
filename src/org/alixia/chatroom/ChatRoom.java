@@ -53,6 +53,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -80,6 +81,7 @@ import javafx.util.Duration;
 
 //TODO Later, I MIGHT put all the GUI nodes into a local class which in turn would go in the tryInit method (or something similar) and instantiate the console object when it has visibility of the nodes. Although this would severly decrease the clutter in my IDE, it would pose the problem of having GUI nodes not be accessible by the rest of the ChatRoom class, as they would be hidden in the local class, so commands will not be able to manipulate the nodes in the future without some serious remodeling.
 //Also, this class is about 1530 lines. 90% of that is probably the commands...
+//TODO Add users
 /**
  * 
  * @author Zeale
@@ -127,6 +129,7 @@ public class ChatRoom {
 	};
 
 	// Nodes are styled and manipulated in the constructor and the tryInit method.
+	private final ImageView settingsButton = new ImageView("/org/alixia/chatroom/assets/graphics/icons/Settings.png");
 	private final TextFlow flow = new TextFlow();
 	private final TextArea input = new TextArea();
 	private final Button sendButton = new PopButton("Send");
@@ -177,6 +180,11 @@ public class ChatRoom {
 
 		AnchorPane.setRightAnchor(sendButton, 50d);
 		AnchorPane.setBottomAnchor(sendButton, 88.5);
+
+		AnchorPane.setLeftAnchor(settingsButton, 0d);
+		AnchorPane.setTopAnchor(settingsButton, 0d);
+		settingsButton.setFitHeight(35);
+		settingsButton.setFitWidth(35);
 
 		input.setMaxHeight(200);
 
