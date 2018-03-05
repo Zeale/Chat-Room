@@ -22,6 +22,7 @@ import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
+import org.alixia.chatroom.commands.CommandConsumer;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
 import org.alixia.chatroom.connections.ClientManager;
@@ -613,6 +614,60 @@ public class ChatRoom {
 						println(s, SUCCESS_COLOR);
 				}
 			}
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("settings");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length > 0) {
+						if (equalsHelp(args[0])) {
+							printHelp("/" + name,
+									"Opens up the settings window. This allows you to customize program settings and/or login.");
+							println("Would you like to open the settings window? (Y/N)", INFO_COLOR);
+							addConsumer(new CommandConsumer() {
+
+								@Override
+								public void consume(String command, String... args) {
+									if (equalsAnyIgnoreCase(command, "yes", "y")) {
+										println("Opening settings window...", SUCCESS_COLOR);
+										// Try block is *currently* useless
+										try {
+											openSettingsWindow();
+										} catch (Exception e) {
+											println("Failed to open window...", ERROR_COLOR);
+										}
+										return;
+									} else if (equalsAnyIgnoreCase(command, "no", "n")) {
+										println("Ok.", INFO_COLOR);
+										return;
+									} else {
+										print("Unknown answer. Please enter either ", ERROR_COLOR);
+										print("/Yes", SUCCESS_COLOR);
+										print(" or ", ERROR_COLOR);
+										print("/No", SUCCESS_COLOR);
+										println(".", ERROR_COLOR);
+										addConsumer(this);
+										return;
+									}
+								}
+							});
+						}
+					} else {
+						println("Opening settings window...", SUCCESS_COLOR);
+						// Try block is *currently* useless
+						try {
+							openSettingsWindow();
+						} catch (Exception e) {
+							println("Failed to open window...", ERROR_COLOR);
+						}
+					}
+				}
+			});
 
 			commandManager.addCommand(new ChatRoomCommand() {
 
@@ -1733,6 +1788,10 @@ public class ChatRoom {
 
 	private void executeCommand(String command) {
 		commandManager.runCommand(command);
+	}
+
+	private void openSettingsWindow() {
+		// TODO Implement
 	}
 
 }
