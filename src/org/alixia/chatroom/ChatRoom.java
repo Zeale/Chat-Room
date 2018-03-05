@@ -35,6 +35,7 @@ import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
+import org.alixia.chatroom.guis.SettingsWindow;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
@@ -98,9 +99,9 @@ public class ChatRoom {
 	public static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
 			WARNING_COLOR = Color.GOLD;
 
-	private static final Color WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
-			NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), NODE_ITEM_COLOR = Color.DARKGRAY,
-			WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
+	public static final Color DEFAULT_WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
+			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
+			DEFAULT_WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
 
 	private static final int DEFAULT_PORT = 25000;
 
@@ -166,8 +167,8 @@ public class ChatRoom {
 		stage.setWidth(800);
 		stage.setHeight(600);
 
-		flow.setBackground(FXTools.getBackgroundFromColor(NODE_OUTPUT_COLOR));
-		input.setBackground(FXTools.getBackgroundFromColor(NODE_OUTPUT_COLOR));
+		flow.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
+		input.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
 		input.setStyle("-fx-text-fill: darkgray; ");
 
 		AnchorPane.setLeftAnchor(flowWrapper, 50d);
@@ -190,7 +191,7 @@ public class ChatRoom {
 		input.setMaxHeight(200);
 
 		// Add a ScrollPane to wrap flow
-		contentWrapper.setBackground(FXTools.getBackgroundFromColor(WINDOW_BACKGROUND_COLOR));
+		contentWrapper.setBackground(FXTools.getBackgroundFromColor(DEFAULT_WINDOW_BACKGROUND_COLOR));
 
 		scene = new Scene(root);
 
@@ -209,7 +210,7 @@ public class ChatRoom {
 	}
 
 	private void addBorder() {
-		final Color ITEM_COLOR = ChatRoom.NODE_ITEM_COLOR, BACKGROUND_COLOR = WINDOW_BORDER_COLOR;
+		final Color ITEM_COLOR = ChatRoom.DEFAULT_NODE_ITEM_COLOR, BACKGROUND_COLOR = DEFAULT_WINDOW_BORDER_COLOR;
 
 		StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
 
@@ -1790,8 +1791,10 @@ public class ChatRoom {
 		commandManager.runCommand(command);
 	}
 
+	private static SettingsWindow settings = new SettingsWindow();
+	
 	private void openSettingsWindow() {
-		// TODO Implement
+		settings.show();
 	}
 
 }
