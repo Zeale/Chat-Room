@@ -15,6 +15,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.LineUnavailableException;
+
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
@@ -27,6 +30,8 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.connections.voicecall.CallClient;
+import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
@@ -81,6 +86,11 @@ import javafx.util.Duration;
  *
  */
 public class ChatRoom {
+
+	private static final int DEFAULT_CALL_SAMPLE_RATE = 96000;
+	private static final int DEFAULT_CALL_PORT = 25369;
+	private CallServer callServer;
+	private CallClient callClient;
 
 	public static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
 			WARNING_COLOR = Color.GOLD;
@@ -595,6 +605,176 @@ public class ChatRoom {
 						println(s, SUCCESS_COLOR);
 				}
 			}
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					return equalsAnyIgnoreCase(name, "host-call", "hostcall");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+
+					if (args[0].equalsIgnoreCase("close")) {
+						if (callServer != null) {
+							try {
+								callServer.stop();
+							} catch (IOException e) {
+								println("A data streaming exception occurred while trying to close the server.",
+										ERROR_COLOR);
+								e.printStackTrace();
+							}
+							callServer = null;
+						} else
+							println("You aren't hosting a call...", ERROR_COLOR);
+						return;
+					}
+
+					if (callServer != null) {
+						print("There is already an active server. Do ", ERROR_COLOR);
+						print("/" + name + " close ", Color.ORANGE);
+						println("to close the current call server.", ERROR_COLOR);
+						return;
+					}
+
+					if (args.length > 0) {
+						if (equalsHelp(args[0])) {
+							printHelp("/" + name + " [port]",
+									"Starts a call server. This is a voice chatting server that others can join.",
+									"Running this command does not put you in the server; you must run   /call self   to join your own call.");
+							return;
+						}
+					}
+
+					try {
+						callServer = new CallServer(args.length == 0 ? DEFAULT_CALL_PORT : Integer.parseInt(args[0]));
+					} catch (IOException e) {
+						println("An error occurred while trying to create a server.", ERROR_COLOR);
+						e.printStackTrace();
+						return;
+					} catch (NumberFormatException e) {
+						println("The port you entered could not be parsed as a number.", ERROR_COLOR);
+						return;
+					}
+
+					println("Successfully started hosting a call.", SUCCESS_COLOR);
+				}
+
+			});
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("call");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+
+					if (args[0].equalsIgnoreCase("disconnect")) {
+						try {
+							if (callClient == null) {
+								print("There is no active call for you to disconnect...", ERROR_COLOR);
+							}
+							callClient.disconnect();
+							callClient = null;
+						} catch (IOException e) {
+							e.printStackTrace();
+							println("A data streaming error occurred while trying to disconnect the client.",
+									ERROR_COLOR);
+						}
+						return;
+					}
+
+					if (callClient != null) {
+						print("There is already a call active. Do ", ERROR_COLOR);
+						print("/" + name + " disconnect ", Color.ORANGE);
+						println("to disconnect from the current call.", ERROR_COLOR);
+						println("(Note that you might not be in a call, but if you created one before and haven't cleared it yet, you can't create a new one, regardless of whether or not the previous call failed.)",
+								WARNING_COLOR);
+						return;
+					}
+
+					if (args.length < 1)
+						println("Please enter an address...", ERROR_COLOR);
+
+					if (equalsHelp(args[0])) {
+						printHelp("/" + name + " (server-address) [audio-level]",
+								"Calls a callserver with the specified address.",
+								"The (server-address) is the internet url or ip that is used to connect to the server.",
+								"The [audio-level] is not a required parameter, but can be given. The [audio-level] allows you to specify the quality of the audio being sent to and from the server.",
+								"I'm not too sure how this program works, but I don't think that anyone else will be able to hear you if they have different audio levels and they try to join the same call. Having different people in the same call with different audio levels may make some of them have to restart the program (or something). Again, not too big of a deal, but...",
+								"There are 6 preset audio levels which can be selected by passing \"l\" (without quotes) and then a number from 1-6. Examples:",
+								"\"l2\"", "\"l1\"", "\"l6\"",
+								"You can also directly specify the audio level by simply entering a number without an \"l\" infront of it.",
+								"The audio level is the sample rate of the sound data streamed to others in the call.");
+						return;
+					}
+
+					try {
+						String location = args[0];
+						float sampleRate = DEFAULT_CALL_SAMPLE_RATE;
+
+						if (equalsAnyIgnoreCase(args[0], "self", "s"))
+							location = "localhost";
+						if (args.length > 1) {
+							final String rate = args[1];
+							if (rate.toLowerCase().startsWith("l")) {
+								int level;
+								try {
+									level = Integer.parseInt(rate.substring(1));
+									switch (level) {
+									case 1:
+										sampleRate = 8000;
+										break;
+									case 2:
+										sampleRate = 12000;
+									case 3:
+										sampleRate = 24000;
+									case 4:
+										sampleRate = 48000;
+									case 5:
+										sampleRate = 96000;
+									case 6:
+										sampleRate = 192000;
+									default:
+										sampleRate = DEFAULT_CALL_SAMPLE_RATE;
+										break;
+									}
+								} catch (NumberFormatException e) {
+									println("Could not parse an audio level preset...", ERROR_COLOR);
+									println("Usage: /" + name + " " + args[0] + " l[level]", Color.ORANGE);
+									return;
+								}
+							} else {
+								try {
+									sampleRate = Float.parseFloat(rate);
+								} catch (NumberFormatException e) {
+									println("Could not parse an audio level...", ERROR_COLOR);
+									println("Usage: /" + name + " " + args[0] + " [number]", Color.ORANGE);
+									return;
+								}
+							}
+						}
+
+						callClient = new CallClient(location, DEFAULT_CALL_PORT,
+								new AudioFormat(sampleRate, 16, 1, true, true));
+					} catch (LineUnavailableException e) {
+						println("Failed to make the call client. Your microphone could not be accessed...",
+								ERROR_COLOR);
+						e.printStackTrace();
+					} catch (UnknownHostException e) {
+						println("Failed to connect to the server. The server could not be found (i.e. its address could not be determined).",
+								ERROR_COLOR);
+					} catch (IOException e) {
+						println("Failed to connect to the server due to some data streaming error.", ERROR_COLOR);
+						e.printStackTrace();
+					}
+
+				}
+			});
 
 			commandManager.addCommand(new Command() {
 
