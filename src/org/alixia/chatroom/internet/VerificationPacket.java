@@ -14,7 +14,10 @@ public class VerificationPacket implements Serializable {
 	public VerificationPacket(boolean verified) {
 		this.verified = verified;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return verified ? "User found and verified." : "The user could not be verified.";
+	}
 
 }

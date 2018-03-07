@@ -1,4 +1,4 @@
-package org.alixia.chatroom.guis;
+package org.alixia.chatroom.impl.guis.settings;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -24,11 +25,16 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class SettingsWindow extends Stage {
+abstract class SettingsWindowImpl extends Stage {
+
+	public SettingsWindowImpl() {
+	}
+
 	private final Button save = new PopButton("save"), cancel = new PopButton("cancel");
 	private final VBox settingsBox = new VBox();
 	private final AnchorPane root = new AnchorPane(settingsBox);
 	private final Scene scene = new Scene(root);
+
 	{
 		initStyle(StageStyle.TRANSPARENT);
 		root.setMinSize(600, 400);
@@ -67,22 +73,33 @@ public class SettingsWindow extends Stage {
 		accountCategory.setFont(Font.font(Font.getDefault().getSize() + 14));
 
 		Text usernameInfo = new Text("Username:"), passwordInfo = new Text("Password:");
-		TextField usernameInput = new TextField(), passwordInput = new TextField();
+		TextField usernameInput = new TextField(), passwordInput = new PasswordField();
 		usernameInput.setPromptText("Username");
 		passwordInput.setPromptText("Passwrd123");
 
 		// Login Wrappers
 		HBox usernameBox = new HBox(15, usernameInfo, usernameInput);
 		HBox passwordBox = new HBox(15, passwordInfo, passwordInput);
+
 		usernameBox.setAlignment(Pos.CENTER);
 		passwordBox.setAlignment(Pos.CENTER);
+
 		Button login = new Button("Login");
+
 		VBox loginWrapper = new VBox(10, accountCategory, usernameBox, passwordBox, login);
 		loginWrapper.setAlignment(Pos.CENTER);
 		loginWrapper.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR,
 				BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
 		loginWrapper.setPadding(new Insets(10));
+
 		settingsBox.getChildren().addAll(loginWrapper);
+
+		// Login impl
+		login.setOnAction(event -> {
+			handleLogin(usernameInput.getText(), passwordInput.getText());
+		});
 	}
+
+	public abstract boolean handleLogin(String username, String password);
 
 }

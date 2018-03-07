@@ -35,7 +35,8 @@ import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
-import org.alixia.chatroom.guis.SettingsWindow;
+import org.alixia.chatroom.impl.guis.settings.Settings;
+import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
@@ -81,9 +82,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-//TODO Later, I MIGHT put all the GUI nodes into a local class which in turn would go in the tryInit method (or something similar) and instantiate the console object when it has visibility of the nodes. Although this would severly decrease the clutter in my IDE, it would pose the problem of having GUI nodes not be accessible by the rest of the ChatRoom class, as they would be hidden in the local class, so commands will not be able to manipulate the nodes in the future without some serious remodeling.
-//Also, this class is about 1530 lines. 90% of that is probably the commands...
-//TODO Add users
 /**
  * 
  * @author Zeale
@@ -91,8 +89,12 @@ import javafx.util.Duration;
  */
 public class ChatRoom {
 
-	private static final int DEFAULT_CALL_SAMPLE_RATE = 96000;
-	private static final int DEFAULT_CALL_PORT = 25369;
+	public static final int DEFAULT_CALL_SAMPLE_RATE = 96000;
+	public static final int DEFAULT_CALL_PORT = 25369;
+
+	public static final int DEFAULT_AUTHENTICATION_PORT = Authentication.DEFAULT_AUTHENTICATION_PORT;
+	public static final String DEFAULT_AUTHENTICATION_SERVER = Authentication.DEFAULT_AUTHENTICATION_SERVER;
+
 	private CallServer callServer;
 	private CallClient callClient;
 
@@ -103,7 +105,7 @@ public class ChatRoom {
 			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
 			DEFAULT_WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
 
-	private static final int DEFAULT_PORT = 25000;
+	public static final int DEFAULT_CHAT_PORT = 25000;
 
 	private String username = "Unnamed";
 
@@ -1439,11 +1441,11 @@ public class ChatRoom {
 						println("/new ...", Color.CRIMSON);
 						printBasicHelp("\tclient (server-address) [port] (client-name)",
 								"Creates a new client. The client will be connected to the server specified by (server-address). The port is optional and defaults to "
-										+ DEFAULT_PORT
+										+ DEFAULT_CHAT_PORT
 										+ ". The (client-name) is required and can be used to refer to the new client later.");
 						printBasicHelp("\tserver [port] (server-name)",
 								"Creates a new server with the given port. Do note that your router's firewall (if there is one) will likely block any incoming connections to your computer on any port, unless you port forward. The [port] is optional and defaults to "
-										+ DEFAULT_PORT + ".");
+										+ DEFAULT_CHAT_PORT + ".");
 						break;
 					default:
 						println("There is no help available for that page...", ERROR_COLOR);
@@ -1508,7 +1510,7 @@ public class ChatRoom {
 							} else {
 
 								final String hostname = args[0];
-								int port = DEFAULT_PORT;
+								int port = DEFAULT_CHAT_PORT;
 								final String clientName;
 
 								try {
@@ -1600,7 +1602,7 @@ public class ChatRoom {
 
 								} // Handle 1 arg (name)
 								else {
-									port = DEFAULT_PORT;
+									port = DEFAULT_CHAT_PORT;
 									serverName = args[0];
 								}
 
@@ -1791,10 +1793,10 @@ public class ChatRoom {
 		commandManager.runCommand(command);
 	}
 
-	private static SettingsWindow settings = new SettingsWindow();
-	
+	private static final Settings SETTINGS_INSTANCE = new Settings();
+
 	private void openSettingsWindow() {
-		settings.show();
+		SETTINGS_INSTANCE.show();
 	}
 
 }
