@@ -8,10 +8,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class AuthServer {
 
-	private Map<String, String> users = new HashMap<>();
+	private Map<String, User> users = new HashMap<>();
 	private final ServerSocket socket;
 
 	private boolean run = true;
@@ -46,6 +47,37 @@ public class AuthServer {
 
 	private void handle(Socket connection) {
 
+		try {
+
+			// Make our communication objs.
+			ObjectInputStream reader = new ObjectInputStream(connection.getInputStream());
+			ObjectOutputStream sender = new ObjectOutputStream(connection.getOutputStream());
+
+			// Catch a sendable exception below and send it.
+
+			// First check if the connection is a server (who's verifying a session id), or
+			// a client (who's trying to log in).
+
+			Object packet = reader.readObject();
+
+			if (packet instanceof LoginRequestPacket) {
+				// We must check to see if the login information in the packet is correct.
+				if (!users.containsKey(((LoginRequestPacket) packet).username)) {
+					// User not registered. If they were, their username would be in the map (as a
+					// key).
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return;
+		} catch (OutOfMemoryError e) {
+			System.gc();
+		}
+
 	}
 
 	{
@@ -54,11 +86,21 @@ public class AuthServer {
 
 	public static final class User implements Serializable {
 		private final String username, password;
+		private UUID sessionID;
 
 		public User(String username, String password) {
 			this.username = username;
 			this.password = password;
 		}
+
+		public UUID makeID() {
+			return sessionID = UUID.randomUUID();
+		}
+
+		public boolean IDsMatch(UUID id) {
+			return sessionID.equals(id);
+		}
+
 	}
 
 }
