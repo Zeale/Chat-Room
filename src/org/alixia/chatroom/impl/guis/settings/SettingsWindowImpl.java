@@ -1,5 +1,7 @@
 package org.alixia.chatroom.impl.guis.settings;
 
+import java.io.IOException;
+
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
@@ -96,10 +98,14 @@ abstract class SettingsWindowImpl extends Stage {
 
 		// Login impl
 		login.setOnAction(event -> {
-			handleLogin(usernameInput.getText(), passwordInput.getText());
+			try {
+				handleLogin(usernameInput.getText(), passwordInput.getText());
+			} catch (IOException e) {
+				// TODO Notify user
+			}
 		});
 	}
 
-	public abstract boolean handleLogin(String username, String password);
+	public abstract boolean handleLogin(String username, String password) throws IOException;
 
 }

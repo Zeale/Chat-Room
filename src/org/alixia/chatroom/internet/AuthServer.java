@@ -74,8 +74,9 @@ public class AuthServer {
 					if (users.containsKey(((LoginRequestPacket) packet).username))
 						if (users.get(((LoginRequestPacket) packet).username)
 								.passwordsMatch(((LoginRequestPacket) packet).password))
-							sender.writeObject(new SessionIDPacket(
-									users.get(((LoginRequestPacket) packet).username).makeID(), Success.SUCCESS));
+							sender.writeObject(new SessionIDPacket(users.get(((LoginRequestPacket) packet).username)
+									// Only if the login is successful, will we make a new ID.
+									.makeID(), Success.SUCCESS));
 						else
 							sender.writeObject(new SessionIDPacket(null, Success.WRONG_PASSWORD));
 					else
