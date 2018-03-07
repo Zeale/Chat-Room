@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.alixia.chatroom.internet.SessionIDPacket.Success;
+
 public class AuthServer {
 
 	private Map<String, User> users = new HashMap<>();
@@ -53,21 +55,40 @@ public class AuthServer {
 			ObjectInputStream reader = new ObjectInputStream(connection.getInputStream());
 			ObjectOutputStream sender = new ObjectOutputStream(connection.getOutputStream());
 
-			// Catch a sendable exception below and send it.
-
 			// First check if the connection is a server (who's verifying a session id), or
 			// a client (who's trying to log in).
 
-			Object packet = reader.readObject();
+			Object packet = reader.readObject();// Blocking method
+			try {
+				// Issue a SessionID when they login. They can use this to communicate instead
+				// of repeatedly sending over the password.
+				//
+				// The ID is given if their password is correct for the user name they give.
+				// Obviously, the user name must also be in this server's database.
+				if (packet instanceof LoginRequestPacket)
+					// We must check to see if the login information in the packet is correct.
+					if (users.containsKey(((LoginRequestPacket) packet).username))
+						if (users.get(((LoginRequestPacket) packet).username)
+								.passwordsMatch(((LoginRequestPacket) packet).password))
+							sender.writeObject(new SessionIDPacket(
+									users.get(((LoginRequestPacket) packet).username).makeID(), Success.SUCCESS));
+						else
+							sender.writeObject(new SessionIDPacket(null, Success.WRONG_PASSWORD));
+					else
+						// User not registered. If they were, their user name would be in the map (as a
+						// key).
+						sender.writeObject(new SessionIDPacket(null, Success.USERNAME_NOT_FOUND));
 
-			if (packet instanceof LoginRequestPacket) {
-				// We must check to see if the login information in the packet is correct.
-				if (!users.containsKey(((LoginRequestPacket) packet).username)) {
-					// User not registered. If they were, their username would be in the map (as a
-					// key).
+				// Verify that a given SessionID is valid for the given user name.
+				else if (packet instanceof VerificationRequestPacket)
+					sender.writeObject(
+							new VerificationPacket(users.containsKey(((VerificationRequestPacket) packet).username)
+									&& users.get(((VerificationRequestPacket) packet).username)
+											.IDsMatch(((VerificationRequestPacket) packet).sessionID)));
 
-				}
-
+				sender.flush();
+			} finally {
+				connection.close();
 			}
 
 		} catch (Exception e) {
@@ -76,6 +97,9 @@ public class AuthServer {
 			return;
 		} catch (OutOfMemoryError e) {
 			System.gc();
+			System.err.println("Out of memory error @");
+			System.err.println("AuthServer.handle()");
+
 		}
 
 	}
@@ -85,12 +109,20 @@ public class AuthServer {
 	}
 
 	public static final class User implements Serializable {
-		private final String username, password;
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		public final String username, password;
 		private UUID sessionID;
 
 		public User(String username, String password) {
 			this.username = username;
 			this.password = password;
+		}
+
+		public boolean passwordsMatch(String password) {
+			return password.equals(this.password);
 		}
 
 		public UUID makeID() {
