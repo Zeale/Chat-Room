@@ -24,6 +24,10 @@ public class AuthServer {
 		handler.start();
 	}
 
+	public void addUser(String username, String password) {
+		users.put(username, new User(username, password));
+	}
+
 	private Thread handler = new Thread(new Runnable() {
 
 		@Override
@@ -92,7 +96,6 @@ public class AuthServer {
 			}
 
 		} catch (Exception e) {
-
 			e.printStackTrace();
 			return;
 		} catch (OutOfMemoryError e) {
