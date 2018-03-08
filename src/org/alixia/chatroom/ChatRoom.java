@@ -218,9 +218,6 @@ public class ChatRoom {
 
 		StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
 
-		Border border = new Border(
-				new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 8, 2)));
-
 		close.setPrefSize(26, 26);
 		minimize.setPrefSize(26, 26);
 		expand.setPrefSize(26, 26);
@@ -494,6 +491,10 @@ public class ChatRoom {
 			menuBar.setAlignment(Pos.CENTER_RIGHT);
 		else
 			menuBar.setAlignment(Pos.CENTER_LEFT);
+
+		Border border = new Border(
+				new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 2, 2)));
+
 		// Root
 		root.setBorder(border);
 		root.setTop(menuBar);
@@ -542,8 +543,7 @@ public class ChatRoom {
 			}
 
 			public void removeBar() {
-				root.setBorder(
-						new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+				root.setBorder(border);
 			}
 
 			@Override
