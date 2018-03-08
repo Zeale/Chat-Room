@@ -42,6 +42,7 @@ import org.alixia.chatroom.resources.fxnodes.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
+import org.alixia.chatroom.texts.BoldText;
 import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
@@ -163,6 +164,7 @@ public class ChatRoom {
 	private final CommandManager commandManager = new CommandManager();
 	private final ClientManager clients = new ClientManager(clientListener);
 	private final ServerManager servers = new ServerManager();
+	private final LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
 
 	ChatRoom(Stage stage) {
 		this.stage = stage;
@@ -1659,6 +1661,9 @@ public class ChatRoom {
 
 		}
 		println("Done!", SUCCESS_COLOR);
+		print("Startup took ", SUCCESS_COLOR);
+		new BoldText("" + (System.currentTimeMillis() - Launch.STARTUP_TIME) + " ", Color.FIREBRICK).print(console);
+		println("milliseconds!", SUCCESS_COLOR);
 
 		print("Connect to a server with ", Color.RED);
 		print("/new client (hostname) [port] (client-name) ", Color.GREEN);
@@ -1792,11 +1797,6 @@ public class ChatRoom {
 
 	private void executeCommand(String command) {
 		commandManager.runCommand(command);
-	}
-
-	private LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
-	{
-		new Settings();
 	}
 
 	private void openSettingsWindow() {
