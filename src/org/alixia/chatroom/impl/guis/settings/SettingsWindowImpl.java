@@ -6,12 +6,17 @@ import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
+import javafx.collections.ListChangeListener;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -34,10 +39,57 @@ abstract class SettingsWindowImpl extends Stage {
 
 	private final Button save = new PopButton("save"), cancel = new PopButton("cancel");
 	private final VBox settingsBox = new VBox();
-	private final AnchorPane root = new AnchorPane(settingsBox);
+	private final AnchorPane root = new AnchorPane();
+	{
+		root.getChildren().addListener(new ListChangeListener<Node>() {
+
+			@Override
+			public void onChanged(Change<? extends Node> c) {
+				while (c.next())
+					if (c.wasAdded())
+						for (Node n : c.getAddedSubList()) {
+							if (n instanceof Parent) {
+								// PickOnBounds is only being disabled for parent objects. I don't want to mess
+								// up any buttons or anything. (Not that doing this to them will, but just to be
+								// safe...)
+								n.setPickOnBounds(false);
+								((Parent) n).getChildrenUnmodifiable().addListener(this);
+							}
+						}
+			}
+		});
+		root.getChildren().add(settingsBox);
+	}
 	private final Scene scene = new Scene(root);
 
 	{
+
+		root.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
+
+			private double offx, offy;
+			private boolean drag;
+
+			{
+				root.addEventFilter(MouseEvent.MOUSE_DRAGGED, event -> {
+					if (!drag)
+						return;
+					setX(offx + event.getScreenX());
+					setY(offy + event.getScreenY());
+				});
+
+				root.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> drag = false);
+			}
+
+			@Override
+			public void handle(MouseEvent event) {
+				if (!(event.getPickResult().getIntersectedNode() == root))
+					return;
+				offx = getX() - event.getScreenX();
+				offy = getY() - event.getScreenY();
+				drag = true;
+			}
+		});
+
 		initStyle(StageStyle.TRANSPARENT);
 		root.setMinSize(600, 400);
 		root.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR, BorderStrokeStyle.SOLID, null,
@@ -104,6 +156,7 @@ abstract class SettingsWindowImpl extends Stage {
 				// TODO Notify user
 			}
 		});
+
 	}
 
 	public abstract boolean handleLogin(String username, String password) throws IOException;
