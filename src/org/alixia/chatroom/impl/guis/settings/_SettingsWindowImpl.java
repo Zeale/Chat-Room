@@ -3,6 +3,7 @@ package org.alixia.chatroom.impl.guis.settings;
 import java.io.IOException;
 
 import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
@@ -16,6 +17,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -32,14 +35,14 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-abstract class SettingsWindowImpl extends Stage {
-
-	public SettingsWindowImpl() {
-	}
+abstract class _SettingsWindowImpl extends Stage {
 
 	private final Button save = new PopButton("save"), cancel = new PopButton("cancel");
+
 	private final VBox settingsBox = new VBox();
 	private final AnchorPane root = new AnchorPane();
+	private LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(
+			() -> new _AdvancedSettingsImpl());
 	{
 		root.getChildren().addListener(new ListChangeListener<Node>() {
 
@@ -60,6 +63,7 @@ abstract class SettingsWindowImpl extends Stage {
 		});
 		root.getChildren().add(settingsBox);
 	}
+
 	private final Scene scene = new Scene(root);
 
 	{
@@ -145,6 +149,7 @@ abstract class SettingsWindowImpl extends Stage {
 		loginWrapper.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR,
 				BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
 		loginWrapper.setPadding(new Insets(10));
+		loginWrapper.setFillWidth(false);
 
 		settingsBox.getChildren().addAll(loginWrapper);
 
@@ -157,6 +162,34 @@ abstract class SettingsWindowImpl extends Stage {
 			}
 		});
 
+		// Handle Ctrl+Alt+Shift+D; this will open the advanced settings window.
+		root.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				if (!(event.getCode() == KeyCode.D && event.isAltDown() && event.isShiftDown()
+						&& event.isControlDown()))
+					return;
+				event.consume();
+
+				if (advancedSettings.get().isShowing())
+					advancedSettings.get().close();
+				else
+					advancedSettings.get().show();
+
+			}
+		});
+
+		root.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+			if (event.getCode() == KeyCode.ESCAPE) {
+				close();
+				event.consume();
+			}
+		});
+
+	}
+
+	public _SettingsWindowImpl() {
 	}
 
 	public abstract boolean handleLogin(String username, String password) throws IOException;

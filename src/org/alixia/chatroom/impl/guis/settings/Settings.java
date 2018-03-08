@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.alixia.chatroom.internet.Authentication;
 
-public class Settings extends SettingsWindowImpl {
+public class Settings extends _SettingsWindowImpl {
 
 	@Override
 	public boolean handleLogin(String username, String password) throws IOException {

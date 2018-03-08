@@ -1,5 +1,7 @@
 package org.alixia.chatroom.internet;
 
+import java.io.IOException;
+
 import org.alixia.chatroom.internet.authmethods.AppAuthMethodImpl;
 import org.alixia.chatroom.internet.authmethods.AuthenticationMethod;
 
@@ -11,10 +13,25 @@ public final class Authentication {
 	private static final AuthenticationMethod DEFAULT_AUTHENTICATION_METHOD = new AppAuthMethodImpl(
 			DEFAULT_AUTHENTICATION_SERVER, DEFAULT_AUTHENTICATION_PORT);
 
+	private static AuthenticationMethod authMethod = DEFAULT_AUTHENTICATION_METHOD;
+
+	private static AuthServer server;
+
 	private Authentication() {
 	}
 
 	public static AuthenticationMethod getDefaultAuthenticationMethod() {
-		return DEFAULT_AUTHENTICATION_METHOD;
+		return authMethod;
+	}
+
+	public static void setDefaultAuthenticationMethod(AuthenticationMethod method) {
+		if (method == null)
+			throw new IllegalArgumentException();
+		authMethod = method;
+	}
+
+	public static void startAuthServer(int port) throws IOException {
+		if (server == null)
+			server = new AuthServer(port);
 	}
 }
