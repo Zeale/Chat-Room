@@ -20,6 +20,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.Printable;
+import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandConsumer;
@@ -36,9 +37,7 @@ import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
 import org.alixia.chatroom.impl.guis.settings.Settings;
-import org.alixia.chatroom.internet.AuthServer;
 import org.alixia.chatroom.internet.Authentication;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult;
 import org.alixia.chatroom.resources.fxnodes.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
@@ -1795,10 +1794,13 @@ public class ChatRoom {
 		commandManager.runCommand(command);
 	}
 
-	private static final Settings SETTINGS_INSTANCE = new Settings();
+	private LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
+	{
+		new Settings();
+	}
 
 	private void openSettingsWindow() {
-		SETTINGS_INSTANCE.show();
+		settingsInstance.get().show();
 	}
 
 }
