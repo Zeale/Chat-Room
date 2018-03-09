@@ -1,18 +1,23 @@
 package org.alixia.chatroom.logging;
 
 import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.Printable;
+import org.alixia.chatroom.texts.BoldText;
 
 import javafx.scene.paint.Color;
 
-public class Logger {
+public final class Logger {
 
 	public static final Logger CHAT_ROOM_LOGGER = new Logger("ChatRoom");
 
 	public Color bracketColor = Color.ORANGERED, parentColor = Color.MEDIUMVIOLETRED, childColor = Color.RED,
 			separatorColor = Color.WHITE, messageColor = Color.WHITE;
+	public boolean boldHeader = false;
 
 	protected final Printable printer = ChatRoom.INSTANCE.printer;
+	protected final Console console = ChatRoom.INSTANCE.console;
+	protected final Printable boldPrinter = (text, color) -> new BoldText(text, color).print(console);
 
 	private final Logger parent;
 	private final String name;
@@ -70,16 +75,22 @@ public class Logger {
 		printer.println(message, messageColor);
 	}
 
+	public void logBold(String message) {
+		printIdentifier();
+		new BoldText(message, messageColor).print(console);
+	}
+
 	private void printIdentifier() {
-		printer.print("[", bracketColor);
+		boldPrinter.print("[", bracketColor);
 		String[] names = getFullName().split("\\.");
 		for (int i = 0; i < names.length - 1; i++) {
 			String s = names[i];
-			printer.print(s, parentColor.interpolate(childColor, (double) i / (names.length - 1)));
-			printer.print(separator, separatorColor);
+			(boldHeader ? boldPrinter : printer).print(s,
+					parentColor.interpolate(childColor, (double) i / (names.length - 1)));
+			boldPrinter.print(separator, separatorColor);
 		}
-		printer.print(getName(), childColor);
-		printer.print("] ", bracketColor);
+		(boldHeader ? boldPrinter : printer).print(getName(), childColor);
+		boldPrinter.print("] ", bracketColor);
 
 	}
 
