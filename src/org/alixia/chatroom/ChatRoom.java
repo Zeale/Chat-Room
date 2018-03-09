@@ -27,6 +27,7 @@ import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.impl.guis.settings.ChatRoomGUI;
 import org.alixia.chatroom.impl.guis.settings.Settings;
 import org.alixia.chatroom.internet.Authentication;
+import org.alixia.chatroom.logging.Logger;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.BoldText;
@@ -50,23 +51,21 @@ public class ChatRoom {
 
 	public static final int DEFAULT_CALL_SAMPLE_RATE = 96000;
 	public static final int DEFAULT_CALL_PORT = 25369;
-
 	public static final int DEFAULT_AUTHENTICATION_PORT = Authentication.DEFAULT_AUTHENTICATION_PORT;
 	public static final String DEFAULT_AUTHENTICATION_SERVER = Authentication.DEFAULT_AUTHENTICATION_SERVER;
-
-	public static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
-			WARNING_COLOR = Color.GOLD;
 	public static final int DEFAULT_CHAT_PORT = 25000;
-
-	public static final ChatRoom INSTANCE = new ChatRoom();
 	public static final Color DEFAULT_WINDOW_BACKGROUND_COLOR = ChatRoomGUI.DEFAULT_WINDOW_BACKGROUND_COLOR,
 			DEFAULT_WINDOW_BORDER_COLOR = ChatRoomGUI.DEFAULT_WINDOW_BORDER_COLOR;
+	public static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
+			WARNING_COLOR = Color.GOLD;
+
+	public static final ChatRoom INSTANCE = new ChatRoom();
+
+	public static final Logger LOGGER = Logger.CHAT_ROOM_LOGGER;
 
 	public UserData userData;
-
 	private CallServer callServer;
 	private CallClient callClient;
-
 	private String username = "Unnamed";
 
 	private ChatRoomGUI gui;
@@ -109,14 +108,6 @@ public class ChatRoom {
 	public final ServerManager servers = new ServerManager();
 	public final LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
 
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
 	ChatRoom() {
 	}
 
@@ -124,8 +115,20 @@ public class ChatRoom {
 		commandManager.runCommand(command);
 	}
 
+	public CallClient getCallClient() {
+		return callClient;
+	}
+
+	public CallServer getCallServer() {
+		return callServer;
+	}
+
 	public ChatRoomGUI getGUI() {
 		return gui;
+	}
+
+	public String getUsername() {
+		return username;
 	}
 
 	public boolean isLoggedIn() {
@@ -185,6 +188,14 @@ public class ChatRoom {
 
 	}
 
+	public void setCallClient(CallClient callClient) {
+		this.callClient = callClient;
+	}
+
+	public void setCallServer(CallServer callServer) {
+		this.callServer = callServer;
+	}
+
 	void setStage(Stage stage) {
 		if (getGUI() != null)
 			throw new RuntimeException("Already initialized");
@@ -202,6 +213,10 @@ public class ChatRoom {
 
 		}
 
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	private void tryInit() {
@@ -309,22 +324,6 @@ public class ChatRoom {
 		println("You can close the program and discard this file, then open the new one with the new updates.",
 				Color.WHITE);
 
-	}
-
-	public CallServer getCallServer() {
-		return callServer;
-	}
-
-	public void setCallServer(CallServer callServer) {
-		this.callServer = callServer;
-	}
-
-	public CallClient getCallClient() {
-		return callClient;
-	}
-
-	public void setCallClient(CallClient callClient) {
-		this.callClient = callClient;
 	}
 
 }

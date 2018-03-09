@@ -293,20 +293,6 @@ public final class Commands {
 		@Override
 		protected void act(String name, String... args) {
 
-			if (args[0].equalsIgnoreCase("close")) {
-				if (callServer != null) {
-					try {
-						callServer.stop();
-					} catch (IOException e) {
-						println("A data streaming exception occurred while trying to close the server.", ERROR_COLOR);
-						e.printStackTrace();
-					}
-					ChatRoom.INSTANCE.setCallServer(null);
-				} else
-					println("You aren't hosting a call...", ERROR_COLOR);
-				return;
-			}
-
 			if (callServer != null) {
 				print("There is already an active server. Do ", ERROR_COLOR);
 				print("/" + name + " close ", Color.ORANGE);
@@ -319,6 +305,21 @@ public final class Commands {
 					printHelp("/" + name + " [port]",
 							"Starts a call server. This is a voice chatting server that others can join.",
 							"Running this command does not put you in the server; you must run   /call self   to join your own call.");
+					return;
+				}
+
+				if (args[0].equalsIgnoreCase("close")) {
+					if (callServer != null) {
+						try {
+							callServer.stop();
+						} catch (IOException e) {
+							println("A data streaming exception occurred while trying to close the server.",
+									ERROR_COLOR);
+							e.printStackTrace();
+						}
+						ChatRoom.INSTANCE.setCallServer(null);
+					} else
+						println("You aren't hosting a call...", ERROR_COLOR);
 					return;
 				}
 			}
