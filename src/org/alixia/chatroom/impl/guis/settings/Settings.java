@@ -30,9 +30,8 @@ public class Settings extends _SettingsWindowImpl {
 			FXTools.spawnLabelAtMousePos("Username not found", ChatRoom.ERROR_COLOR, this);
 		else if (result.errType == ErrorType.WRONG_PASSWORD)
 			FXTools.spawnLabelAtMousePos("Wrong password", ChatRoom.ERROR_COLOR, this);
-		
-		ChatRoom.userData = new UserData(username, result.sessionID);
 
+		ChatRoom.INSTANCE.userData = new UserData(username, result.sessionID);
 
 	}
 
