@@ -1799,9 +1799,9 @@ public class ChatRoom {
 	private void onUserSubmit() {
 		String text = input.getText();
 
-		if (commandManager.hasConsumer() && !text.contains("/"))
-			text = "/" + text;// This way, the user can type text without a slash for the next
-								// argument.
+		if (commandManager.hasConsumer()) {
+			commandManager.runCommand(text);
+		}
 
 		// We don't want to handle nothing...
 		if (text.isEmpty())

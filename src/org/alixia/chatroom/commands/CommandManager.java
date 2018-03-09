@@ -56,9 +56,14 @@ public class CommandManager {
 			return runCommand(input.substring(commandChar.length()), new String[0]);
 
 		// Handle args.
-		String cmd = input.substring(1, input.indexOf(" "));// 1 gets rid of '/'
+		String cmd = input.substring(hasConsumer() ? 0 : commandChar.length(), input.indexOf(" "));// 1 gets rid of '/'
 		String args = input.substring(input.indexOf(" ") + 1);
 		String[] argArr = args.split(" ");
+
+		if (hasConsumer()) {
+			consumers.pop().consume(cmd, args);
+			return true;
+		}
 		return runCommand(cmd, argArr);
 
 	}
@@ -87,6 +92,7 @@ public class CommandManager {
 	 *         this {@link CommandManager}, false otherwise.
 	 */
 	public boolean runCommand(String... args) {
+
 		String name;
 
 		// Get the command's name.
