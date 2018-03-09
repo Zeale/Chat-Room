@@ -7,7 +7,19 @@ import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.logging.Logger;
+
+import javafx.scene.paint.Color;
+
 public class CallServer {
+
+	public static final Logger LOGGER = new Logger("CallServer", ChatRoom.LOGGER);
+	static {
+		LOGGER.bracketColor = Color.RED;
+		LOGGER.separatorColor = LOGGER.parentColor = LOGGER.childColor = Color.AQUA;
+	}
+
 	private final ServerSocket socket;
 	private boolean run = true;
 
@@ -21,7 +33,8 @@ public class CallServer {
 			while (run)
 				try {
 					Socket connection = socket.accept();
-					System.out.println("SOUNDSERVER: Accepted the connection " + connection.getInetAddress());
+
+					LOGGER.log("Accepted the connection " + connection.getInetAddress());
 					new Thread(() -> {
 						try {
 							handleConnection(connection);
