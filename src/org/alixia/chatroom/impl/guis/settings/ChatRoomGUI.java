@@ -1,7 +1,6 @@
 package org.alixia.chatroom.impl.guis.settings;
 
-import static org.alixia.chatroom.impl.guis.settings.ChatRoomGUI.DEFAULT_NODE_ITEM_COLOR;
-import static org.alixia.chatroom.impl.guis.settings.ChatRoomGUI.DEFAULT_WINDOW_BORDER_COLOR;
+import static org.alixia.chatroom.ChatRoom.WARNING_COLOR;
 
 import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.fxtools.FXTools;
@@ -40,7 +39,6 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import static org.alixia.chatroom.ChatRoom.*;
 
 public final class ChatRoomGUI {
 
