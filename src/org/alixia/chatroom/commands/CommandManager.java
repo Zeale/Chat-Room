@@ -53,10 +53,14 @@ public class CommandManager {
 
 		// Handle no args.
 		if (!input.contains(" "))
-			return runCommand(input.substring(commandChar.length()), new String[0]);
+			if (input.isEmpty())
+				return runCommand("", new String[0]);
+			else
+				return runCommand(input.substring(hasConsumer() ? 0 : commandChar.length()), new String[0]);
 
 		// Handle args.
-		String cmd = input.substring(hasConsumer() ? 0 : commandChar.length(), input.indexOf(" "));// 1 gets rid of '/'
+		String cmd = input.substring(hasConsumer() ? 0 : commandChar.length(), input.indexOf(" "));
+
 		String args = input.substring(input.indexOf(" ") + 1);
 		String[] argArr = args.split(" ");
 

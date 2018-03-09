@@ -14,13 +14,14 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.UUID;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 
 import org.alixia.chatroom.api.Console;
+import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
+import org.alixia.chatroom.api.UserData;
 import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
@@ -112,10 +113,10 @@ public class ChatRoom {
 	public static final int DEFAULT_CHAT_PORT = 25000;
 
 	private String username = "Unnamed";
-	private UUID sessionID = null;
+	private UserData userData;
 
 	private boolean isLoggedIn() {
-		return sessionID != null;
+		return userData != null;
 	}
 
 	private final Printable printer = new Printable() {
@@ -630,7 +631,7 @@ public class ChatRoom {
 
 			commandManager.addCommand(new ChatRoomCommand() {
 
-				private String username, password;
+				private String accountName, password;
 				private final CommandConsumer usernameConsumer = new CommandConsumer() {
 
 					@Override
@@ -640,15 +641,15 @@ public class ChatRoom {
 
 						if (command.isEmpty()) {
 
-							if (username == null)
+							if (accountName == null)
 								println("Please enter a username.", ERROR_COLOR);
 							else if (password == null)
 								println("Please enter a password.", ERROR_COLOR);
 							addConsumer(this);
 							return;
 						}
-						if (username == null) {
-							username = command;
+						if (accountName == null) {
+							accountName = command;
 							if (args.length > 0)
 								password = args[0];
 							else
@@ -665,7 +666,7 @@ public class ChatRoom {
 					public void run() {
 						LoginResult result;
 						try {
-							result = Authentication.getDefaultAuthenticationMethod().login(username, password);
+							result = Authentication.getDefaultAuthenticationMethod().login(accountName, password);
 						} catch (IOException e) {
 							e.printStackTrace();
 							println("An error occurred while trying to log in.", ERROR_COLOR);
@@ -689,10 +690,9 @@ public class ChatRoom {
 							return;
 						}
 
-						ChatRoom.this.username = username;
-						sessionID = result.sessionID;
+						ChatRoom.this.userData = new UserData(accountName, result.sessionID);
 
-						username = null;
+						accountName = null;
 						password = null;
 
 					}
@@ -713,7 +713,7 @@ public class ChatRoom {
 							println("Please enter a password:", INFO_COLOR);
 							addConsumer(usernameConsumer);
 						}
-						username = args[0];
+						accountName = args[0];
 					} else {
 						println("Please enter a username:", INFO_COLOR);
 						addConsumer(usernameConsumer);
@@ -1212,6 +1212,12 @@ public class ChatRoom {
 							return;
 						}
 
+						if (isLoggedIn()) {
+							println("You can't change your name if you're logged in.", ERROR_COLOR);
+							println("This feature may be released in a later update.", INFO_COLOR);
+							return;
+						}
+
 						if (args.length > 1)
 							println("You gave me too many arguments, so I'll just use the first one... That will be your name.....",
 									ERROR_COLOR);
@@ -1594,7 +1600,7 @@ public class ChatRoom {
 						protected void act(String name, String... args) {
 							if (args.length > 0 && equalsHelp(args[0])) {
 								printHelp("/new " + name + " (host-name) [port] (client-name)", "Creates a new " + name
-										+ " given a (host-name), optionally a [port], and a (client-name).");
+										+ " given a (host-name), optionally, a [port], and a (client-name).");
 								return;
 							}
 							if (args.length < 2) {
@@ -1633,6 +1639,10 @@ public class ChatRoom {
 									}
 
 									client = new Client(hostname, port, clientName);
+
+									if (isLoggedIn()) {
+										client.sendObject(userData);
+									}
 
 									// TODO The case of a taken name should be handled before the client is created.
 									if (!clients.addItem(client)) {
@@ -1799,21 +1809,13 @@ public class ChatRoom {
 	private void onUserSubmit() {
 		String text = input.getText();
 
-		if (commandManager.hasConsumer()) {
-			commandManager.runCommand(text);
-		}
-
-		// We don't want to handle nothing...
-		if (text.isEmpty())
-			return;
-
-		// Given command.
-		if (text.startsWith("/") && !commandManager.runCommand(text)) {
-			println("That command was not recognized.", Color.AQUA);
-		}
-		// Given message.
-		else
-			sendText(text);
+		if (!commandManager.runCommand(text))
+			if (text.isEmpty())
+				return;
+			else if (text.startsWith(commandManager.getCommandChar()))
+				println("That command was not recognized.", Color.AQUA);
+			else
+				sendText(text);
 
 		input.setText("");
 	}
@@ -1841,7 +1843,7 @@ public class ChatRoom {
 
 		TRY_DOWNLOAD: {
 			// Windows
-			if (System.getProperty("os.name").toLowerCase().startsWith("win"))
+			if (OS.getOS() == OS.WINDOWS)
 				try (InputStream is = new URL("http://dusttoash.org/chat-room/ChatRoom.jar").openStream()) {
 					Files.copy(is, new File(System.getProperty("user.home") + "\\Desktop\\ChatRoom.jar").toPath(),
 							StandardCopyOption.REPLACE_EXISTING);
