@@ -1,8 +1,2 @@
-0.1.7:
+0.1.8:
 
-+ Added audio calling
-+ Added Authentication Servers and accounts (Working, but buggy feature).
-~ Remodeled program framework
-+ Added a Settings page
-+ Added some developer things
-~ Forgot all the other features that were added in this update.
