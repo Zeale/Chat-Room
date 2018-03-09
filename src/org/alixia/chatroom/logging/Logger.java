@@ -87,7 +87,7 @@ public final class Logger {
 			String s = names[i];
 			(boldHeader ? boldPrinter : printer).print(s,
 					parentColor.interpolate(childColor, (double) i / (names.length - 1)));
-			boldPrinter.print(separator, separatorColor);
+			(boldHeader ? boldPrinter : printer).print(separator, separatorColor);
 		}
 		(boldHeader ? boldPrinter : printer).print(getName(), childColor);
 		boldPrinter.print("] ", bracketColor);
