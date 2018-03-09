@@ -3,6 +3,7 @@ package org.alixia.chatroom.impl.guis.settings;
 import java.io.IOException;
 
 import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.fxtools.FXTools;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.internet.authmethods.AppAuthMethodImpl;
 
@@ -44,6 +45,7 @@ public class _AdvancedSettingsImpl {
 	{
 
 		stage.setScene(scene);
+		stage.setAlwaysOnTop(true);
 
 		scene.setFill(Color.TRANSPARENT);
 		root.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
@@ -109,6 +111,7 @@ public class _AdvancedSettingsImpl {
 					stage.close();
 				} catch (IOException e) {
 					e.printStackTrace();
+					FXTools.spawnLabelAtMousePos("Failed to start server.", ChatRoom.ERROR_COLOR, stage);
 				}
 			}
 		});

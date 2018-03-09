@@ -44,7 +44,7 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 			return reply.success == Success.SUCCESS ? new LoginResult(reply.sessionID, null)
 					: new LoginResult(null,
 							reply.success == Success.USERNAME_NOT_FOUND ? LoginResult.ErrorType.USERNAME_NOT_FOUND
-									: LoginResult.ErrorType.WRONG_USERNAME);
+									: LoginResult.ErrorType.WRONG_PASSWORD);
 
 		} catch (SocketTimeoutException e) {
 			// Catch timeouts

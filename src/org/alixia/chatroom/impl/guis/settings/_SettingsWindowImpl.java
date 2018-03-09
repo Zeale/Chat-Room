@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.items.LateLoadItem;
+import org.alixia.chatroom.fxtools.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
@@ -156,9 +157,12 @@ abstract class _SettingsWindowImpl extends Stage {
 		// Login impl
 		login.setOnAction(event -> {
 			try {
-				handleLogin(usernameInput.getText(), passwordInput.getText());
+				if (!handleLogin(usernameInput.getText(), passwordInput.getText()))
+					FXTools.spawnLabelAtMousePos("Failure; server already exists", ChatRoom.ERROR_COLOR,
+							_SettingsWindowImpl.this);
 			} catch (IOException e) {
-				// TODO Notify user
+				FXTools.spawnLabelAtMousePos("An error occurred...", ChatRoom.ERROR_COLOR, _SettingsWindowImpl.this);
+				e.printStackTrace();
 			}
 		});
 

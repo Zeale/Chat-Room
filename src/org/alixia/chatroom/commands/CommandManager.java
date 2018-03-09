@@ -9,6 +9,9 @@ public class CommandManager {
 
 	private Stack<CommandConsumer> consumers = new Stack<>();
 
+	public CommandManager() {
+	}
+
 	public void addCommand(Command command) {
 		if (commands.contains(command))
 			return;
@@ -60,6 +63,20 @@ public class CommandManager {
 	}
 
 	/**
+	 * Text sent through this method gets sent straight to the next consumer, if
+	 * there is one. Otherwise, this method returns <code>false</code>.
+	 * 
+	 * @param text
+	 *            The raw user input given.
+	 * @return <code>true</code> if the text was handled. <code>false</code>
+	 *         otherwise.
+	 */
+	public boolean sendText(String text) {
+		// TODO Implement
+		return false;
+	}
+
+	/**
 	 * Runs a command where the command's name is the first item in the string array
 	 * and the command's arguments are the remaining items in the string array.
 	 * 
@@ -92,5 +109,9 @@ public class CommandManager {
 		// Stack can have dupes, in case consumption is wanted twice. Command list can't
 		// have dupes.
 		consumers.push(consumer);
+	}
+
+	public boolean hasConsumer() {
+		return !consumers.isEmpty();
 	}
 }

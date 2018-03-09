@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
@@ -39,6 +40,7 @@ import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
 import org.alixia.chatroom.impl.guis.settings.Settings;
 import org.alixia.chatroom.internet.Authentication;
+import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
@@ -110,6 +112,11 @@ public class ChatRoom {
 	public static final int DEFAULT_CHAT_PORT = 25000;
 
 	private String username = "Unnamed";
+	private UUID sessionID = null;
+
+	private boolean isLoggedIn() {
+		return sessionID != null;
+	}
 
 	private final Printable printer = new Printable() {
 
@@ -620,6 +627,99 @@ public class ChatRoom {
 						println(s, SUCCESS_COLOR);
 				}
 			}
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				private String username, password;
+				private final CommandConsumer usernameConsumer = new CommandConsumer() {
+
+					@Override
+					public void consume(String command, String... args) {
+						if (command.equals("cancel") && args.length == 0)
+							return;
+
+						if (command.isEmpty()) {
+
+							if (username == null)
+								println("Please enter a username.", ERROR_COLOR);
+							else if (password == null)
+								println("Please enter a password.", ERROR_COLOR);
+							addConsumer(this);
+							return;
+						}
+						if (username == null) {
+							username = command;
+							if (args.length > 0)
+								password = args[0];
+							else
+								addConsumer(this);
+						} else if (password == null)
+							password = command;
+
+					}
+				};
+
+				private final Runnable login = new Runnable() {
+
+					@Override
+					public void run() {
+						LoginResult result;
+						try {
+							result = Authentication.getDefaultAuthenticationMethod().login(username, password);
+						} catch (IOException e) {
+							e.printStackTrace();
+							println("An error occurred while trying to log in.", ERROR_COLOR);
+							return;
+						}
+
+						if (result.sessionID == null) {
+							switch (result.errType) {
+							case TIMEOUT:
+								println("The server could not be connected to.", ERROR_COLOR);
+								break;
+							case USERNAME_NOT_FOUND:
+								println("That username was not found by the server.", ERROR_COLOR);
+								break;
+							case WRONG_PASSWORD:
+								println("That password was invalid.", ERROR_COLOR);
+								break;
+							default:
+								break;
+							}
+							return;
+						}
+
+						ChatRoom.this.username = username;
+						sessionID = result.sessionID;
+
+						username = null;
+						password = null;
+
+					}
+				};
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("login");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length > 0) {
+						if (args.length > 1) {
+							password = args[1];
+							login.run();
+						} else {
+							println("Please enter a password:", INFO_COLOR);
+							addConsumer(usernameConsumer);
+						}
+						username = args[0];
+					} else {
+						println("Please enter a username:", INFO_COLOR);
+						addConsumer(usernameConsumer);
+					}
+				}
+			});
 
 			commandManager.addCommand(new ChatRoomCommand() {
 
@@ -1699,6 +1799,11 @@ public class ChatRoom {
 	private void onUserSubmit() {
 		String text = input.getText();
 
+		if (commandManager.hasConsumer()) {
+			commandManager.runCommand("/" + text);// This way, the user can type text without a slash for the next
+													// argument.
+			return;
+		}
 		// We don't want to handle nothing...
 		if (text.isEmpty())
 			return;

@@ -27,7 +27,7 @@ public abstract class AuthenticationMethod {
 		}
 
 		public enum ErrorType {
-			USERNAME_NOT_FOUND, WRONG_USERNAME, TIMEOUT;
+			USERNAME_NOT_FOUND, WRONG_PASSWORD, TIMEOUT;
 		}
 	}
 
