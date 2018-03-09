@@ -9,7 +9,27 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
+
 class ServerClient {
+
+	private String username, accountName;
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getAccountName() {
+		return accountName;
+	}
+
+	public void setAccountName(String accountName) {
+		this.accountName = accountName;
+	}
 
 	private boolean connectionClosed;
 
@@ -105,8 +125,17 @@ class ServerClient {
 		}
 	}
 
+	/**
+	 * Sends a text message to the client as the server.
+	 * 
+	 * @param message
+	 *            The message to send.
+	 * @throws IOException
+	 *             If an {@link IOException} occurs, as thrown by
+	 *             {@link #sendObject(Serializable)}.
+	 */
 	public void sendMessage(final String message) throws IOException {
-		sendObject(message);
+		sendObject(new BasicServerMessage(message));
 	}
 
 	public void sendObject(final Serializable object) throws SocketException, RuntimeException {

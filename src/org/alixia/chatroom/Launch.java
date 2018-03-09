@@ -5,6 +5,8 @@ import javafx.stage.Stage;
 
 public class Launch extends Application {
 
+	public final static long STARTUP_TIME = System.currentTimeMillis();
+
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		new ChatRoom(primaryStage);

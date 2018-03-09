@@ -8,10 +8,13 @@ import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alixia.chatroom.api.UserData;
 import org.alixia.chatroom.connections.messages.Message;
 import org.alixia.chatroom.connections.messages.ReplyMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
+import org.alixia.chatroom.internet.Authentication;
+import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.AuthenticationResult;
 
 public class Server extends NamedObject {
 
@@ -76,6 +79,29 @@ public class Server extends NamedObject {
 							client.getListener().connectionClosed();
 						} catch (Exception e) {
 						}
+					} else if (object instanceof UserData) {
+						UserData userData = (UserData) object;
+						try {
+							AuthenticationResult auth = Authentication.getDefaultAuthenticationMethod()
+									.authenticate(userData.username, userData.sessionID);
+							if (auth.verified) {
+								client.setAccountName(userData.username);
+								client.setUsername(userData.username);
+								client.sendMessage("Successfully verified your login information.");
+							} else {
+								client.sendMessage("Your login information was incorrect...");
+							}
+
+						} catch (IOException e) {
+							e.printStackTrace();
+							try {
+								client.sendObject(new BasicServerMessage(
+										"The server was unable to connect to its authentication server to verify your login information."));
+							} catch (SocketException | RuntimeException e1) {
+								e1.printStackTrace();
+							}
+						}
+
 					}
 				}
 

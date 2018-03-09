@@ -9,11 +9,28 @@ public class CommandManager {
 
 	private Stack<CommandConsumer> consumers = new Stack<>();
 
+	public CommandManager() {
+	}
+
 	public void addCommand(Command command) {
 		if (commands.contains(command))
 			return;
 		command.setManager(this);
 		commands.add(command);
+	}
+
+	private String commandChar = "/";
+
+	public String getCommandChar() {
+		return commandChar;
+	}
+
+	public void setCommandChar(String commandChar) {
+		this.commandChar = commandChar;
+	}
+
+	public CommandManager(String commandChar) {
+		this.commandChar = commandChar;
 	}
 
 	/**
@@ -36,12 +53,21 @@ public class CommandManager {
 
 		// Handle no args.
 		if (!input.contains(" "))
-			return runCommand(input.substring(1), new String[0]);
+			if (input.isEmpty())
+				return runCommand("", new String[0]);
+			else
+				return runCommand(input.substring(hasConsumer() ? 0 : commandChar.length()), new String[0]);
 
 		// Handle args.
-		String cmd = input.substring(1, input.indexOf(" "));// 1 gets rid of '/'
+		String cmd = input.substring(hasConsumer() ? 0 : commandChar.length(), input.indexOf(" "));
+
 		String args = input.substring(input.indexOf(" ") + 1);
 		String[] argArr = args.split(" ");
+
+		if (hasConsumer()) {
+			consumers.pop().consume(cmd, args);
+			return true;
+		}
 		return runCommand(cmd, argArr);
 
 	}
@@ -70,6 +96,7 @@ public class CommandManager {
 	 *         this {@link CommandManager}, false otherwise.
 	 */
 	public boolean runCommand(String... args) {
+
 		String name;
 
 		// Get the command's name.
@@ -92,5 +119,9 @@ public class CommandManager {
 		// Stack can have dupes, in case consumption is wanted twice. Command list can't
 		// have dupes.
 		consumers.push(consumer);
+	}
+
+	public boolean hasConsumer() {
+		return !consumers.isEmpty();
 	}
 }

@@ -19,9 +19,13 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 
 import org.alixia.chatroom.api.Console;
+import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
+import org.alixia.chatroom.api.UserData;
+import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
+import org.alixia.chatroom.commands.CommandConsumer;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.Client;
 import org.alixia.chatroom.connections.ClientManager;
@@ -32,12 +36,16 @@ import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
+import org.alixia.chatroom.fxtools.FXTools;
 import org.alixia.chatroom.fxtools.Resizable;
 import org.alixia.chatroom.fxtools.ResizeOperator;
-import org.alixia.chatroom.resources.fxnodes.FXTools;
+import org.alixia.chatroom.impl.guis.settings.Settings;
+import org.alixia.chatroom.internet.Authentication;
+import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BasicUserText;
+import org.alixia.chatroom.texts.BoldText;
 import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
@@ -79,9 +87,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-//TODO Later, I MIGHT put all the GUI nodes into a local class which in turn would go in the tryInit method (or something similar) and instantiate the console object when it has visibility of the nodes. Although this would severly decrease the clutter in my IDE, it would pose the problem of having GUI nodes not be accessible by the rest of the ChatRoom class, as they would be hidden in the local class, so commands will not be able to manipulate the nodes in the future without some serious remodeling.
-//Also, this class is about 1530 lines. 90% of that is probably the commands...
-//TODO Add users
 /**
  * 
  * @author Zeale
@@ -89,21 +94,30 @@ import javafx.util.Duration;
  */
 public class ChatRoom {
 
-	private static final int DEFAULT_CALL_SAMPLE_RATE = 96000;
-	private static final int DEFAULT_CALL_PORT = 25369;
+	public static final int DEFAULT_CALL_SAMPLE_RATE = 96000;
+	public static final int DEFAULT_CALL_PORT = 25369;
+
+	public static final int DEFAULT_AUTHENTICATION_PORT = Authentication.DEFAULT_AUTHENTICATION_PORT;
+	public static final String DEFAULT_AUTHENTICATION_SERVER = Authentication.DEFAULT_AUTHENTICATION_SERVER;
+
 	private CallServer callServer;
 	private CallClient callClient;
 
 	public static final Color ERROR_COLOR = Color.RED, INFO_COLOR = Color.LIGHTBLUE, SUCCESS_COLOR = Color.GREEN,
 			WARNING_COLOR = Color.GOLD;
 
-	private static final Color WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
-			NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), NODE_ITEM_COLOR = Color.DARKGRAY,
-			WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
+	public static final Color DEFAULT_WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
+			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
+			DEFAULT_WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
 
-	private static final int DEFAULT_PORT = 25000;
+	public static final int DEFAULT_CHAT_PORT = 25000;
 
 	private String username = "Unnamed";
+	public static UserData userData;
+
+	private boolean isLoggedIn() {
+		return userData != null;
+	}
 
 	private final Printable printer = new Printable() {
 
@@ -158,6 +172,7 @@ public class ChatRoom {
 	private final CommandManager commandManager = new CommandManager();
 	private final ClientManager clients = new ClientManager(clientListener);
 	private final ServerManager servers = new ServerManager();
+	private final LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
 
 	ChatRoom(Stage stage) {
 		this.stage = stage;
@@ -165,8 +180,8 @@ public class ChatRoom {
 		stage.setWidth(800);
 		stage.setHeight(600);
 
-		flow.setBackground(FXTools.getBackgroundFromColor(NODE_OUTPUT_COLOR));
-		input.setBackground(FXTools.getBackgroundFromColor(NODE_OUTPUT_COLOR));
+		flow.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
+		input.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
 		input.setStyle("-fx-text-fill: darkgray; ");
 
 		AnchorPane.setLeftAnchor(flowWrapper, 50d);
@@ -189,7 +204,7 @@ public class ChatRoom {
 		input.setMaxHeight(200);
 
 		// Add a ScrollPane to wrap flow
-		contentWrapper.setBackground(FXTools.getBackgroundFromColor(WINDOW_BACKGROUND_COLOR));
+		contentWrapper.setBackground(FXTools.getBackgroundFromColor(DEFAULT_WINDOW_BACKGROUND_COLOR));
 
 		scene = new Scene(root);
 
@@ -208,12 +223,9 @@ public class ChatRoom {
 	}
 
 	private void addBorder() {
-		final Color ITEM_COLOR = ChatRoom.NODE_ITEM_COLOR, BACKGROUND_COLOR = WINDOW_BORDER_COLOR;
+		final Color ITEM_COLOR = ChatRoom.DEFAULT_NODE_ITEM_COLOR, BACKGROUND_COLOR = DEFAULT_WINDOW_BORDER_COLOR;
 
 		StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
-
-		Border border = new Border(
-				new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 8, 2)));
 
 		close.setPrefSize(26, 26);
 		minimize.setPrefSize(26, 26);
@@ -488,6 +500,10 @@ public class ChatRoom {
 			menuBar.setAlignment(Pos.CENTER_RIGHT);
 		else
 			menuBar.setAlignment(Pos.CENTER_LEFT);
+
+		Border border = new Border(
+				new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 2, 2)));
+
 		// Root
 		root.setBorder(border);
 		root.setTop(menuBar);
@@ -536,8 +552,7 @@ public class ChatRoom {
 			}
 
 			public void removeBar() {
-				root.setBorder(
-						new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+				root.setBorder(border);
 			}
 
 			@Override
@@ -613,6 +628,208 @@ public class ChatRoom {
 						println(s, SUCCESS_COLOR);
 				}
 			}
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					// Not ignorecase
+					return equalsAny(name, "auth-server", "authserver");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length == 0)
+						println(Authentication.getDefaultAuthenticationMethod().toString(), Color.DARKORANGE);
+					else {
+						String subcommand = args[0];
+						if (subcommand.equalsIgnoreCase("add")) {
+							if (args.length < 3) {
+								print("Usage: ", ERROR_COLOR);
+								println("/" + name + " " + subcommand + " (username) (password)", ERROR_COLOR);
+								return;
+							}
+							try {
+								Authentication.getAuthServer().addUser(args[1], args[2]);
+								println("Successfully added " + args[1], SUCCESS_COLOR);
+							} catch (Exception e) {
+								println("An error occurred while trying to add " + args[1], ERROR_COLOR);
+								return;
+							}
+						} else if (subcommand.equalsIgnoreCase("save")) {
+							if (args.length < 2) {
+								print("Usage: ", ERROR_COLOR);
+								println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
+								return;
+							}
+							File file = new File(args[1]);
+							if (file.exists())
+								file.delete();
+							try {
+								Authentication.getAuthServer().store(file);
+							} catch (IOException e) {
+								println("Failed to create the file: " + file.getAbsolutePath() + "."
+										+ (file.exists() ? " Note that this is probably NOT because the file exists."
+												: ""),
+										ERROR_COLOR);
+								e.printStackTrace();
+								return;
+							} catch (Exception e) {
+								println("Failed to print data to the file: " + file.getAbsolutePath(), ERROR_COLOR);
+								return;
+							}
+							println("Successfully printed the user data to the file, " + file.getAbsolutePath(),
+									SUCCESS_COLOR);
+						}
+					}
+				}
+			});
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				private String accountName, password;
+				private final CommandConsumer usernameConsumer = new CommandConsumer() {
+
+					@Override
+					public void consume(String command, String... args) {
+						if (command.equals("cancel") && args.length == 0)
+							return;
+
+						if (command.isEmpty()) {
+
+							if (accountName == null)
+								println("Please enter a username.", ERROR_COLOR);
+							else if (password == null)
+								println("Please enter a password.", ERROR_COLOR);
+							addConsumer(this);
+							return;
+						}
+						if (accountName == null) {
+							accountName = command;
+							if (args.length > 0)
+								password = args[0];
+							else
+								addConsumer(this);
+						} else if (password == null)
+							password = command;
+
+					}
+				};
+
+				private final Runnable login = new Runnable() {
+
+					@Override
+					public void run() {
+						LoginResult result;
+						try {
+							result = Authentication.getDefaultAuthenticationMethod().login(accountName, password);
+						} catch (IOException e) {
+							e.printStackTrace();
+							println("An error occurred while trying to log in.", ERROR_COLOR);
+							return;
+						}
+
+						if (result.sessionID == null) {
+							switch (result.errType) {
+							case TIMEOUT:
+								println("The server could not be connected to.", ERROR_COLOR);
+								break;
+							case USERNAME_NOT_FOUND:
+								println("That username was not found by the server.", ERROR_COLOR);
+								break;
+							case WRONG_PASSWORD:
+								println("That password was invalid.", ERROR_COLOR);
+								break;
+							default:
+								break;
+							}
+							return;
+						}
+
+						ChatRoom.userData = new UserData(accountName, result.sessionID);
+
+						accountName = null;
+						password = null;
+
+					}
+				};
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("login");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length > 0) {
+						if (args.length > 1) {
+							password = args[1];
+							login.run();
+						} else {
+							println("Please enter a password:", INFO_COLOR);
+							addConsumer(usernameConsumer);
+						}
+						accountName = args[0];
+					} else {
+						println("Please enter a username:", INFO_COLOR);
+						addConsumer(usernameConsumer);
+					}
+				}
+			});
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
+				@Override
+				protected boolean match(String name) {
+					return name.equalsIgnoreCase("settings");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length > 0) {
+						if (equalsHelp(args[0])) {
+							printHelp("/" + name,
+									"Opens up the settings window. This allows you to customize program settings and/or login.");
+							println("Would you like to open the settings window? (Y/N)", INFO_COLOR);
+							addConsumer(new CommandConsumer() {
+
+								@Override
+								public void consume(String command, String... args) {
+									if (equalsAnyIgnoreCase(command, "yes", "y")) {
+										println("Opening settings window...", SUCCESS_COLOR);
+										// Try block is *currently* useless
+										try {
+											openSettingsWindow();
+										} catch (Exception e) {
+											println("Failed to open window...", ERROR_COLOR);
+										}
+										return;
+									} else if (equalsAnyIgnoreCase(command, "no", "n")) {
+										println("Ok.", INFO_COLOR);
+										return;
+									} else {
+										print("Unknown answer. Please enter either ", ERROR_COLOR);
+										print("/Yes", SUCCESS_COLOR);
+										print(" or ", ERROR_COLOR);
+										print("/No", SUCCESS_COLOR);
+										println(".", ERROR_COLOR);
+										addConsumer(this);
+										return;
+									}
+								}
+							});
+						}
+					} else {
+						println("Opening settings window...", SUCCESS_COLOR);
+						// Try block is *currently* useless
+						try {
+							openSettingsWindow();
+						} catch (Exception e) {
+							println("Failed to open window...", ERROR_COLOR);
+						}
+					}
+				}
+			});
 
 			commandManager.addCommand(new ChatRoomCommand() {
 
@@ -1051,6 +1268,12 @@ public class ChatRoom {
 							return;
 						}
 
+						if (isLoggedIn()) {
+							println("You can't change your name if you're logged in.", ERROR_COLOR);
+							println("This feature may be released in a later update.", INFO_COLOR);
+							return;
+						}
+
 						if (args.length > 1)
 							println("You gave me too many arguments, so I'll just use the first one... That will be your name.....",
 									ERROR_COLOR);
@@ -1383,11 +1606,11 @@ public class ChatRoom {
 						println("/new ...", Color.CRIMSON);
 						printBasicHelp("\tclient (server-address) [port] (client-name)",
 								"Creates a new client. The client will be connected to the server specified by (server-address). The port is optional and defaults to "
-										+ DEFAULT_PORT
+										+ DEFAULT_CHAT_PORT
 										+ ". The (client-name) is required and can be used to refer to the new client later.");
 						printBasicHelp("\tserver [port] (server-name)",
 								"Creates a new server with the given port. Do note that your router's firewall (if there is one) will likely block any incoming connections to your computer on any port, unless you port forward. The [port] is optional and defaults to "
-										+ DEFAULT_PORT + ".");
+										+ DEFAULT_CHAT_PORT + ".");
 						break;
 					default:
 						println("There is no help available for that page...", ERROR_COLOR);
@@ -1433,7 +1656,7 @@ public class ChatRoom {
 						protected void act(String name, String... args) {
 							if (args.length > 0 && equalsHelp(args[0])) {
 								printHelp("/new " + name + " (host-name) [port] (client-name)", "Creates a new " + name
-										+ " given a (host-name), optionally a [port], and a (client-name).");
+										+ " given a (host-name), optionally, a [port], and a (client-name).");
 								return;
 							}
 							if (args.length < 2) {
@@ -1452,7 +1675,7 @@ public class ChatRoom {
 							} else {
 
 								final String hostname = args[0];
-								int port = DEFAULT_PORT;
+								int port = DEFAULT_CHAT_PORT;
 								final String clientName;
 
 								try {
@@ -1472,6 +1695,10 @@ public class ChatRoom {
 									}
 
 									client = new Client(hostname, port, clientName);
+
+									if (isLoggedIn()) {
+										client.sendObject(userData);
+									}
 
 									// TODO The case of a taken name should be handled before the client is created.
 									if (!clients.addItem(client)) {
@@ -1544,7 +1771,7 @@ public class ChatRoom {
 
 								} // Handle 1 arg (name)
 								else {
-									port = DEFAULT_PORT;
+									port = DEFAULT_CHAT_PORT;
 									serverName = args[0];
 								}
 
@@ -1600,6 +1827,9 @@ public class ChatRoom {
 
 		}
 		println("Done!", SUCCESS_COLOR);
+		print("Startup took ", SUCCESS_COLOR);
+		new BoldText("" + (System.currentTimeMillis() - Launch.STARTUP_TIME) + " ", Color.FIREBRICK).print(console);
+		println("milliseconds!", SUCCESS_COLOR);
 
 		print("Connect to a server with ", Color.RED);
 		print("/new client (hostname) [port] (client-name) ", Color.GREEN);
@@ -1635,20 +1865,13 @@ public class ChatRoom {
 	private void onUserSubmit() {
 		String text = input.getText();
 
-		// We don't want to handle nothing...
-		if (text.isEmpty())
-			return;
-
-		// Given command.
-		if (text.startsWith("/")) {
-			// We only want to notify the user if the command was not recognized.
-			if (!commandManager.runCommand(text))
+		if (!commandManager.runCommand(text))
+			if (text.isEmpty())
+				return;
+			else if (text.startsWith(commandManager.getCommandChar()))
 				println("That command was not recognized.", Color.AQUA);
-		}
-		// Given message.
-		else {
-			sendText(text);
-		}
+			else
+				sendText(text);
 
 		input.setText("");
 	}
@@ -1676,7 +1899,7 @@ public class ChatRoom {
 
 		TRY_DOWNLOAD: {
 			// Windows
-			if (System.getProperty("os.name").toLowerCase().startsWith("win"))
+			if (OS.getOS() == OS.WINDOWS)
 				try (InputStream is = new URL("http://dusttoash.org/chat-room/ChatRoom.jar").openStream()) {
 					Files.copy(is, new File(System.getProperty("user.home") + "\\Desktop\\ChatRoom.jar").toPath(),
 							StandardCopyOption.REPLACE_EXISTING);
@@ -1733,6 +1956,10 @@ public class ChatRoom {
 
 	private void executeCommand(String command) {
 		commandManager.runCommand(command);
+	}
+
+	private void openSettingsWindow() {
+		settingsInstance.get().show();
 	}
 
 }

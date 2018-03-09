@@ -4,7 +4,6 @@ import org.alixia.chatroom.api.Console;
 
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 public class BasicInfoText extends ConsoleText {
 
