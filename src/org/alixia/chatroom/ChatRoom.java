@@ -85,7 +85,7 @@ public class ChatRoom {
 		}
 	};
 
-	public final Console console = text -> getGUI().flow.getChildren().add(text);
+	public final Console console = text -> Platform.runLater(() -> getGUI().flow.getChildren().add(text));
 
 	private final ConnectionListener clientListener = new ConnectionListener() {
 
