@@ -1799,25 +1799,21 @@ public class ChatRoom {
 	private void onUserSubmit() {
 		String text = input.getText();
 
-		if (commandManager.hasConsumer()) {
-			commandManager.runCommand("/" + text);// This way, the user can type text without a slash for the next
-													// argument.
-			return;
-		}
+		if (commandManager.hasConsumer() && !text.contains("/"))
+			text = "/" + text;// This way, the user can type text without a slash for the next
+								// argument.
+
 		// We don't want to handle nothing...
 		if (text.isEmpty())
 			return;
 
 		// Given command.
-		if (text.startsWith("/")) {
-			// We only want to notify the user if the command was not recognized.
-			if (!commandManager.runCommand(text))
-				println("That command was not recognized.", Color.AQUA);
+		if (text.startsWith("/") && !commandManager.runCommand(text)) {
+			println("That command was not recognized.", Color.AQUA);
 		}
 		// Given message.
-		else {
+		else
 			sendText(text);
-		}
 
 		input.setText("");
 	}

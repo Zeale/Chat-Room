@@ -19,6 +19,20 @@ public class CommandManager {
 		commands.add(command);
 	}
 
+	private String commandChar = "/";
+
+	public String getCommandChar() {
+		return commandChar;
+	}
+
+	public void setCommandChar(String commandChar) {
+		this.commandChar = commandChar;
+	}
+
+	public CommandManager(String commandChar) {
+		this.commandChar = commandChar;
+	}
+
 	/**
 	 * This method operates assuming the precondition that the first character of
 	 * the trimmed value of <code>rawInput</code> is "<code>/</code>". If such is
@@ -39,7 +53,7 @@ public class CommandManager {
 
 		// Handle no args.
 		if (!input.contains(" "))
-			return runCommand(input.substring(1), new String[0]);
+			return runCommand(input.substring(commandChar.length()), new String[0]);
 
 		// Handle args.
 		String cmd = input.substring(1, input.indexOf(" "));// 1 gets rid of '/'
@@ -59,20 +73,6 @@ public class CommandManager {
 				c.act(cmd, args);
 				return true;
 			}
-		return false;
-	}
-
-	/**
-	 * Text sent through this method gets sent straight to the next consumer, if
-	 * there is one. Otherwise, this method returns <code>false</code>.
-	 * 
-	 * @param text
-	 *            The raw user input given.
-	 * @return <code>true</code> if the text was handled. <code>false</code>
-	 *         otherwise.
-	 */
-	public boolean sendText(String text) {
-		// TODO Implement
 		return false;
 	}
 
