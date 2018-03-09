@@ -55,6 +55,9 @@ import javafx.scene.text.Text;
 
 public final class Commands {
 
+	// Literally everything in this class is implementation specific, so it
+	// DEFINITELY belongs in this impl class.
+
 	/**
 	 * This is actually, conveniently, used to load this class (and, thus, all of
 	 * the commands) at startup.
