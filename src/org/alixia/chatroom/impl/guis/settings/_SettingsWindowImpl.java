@@ -155,16 +155,7 @@ abstract class _SettingsWindowImpl extends Stage {
 		settingsBox.getChildren().addAll(loginWrapper);
 
 		// Login impl
-		login.setOnAction(event -> {
-			try {
-				if (!handleLogin(usernameInput.getText(), passwordInput.getText()))
-					FXTools.spawnLabelAtMousePos("Failure; server already exists", ChatRoom.ERROR_COLOR,
-							_SettingsWindowImpl.this);
-			} catch (IOException e) {
-				FXTools.spawnLabelAtMousePos("An error occurred...", ChatRoom.ERROR_COLOR, _SettingsWindowImpl.this);
-				e.printStackTrace();
-			}
-		});
+		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
 
 		// Handle Ctrl+Alt+Shift+D; this will open the advanced settings window.
 		root.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
@@ -196,6 +187,6 @@ abstract class _SettingsWindowImpl extends Stage {
 	public _SettingsWindowImpl() {
 	}
 
-	public abstract boolean handleLogin(String username, String password) throws IOException;
+	public abstract void handleLogin(String username, String password);
 
 }

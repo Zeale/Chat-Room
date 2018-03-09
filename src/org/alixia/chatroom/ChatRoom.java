@@ -113,7 +113,7 @@ public class ChatRoom {
 	public static final int DEFAULT_CHAT_PORT = 25000;
 
 	private String username = "Unnamed";
-	private UserData userData;
+	public static UserData userData;
 
 	private boolean isLoggedIn() {
 		return userData != null;
@@ -631,6 +631,62 @@ public class ChatRoom {
 
 			commandManager.addCommand(new ChatRoomCommand() {
 
+				@Override
+				protected boolean match(String name) {
+					// Not ignorecase
+					return equalsAny(name, "auth-server", "authserver");
+				}
+
+				@Override
+				protected void act(String name, String... args) {
+					if (args.length == 0)
+						println(Authentication.getDefaultAuthenticationMethod().toString(), Color.DARKORANGE);
+					else {
+						String subcommand = args[0];
+						if (subcommand.equalsIgnoreCase("add")) {
+							if (args.length < 3) {
+								print("Usage: ", ERROR_COLOR);
+								println("/" + name + " " + subcommand + " (username) (password)", ERROR_COLOR);
+								return;
+							}
+							try {
+								Authentication.getAuthServer().addUser(args[1], args[2]);
+								println("Successfully added " + args[1], SUCCESS_COLOR);
+							} catch (Exception e) {
+								println("An error occurred while trying to add " + args[1], ERROR_COLOR);
+								return;
+							}
+						} else if (subcommand.equalsIgnoreCase("save")) {
+							if (args.length < 2) {
+								print("Usage: ", ERROR_COLOR);
+								println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
+								return;
+							}
+							File file = new File(args[1]);
+							if (file.exists())
+								file.delete();
+							try {
+								Authentication.getAuthServer().store(file);
+							} catch (IOException e) {
+								println("Failed to create the file: " + file.getAbsolutePath() + "."
+										+ (file.exists() ? " Note that this is probably NOT because the file exists."
+												: ""),
+										ERROR_COLOR);
+								e.printStackTrace();
+								return;
+							} catch (Exception e) {
+								println("Failed to print data to the file: " + file.getAbsolutePath(), ERROR_COLOR);
+								return;
+							}
+							println("Successfully printed the user data to the file, " + file.getAbsolutePath(),
+									SUCCESS_COLOR);
+						}
+					}
+				}
+			});
+
+			commandManager.addCommand(new ChatRoomCommand() {
+
 				private String accountName, password;
 				private final CommandConsumer usernameConsumer = new CommandConsumer() {
 
@@ -690,7 +746,7 @@ public class ChatRoom {
 							return;
 						}
 
-						ChatRoom.this.userData = new UserData(accountName, result.sessionID);
+						ChatRoom.userData = new UserData(accountName, result.sessionID);
 
 						accountName = null;
 						password = null;

@@ -37,7 +37,9 @@ public class AuthServer {
 		return true;
 	}
 
-	public void store(File path) throws FileNotFoundException {
+	public void store(File path) throws FileNotFoundException, IOException {
+		path.getParentFile().mkdirs();
+		path.createNewFile();
 		try (PrintWriter writer = new PrintWriter(new FileOutputStream(path))) {
 			for (Entry<String, User> e : users.entrySet())
 				// The first colon (:) will be parsed as a separator between usernames and
@@ -51,14 +53,14 @@ public class AuthServer {
 				// look the same to the user, they won't see anything wrong. This program would
 				// also read \r into the password. Because of this, no whitespace chars will be
 				// allowed inside usernames or passwords.
-				writer.println(e.getKey() + ":" + e.getValue());
+				writer.println(e.getKey() + ":" + e.getValue().password);
 
 			writer.flush();
 		}
 
 	}
 
-	public void store(String path) throws FileNotFoundException {
+	public void store(String path) throws FileNotFoundException, IOException {
 		store(new File(path));
 	}
 

@@ -34,4 +34,8 @@ public final class Authentication {
 		if (server == null)
 			server = new AuthServer(port);
 	}
+
+	public static AuthServer getAuthServer() {
+		return server;
+	}
 }
