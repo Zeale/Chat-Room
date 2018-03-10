@@ -26,7 +26,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 
 import org.alixia.chatroom.ChatRoom;
-import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
@@ -41,7 +40,6 @@ import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.internet.Authentication;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
@@ -168,42 +166,9 @@ public final class Commands {
 			}
 		};
 
-		private final Runnable login = new Runnable() {
-
-			@Override
-			public void run() {
-				LoginResult result;
-				try {
-					result = Authentication.getDefaultAuthenticationMethod().login(accountName, password);
-				} catch (IOException e) {
-					e.printStackTrace();
-					println("An error occurred while trying to log in.", ERROR_COLOR);
-					return;
-				}
-
-				if (result.sessionID == null) {
-					switch (result.errType) {
-					case TIMEOUT:
-						println("The server could not be connected to.", ERROR_COLOR);
-						break;
-					case USERNAME_NOT_FOUND:
-						println("That username was not found by the server.", ERROR_COLOR);
-						break;
-					case WRONG_PASSWORD:
-						println("That password was invalid.", ERROR_COLOR);
-						break;
-					default:
-						break;
-					}
-					return;
-				}
-
-				ChatRoom.INSTANCE.setAccount(new Account(accountName, result.sessionID));
-
-				accountName = null;
-				password = null;
-
-			}
+		private final Runnable login = () -> {
+			Authentication.login(accountName, password);
+			accountName = password = null;
 		};
 
 		@Override

@@ -1,38 +1,32 @@
 package org.alixia.chatroom.impl.guis.settings;
 
-import java.io.IOException;
-
 import org.alixia.chatroom.ChatRoom;
-import org.alixia.chatroom.api.Account;
-import org.alixia.chatroom.fxtools.FXTools;
 import org.alixia.chatroom.internet.Authentication;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult.ErrorType;
+import org.alixia.chatroom.logging.Logger;
+
+import javafx.scene.paint.Color;
 
 public class Settings extends _SettingsWindowImpl {
 
+	public static final Logger LOGGER = new Logger("SETTINGS", ChatRoom.LOGGER);
+	static {
+		LOGGER.boldHeader = true;
+		LOGGER.bracketColor = LOGGER.separatorColor = Color.GOLD;
+		LOGGER.parentColor = Color.RED;
+		LOGGER.childColor = Color.BLUE;
+		LOGGER.messageColor = Color.GREEN;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.alixia.chatroom.impl.guis.settings._SettingsWindowImpl#handleLogin(java.
+	 * lang.String, java.lang.String)
+	 */
 	@Override
 	public void handleLogin(String username, String password) {
-		LoginResult result;
-		try {
-			result = Authentication.getDefaultAuthenticationMethod().login(username, password);
-		} catch (IOException e) {
-			e.printStackTrace();
-			FXTools.spawnLabelAtMousePos("An error occurred...", ChatRoom.ERROR_COLOR, this);
-			return;
-		}
-
-		if (result.isSuccessful())
-			FXTools.spawnLabelAtMousePos("Successfully logged in!", ChatRoom.SUCCESS_COLOR, this);
-		else if (result.errType == ErrorType.TIMEOUT)
-			FXTools.spawnLabelAtMousePos("Could not connect to server...", ChatRoom.ERROR_COLOR, this);
-		else if (result.errType == ErrorType.USERNAME_NOT_FOUND)
-			FXTools.spawnLabelAtMousePos("Username not found", ChatRoom.ERROR_COLOR, this);
-		else if (result.errType == ErrorType.WRONG_PASSWORD)
-			FXTools.spawnLabelAtMousePos("Wrong password", ChatRoom.ERROR_COLOR, this);
-
-		ChatRoom.INSTANCE.setAccount(new Account(username, result.sessionID));
-
+		Authentication.login(username, password);
 	}
 
 }

@@ -355,4 +355,8 @@ public class ChatRoom {
 
 	}
 
+	public boolean isUsernameSet() {
+		return username != null;
+	}
+
 }
