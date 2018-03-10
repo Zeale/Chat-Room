@@ -1,2 +1,5 @@
 0.1.8:
 
+~ Updated the way that accounts react with the rest of the program.
+• Fixed some account and authentication related bugs.
++ Added Cleanup command.
