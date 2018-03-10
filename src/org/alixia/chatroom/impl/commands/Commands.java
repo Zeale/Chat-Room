@@ -41,6 +41,7 @@ import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.texts.BasicInfoText;
+import org.alixia.chatroom.texts.BoldText;
 import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
@@ -1236,7 +1237,27 @@ public final class Commands {
 
 		@Override
 		protected void act(String name, String... args) {
+			println("Not yet implemented.", ERROR_COLOR);
 			// TODO Implement
+		}
+	};
+
+	public static ChatRoomCommand CLEANUP = new ChatRoomCommand() {
+
+		@Override
+		protected boolean match(String name) {
+			return equalsAnyIgnoreCase(name, "clean", "cleanup");
+		}
+
+		@Override
+		protected void act(String name, String... args) {
+			long start = System.currentTimeMillis();
+			System.gc();
+			long time = System.currentTimeMillis() - start;
+			println("Cleaned up garbage!", SUCCESS_COLOR);
+			print("Cleanup took ", SUCCESS_COLOR);
+			new BoldText("" + time, Color.FIREBRICK).print(console);
+			println(" milliseconds.", SUCCESS_COLOR);
 		}
 	};
 
