@@ -576,11 +576,18 @@ public final class Commands {
 				try {
 					Reader versionInput = new InputStreamReader(
 							new URL("http://dusttoash.org/chat-room/version").openStream());
+
+					// This parses things backwards...
 					int n;
 					int inc = 0;
+
+					String rawInput = "";
 					while ((n = versionInput.read()) != -1)
 						if (Character.isDigit(n))
-							latest += Math.pow(10, inc++) * Integer.parseInt("" + (char) n);
+							rawInput += (char) n;
+					char[] charArray = rawInput.toCharArray();
+					for (int i = charArray.length - 1; i > -1; i--)
+						latest += Math.pow(10, inc++) * Integer.parseInt("" + charArray[i]);
 
 					lateSuccess = true;
 
@@ -1262,6 +1269,19 @@ public final class Commands {
 				print("Unknown argument: ", ERROR_COLOR);
 				println(args[0], Color.ORANGE);
 			}
+		}
+	};
+
+	public static final ChatRoomCommand STATISTICS = new ChatRoomCommand() {
+
+		@Override
+		protected boolean match(String name) {
+			return equalsAnyIgnoreCase(name, "stats", "statistics");
+		}
+
+		@Override
+		protected void act(String name, String... args) {
+			// TODO Implement
 		}
 	};
 
