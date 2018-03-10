@@ -26,10 +26,10 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 
 import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
-import org.alixia.chatroom.api.UserData;
 import org.alixia.chatroom.changelogparser.ChangelogParser;
 import org.alixia.chatroom.commands.Command;
 import org.alixia.chatroom.commands.CommandConsumer;
@@ -198,7 +198,7 @@ public final class Commands {
 					return;
 				}
 
-				ChatRoom.INSTANCE.userData = new UserData(accountName, result.sessionID);
+				ChatRoom.INSTANCE.setAccount(new Account(accountName, result.sessionID));
 
 				accountName = null;
 				password = null;
@@ -722,12 +722,6 @@ public final class Commands {
 					return;
 				}
 
-				if (isLoggedIn()) {
-					println("You can't change your name if you're logged in.", ERROR_COLOR);
-					println("This feature may be released in a later update.", INFO_COLOR);
-					return;
-				}
-
 				if (args.length > 1)
 					println("You gave me too many arguments, so I'll just use the first one... That will be your name.....",
 							ERROR_COLOR);
@@ -1143,10 +1137,13 @@ public final class Commands {
 							}
 
 							client = new Client(hostname, port, clientName);
+							// The following makes the server respond with a "Name successfully chagned"
+							// message.
+							//
+							// client.sendObject(new NameChangeRequest(ChatRoom.INSTANCE.getUsername()));
 
-							if (isLoggedIn()) {
-								client.sendObject(ChatRoom.INSTANCE.userData);
-							}
+							if (isLoggedIn())
+								client.sendObject(ChatRoom.INSTANCE.getAccount());
 
 							// TODO The case of a taken name should be handled before the client is created.
 							if (!clients.addItem(client)) {
@@ -1290,7 +1287,7 @@ public final class Commands {
 	}
 
 	private static boolean isLoggedIn() {
-		return ChatRoom.INSTANCE.userData != null;
+		return ChatRoom.INSTANCE.getAccount() != null;
 	}
 
 	private static void openSettingsWindow() {

@@ -8,11 +8,13 @@ import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.alixia.chatroom.api.UserData;
+import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.connections.messages.Message;
 import org.alixia.chatroom.connections.messages.ReplyMessage;
-import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
+import org.alixia.chatroom.connections.messages.client.requests.NameChangeRequest;
 import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
+import org.alixia.chatroom.connections.messages.server.RelayedUserMessage;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.AuthenticationResult;
 
@@ -70,8 +72,18 @@ public class Server extends NamedObject {
 
 				@Override
 				public void objectReceived(Serializable object) {
-					if (object instanceof UserMessage) {
-						sendAll((Message) object, client);
+
+					if (object instanceof BasicUserMessage) {
+						sendAll(new RelayedUserMessage(client.getUsername(), ((BasicUserMessage) object).text,
+								client.isAnonymous() ? "Anonymous" : client.getAccountName()), client);
+						try {
+							client.sendObject(
+									new RelayedUserMessage(client.getUsername(), ((BasicUserMessage) object).text,
+											client.isAnonymous() ? "This is you." : client.getAccountName()));
+						} catch (SocketException | RuntimeException e1) {
+							e1.printStackTrace();
+						}
+
 						try {
 							client.sendObject(new ReplyMessage((Message) object));
 						} catch (SocketException e) {
@@ -79,14 +91,15 @@ public class Server extends NamedObject {
 							client.getListener().connectionClosed();
 						} catch (Exception e) {
 						}
-					} else if (object instanceof UserData) {
-						UserData userData = (UserData) object;
+					} else if (object instanceof Account) {
+						Account account = (Account) object;
 						try {
 							AuthenticationResult auth = Authentication.getDefaultAuthenticationMethod()
-									.authenticate(userData.username, userData.sessionID);
+									.authenticate(account.username, account.sessionID);
 							if (auth.verified) {
-								client.setAccountName(userData.username);
-								client.setUsername(userData.username);
+								// Should only be set when logging in!
+								client.setAccountName(account.username);
+								client.setUsername(account.username);
 								client.sendMessage("Successfully verified your login information.");
 							} else {
 								client.sendMessage("Your login information was incorrect...");
@@ -102,7 +115,20 @@ public class Server extends NamedObject {
 							}
 						}
 
+					} else if (object instanceof NameChangeRequest) {
+						String name = ((NameChangeRequest) object).newName;
+						try {
+							if (!isUsernameValid(name))
+								client.sendMessage("That username is not valid!");
+							else {
+								client.sendMessage("Successfully changed your username.");
+								client.setUsername(name);
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
+
 				}
 
 				@Override
@@ -116,6 +142,13 @@ public class Server extends NamedObject {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private boolean isUsernameValid(String name) {
+		for (char c : name.toCharArray())
+			if (Character.isWhitespace(c))
+				return false;
+		return name.length() > 3;
 	}
 
 	private void sendAll(Message message, ServerClient... excludedClients) {

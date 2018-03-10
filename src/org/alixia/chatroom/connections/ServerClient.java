@@ -13,7 +13,7 @@ import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
 
 class ServerClient {
 
-	private String username, accountName;
+	private String username = "Anonymous", accountName;
 
 	public String getUsername() {
 		return username;
@@ -98,6 +98,10 @@ class ServerClient {
 		objOut = new ObjectOutputStream(socket.getOutputStream());
 		objIn = new ObjectInputStream(socket.getInputStream());
 
+	}
+
+	public boolean isAnonymous() {
+		return getAccountName() == null;
 	}
 
 	public ServerClient(final String hostname, final int port) throws UnknownHostException, IOException {

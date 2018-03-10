@@ -1,24 +1,18 @@
 package org.alixia.chatroom.connections.messages.client;
 
-import org.alixia.chatroom.texts.BasicUserText;
-import org.alixia.chatroom.texts.ConsoleText;
+import org.alixia.chatroom.connections.messages.Message;
 
-public class BasicUserMessage extends UserMessage {
+public class BasicUserMessage extends Message {
 
 	/**
 	 * SUID
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public final String author, text;
+	public final String text;
 
-	public BasicUserMessage(String author, String text) {
-		this.author = author;
+	public BasicUserMessage(String text) {
 		this.text = text;
-	}
-
-	public ConsoleText toConsoleText() {
-		return new BasicUserText(author, text);
 	}
 
 }

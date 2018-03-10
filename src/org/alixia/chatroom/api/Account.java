@@ -3,7 +3,7 @@ package org.alixia.chatroom.api;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class UserData implements Serializable {
+public class Account implements Serializable {
 
 	/**
 	 * SUID
@@ -13,7 +13,7 @@ public class UserData implements Serializable {
 	public final String username;
 	public final UUID sessionID;
 
-	public UserData(String username, UUID sessionID) {
+	public Account(String username, UUID sessionID) {
 		this.username = username;
 		this.sessionID = sessionID;
 	}

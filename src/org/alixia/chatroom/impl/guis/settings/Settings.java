@@ -3,7 +3,7 @@ package org.alixia.chatroom.impl.guis.settings;
 import java.io.IOException;
 
 import org.alixia.chatroom.ChatRoom;
-import org.alixia.chatroom.api.UserData;
+import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.fxtools.FXTools;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult;
@@ -31,7 +31,7 @@ public class Settings extends _SettingsWindowImpl {
 		else if (result.errType == ErrorType.WRONG_PASSWORD)
 			FXTools.spawnLabelAtMousePos("Wrong password", ChatRoom.ERROR_COLOR, this);
 
-		ChatRoom.INSTANCE.userData = new UserData(username, result.sessionID);
+		ChatRoom.INSTANCE.setAccount(new Account(username, result.sessionID));
 
 	}
 

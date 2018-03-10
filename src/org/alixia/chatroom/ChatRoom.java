@@ -11,10 +11,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
-import org.alixia.chatroom.api.UserData;
 import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.commands.CommandManager;
 import org.alixia.chatroom.connections.ClientManager;
@@ -22,6 +22,7 @@ import org.alixia.chatroom.connections.ConnectionListener;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
+import org.alixia.chatroom.connections.messages.client.requests.NameChangeRequest;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.impl.guis.settings.ChatRoomGUI;
@@ -29,7 +30,6 @@ import org.alixia.chatroom.impl.guis.settings.Settings;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.logging.Logger;
 import org.alixia.chatroom.texts.BasicInfoText;
-import org.alixia.chatroom.texts.BasicUserText;
 import org.alixia.chatroom.texts.BoldText;
 import org.alixia.chatroom.texts.Println;
 
@@ -63,10 +63,17 @@ public class ChatRoom {
 
 	public static final Logger LOGGER = Logger.CHAT_ROOM_LOGGER;
 
-	public UserData userData;
+	private Account account;
 	private CallServer callServer;
 	private CallClient callClient;
-	private String username = "Unnamed";
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
+	}
 
 	private ChatRoomGUI gui;
 
@@ -107,6 +114,7 @@ public class ChatRoom {
 	public final ClientManager clients = new ClientManager(clientListener);
 	public final ServerManager servers = new ServerManager();
 	public final LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
+	private String username = "Anonymous";
 
 	ChatRoom() {
 	}
@@ -132,7 +140,7 @@ public class ChatRoom {
 	}
 
 	public boolean isLoggedIn() {
-		return userData != null;
+		return account != null;
 	}
 
 	/**
@@ -178,8 +186,7 @@ public class ChatRoom {
 	public void sendText(String text) {
 
 		if (clients.isItemSelected()) {
-			clients.getSelectedItem().sendObject(new BasicUserMessage(username, text));
-			new BasicUserText(username, text).print(console);
+			clients.getSelectedItem().sendObject(new BasicUserMessage(text));
 		} else {
 			print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
 			print("/new help ", Color.ORANGERED);
@@ -217,6 +224,8 @@ public class ChatRoom {
 
 	public void setUsername(String username) {
 		this.username = username;
+		if (ChatRoom.INSTANCE.clients.isItemSelected())
+			clients.getSelectedItem().sendObject(new NameChangeRequest(username));
 	}
 
 	private void tryInit() {
