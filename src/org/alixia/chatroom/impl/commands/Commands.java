@@ -1267,6 +1267,7 @@ public final class Commands {
 
 	private static void openSettingsWindow() {
 		ChatRoom.INSTANCE.settingsInstance.get().show();
+		ChatRoom.INSTANCE.settingsInstance.get().requestFocus();
 	}
 
 	private static void print(String text, Color color) {
