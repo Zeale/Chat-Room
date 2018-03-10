@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
 
 public final class Logger {
 
-	public static final Logger CHAT_ROOM_LOGGER = new Logger("ChatRoom");
+	public static final Logger CHAT_ROOM_LOGGER = new Logger("CHAT-ROOM");
 
 	public Color bracketColor = Color.ORANGERED, parentColor = Color.MEDIUMVIOLETRED, childColor = Color.RED,
 			separatorColor = Color.WHITE, messageColor = Color.WHITE;
@@ -32,7 +32,7 @@ public final class Logger {
 		this.separator = separator;
 	}
 
-	private Logger(String name) {
+	public Logger(String name) {
 		this.name = name;
 		parent = null;
 	}
@@ -90,7 +90,7 @@ public final class Logger {
 			(boldHeader ? boldPrinter : printer).print(separator, separatorColor);
 		}
 		(boldHeader ? boldPrinter : printer).print(getName(), childColor);
-		boldPrinter.print("] ", bracketColor);
+		boldPrinter.print("]: ", bracketColor);
 
 	}
 

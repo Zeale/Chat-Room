@@ -17,8 +17,11 @@ import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
 import org.alixia.chatroom.connections.messages.server.RelayedUserMessage;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.AuthenticationResult;
+import org.alixia.chatroom.logging.Logger;
 
 public class Server extends NamedObject {
+
+	public static final Logger SERVER_LOGGER = new Logger("SERVER");
 
 	private final ServerSocket socket;
 
@@ -121,7 +124,7 @@ public class Server extends NamedObject {
 							if (!isUsernameValid(name))
 								client.sendMessage("That username is not valid!");
 							else {
-								client.sendMessage("Successfully changed your username.");
+								client.sendMessage("Your name was set to " + name);
 								client.setUsername(name);
 							}
 						} catch (IOException e) {

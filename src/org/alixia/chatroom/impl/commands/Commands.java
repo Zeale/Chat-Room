@@ -1122,8 +1122,6 @@ public final class Commands {
 
 						try {
 
-							Client client;
-
 							// No port
 							if (args.length == 2) {
 								clientName = args[1];
@@ -1136,20 +1134,15 @@ public final class Commands {
 
 							}
 
-							client = new Client(hostname, port, clientName);
 							// The following makes the server respond with a "Name successfully chagned"
 							// message.
 							//
 							// client.sendObject(new NameChangeRequest(ChatRoom.INSTANCE.getUsername()));
 
-							if (isLoggedIn())
-								client.sendObject(ChatRoom.INSTANCE.getAccount());
-
 							// TODO The case of a taken name should be handled before the client is created.
-							if (!clients.addItem(client)) {
+							if (!ChatRoom.INSTANCE.createNewClient(hostname, port, clientName)) {
 								println("A client with this name already exists. Please choose a new name and try again.",
 										ERROR_COLOR);
-								client.closeConnection();
 							} else if (!clients.isItemSelected()) {
 								println("Since there is currently not a selected client, this new one that you've just created will be selected.",
 										Color.CORNFLOWERBLUE);
@@ -1284,10 +1277,6 @@ public final class Commands {
 
 	private static void executeCommand(String command) {
 		commandManager.runCommand(command);
-	}
-
-	private static boolean isLoggedIn() {
-		return ChatRoom.INSTANCE.getAccount() != null;
 	}
 
 	private static void openSettingsWindow() {

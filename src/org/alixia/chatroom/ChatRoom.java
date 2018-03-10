@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -17,12 +18,14 @@ import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.commands.CommandManager;
+import org.alixia.chatroom.connections.Client;
 import org.alixia.chatroom.connections.ClientManager;
 import org.alixia.chatroom.connections.ConnectionListener;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.connections.messages.client.UserMessage;
 import org.alixia.chatroom.connections.messages.client.requests.NameChangeRequest;
+import org.alixia.chatroom.connections.messages.server.ServerMessage;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.impl.guis.settings.ChatRoomGUI;
@@ -105,6 +108,8 @@ public class ChatRoom {
 		public void objectReceived(Serializable object) {
 			if (object instanceof UserMessage)
 				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(console));
+			else if (object instanceof ServerMessage)
+				Platform.runLater(() -> ((ServerMessage) object).toConsoleText().print(console));
 
 		}
 	};
@@ -114,7 +119,7 @@ public class ChatRoom {
 	public final ClientManager clients = new ClientManager(clientListener);
 	public final ServerManager servers = new ServerManager();
 	public final LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
-	private String username = "Anonymous";
+	private String username = null;
 
 	ChatRoom() {
 	}
@@ -136,7 +141,7 @@ public class ChatRoom {
 	}
 
 	public String getUsername() {
-		return username;
+		return username == null ? "Anonymous" : username;
 	}
 
 	public boolean isLoggedIn() {
@@ -220,6 +225,21 @@ public class ChatRoom {
 
 		}
 
+	}
+
+	public void createNewClient(String host, String id) throws UnknownHostException, IOException {
+		createNewClient(host, DEFAULT_CHAT_PORT, id);
+	}
+
+	public boolean createNewClient(String host, int port, String id) throws UnknownHostException, IOException {
+		if (clients.containsKey(id))
+			return false;
+		Client client = new Client(host, port, id);
+		if (isLoggedIn())
+			client.sendObject(ChatRoom.INSTANCE.getAccount());
+		if (username != null)
+			client.sendObject(new NameChangeRequest(username));
+		return clients.addItem(client);
 	}
 
 	public void setUsername(String username) {
