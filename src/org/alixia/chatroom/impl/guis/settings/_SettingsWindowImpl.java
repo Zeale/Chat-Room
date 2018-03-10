@@ -1,10 +1,7 @@
 package org.alixia.chatroom.impl.guis.settings;
 
-import java.io.IOException;
-
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.items.LateLoadItem;
-import org.alixia.chatroom.fxtools.FXTools;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
@@ -38,7 +35,7 @@ import javafx.stage.StageStyle;
 
 abstract class _SettingsWindowImpl extends Stage {
 
-	private final Button save = new PopButton("save"), cancel = new PopButton("cancel");
+	private final Button close = new PopButton("close");
 
 	private final VBox settingsBox = new VBox();
 	private final AnchorPane root = new AnchorPane();
@@ -109,7 +106,10 @@ abstract class _SettingsWindowImpl extends Stage {
 		scene.setFill(Color.TRANSPARENT);
 
 		// Save & Cancel buttons
-		HBox buttonWrapper = new HBox(15, save, cancel);
+
+		close.setOnAction(event -> close());
+
+		HBox buttonWrapper = new HBox(15, close);
 		buttonWrapper.setAlignment(Pos.CENTER);
 		AnchorPane.setBottomAnchor(buttonWrapper, 15d);
 		AnchorPane.setLeftAnchor(buttonWrapper, 0d);
