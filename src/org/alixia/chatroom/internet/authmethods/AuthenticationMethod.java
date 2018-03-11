@@ -5,10 +5,14 @@ import java.util.UUID;
 
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.internet.BasicAuthServer;
+import org.alixia.chatroom.internet.authmethods.exceptions.AccountCreationDeniedException;
 import org.alixia.chatroom.internet.authmethods.exceptions.IncorrectPasswordException;
+import org.alixia.chatroom.internet.authmethods.exceptions.InvalidSessionIDException;
+import org.alixia.chatroom.internet.authmethods.exceptions.InvalidUsernameException;
 import org.alixia.chatroom.internet.authmethods.exceptions.TimeoutException;
 import org.alixia.chatroom.internet.authmethods.exceptions.UnknownAuthenticationException;
 import org.alixia.chatroom.internet.authmethods.exceptions.UsernameNotFoundException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UsernameTakenException;
 
 /**
  * A class that contains ways for client classes to contact an
@@ -65,7 +69,8 @@ public abstract class AuthenticationMethod {
 			UsernameNotFoundException, TimeoutException, UnknownAuthenticationException;
 
 	public abstract UUID createNewAccount(String username, String password)
-			throws IOException, TimeoutException, UsernameTakenException, UnknownAuthenticationException;
+			throws IOException, TimeoutException, UsernameTakenException, InvalidUsernameException,
+			UnknownAuthenticationException, AccountCreationDeniedException;
 
 	public abstract void logout(String username, UUID sessionID) throws IOException, UsernameNotFoundException,
 			TimeoutException, UnknownAuthenticationException, InvalidSessionIDException;

@@ -1,6 +1,4 @@
-package org.alixia.chatroom.internet.authmethods;
-
-import org.alixia.chatroom.internet.authmethods.exceptions.AuthenticationException;
+package org.alixia.chatroom.internet.authmethods.exceptions;
 
 public class InvalidSessionIDException extends AuthenticationException {
 

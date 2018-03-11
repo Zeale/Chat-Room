@@ -8,6 +8,9 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.UUID;
 
+import org.alixia.chatroom.internet.CreateAccountReplyPacket;
+import org.alixia.chatroom.internet.CreateAccountReplyPacket.ErrType;
+import org.alixia.chatroom.internet.CreateAccountRequestPacket;
 import org.alixia.chatroom.internet.LoginRequestPacket;
 import org.alixia.chatroom.internet.LogoutReplyPacket;
 import org.alixia.chatroom.internet.LogoutReplyPacket.ErrorType;
@@ -16,10 +19,14 @@ import org.alixia.chatroom.internet.SessionIDPacket;
 import org.alixia.chatroom.internet.SessionIDPacket.Success;
 import org.alixia.chatroom.internet.VerificationPacket;
 import org.alixia.chatroom.internet.VerificationRequestPacket;
+import org.alixia.chatroom.internet.authmethods.exceptions.AccountCreationDeniedException;
 import org.alixia.chatroom.internet.authmethods.exceptions.IncorrectPasswordException;
+import org.alixia.chatroom.internet.authmethods.exceptions.InvalidSessionIDException;
+import org.alixia.chatroom.internet.authmethods.exceptions.InvalidUsernameException;
 import org.alixia.chatroom.internet.authmethods.exceptions.TimeoutException;
 import org.alixia.chatroom.internet.authmethods.exceptions.UnknownAuthenticationException;
 import org.alixia.chatroom.internet.authmethods.exceptions.UsernameNotFoundException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UsernameTakenException;
 
 public class AppAuthMethodImpl extends AuthenticationMethod {
 
@@ -90,10 +97,39 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 	}
 
 	@Override
-	public UUID createNewAccount(String username, String password)
-			throws IOException, TimeoutException, UsernameTakenException, ConnectException {
-		// TODO Auto-generated method stub
-		return null;
+	public UUID createNewAccount(String username, String password) throws IOException, TimeoutException,
+			UsernameTakenException, ConnectException, InvalidUsernameException, AccountCreationDeniedException {
+		// Create our connection objects
+		final Socket socket = new Socket(host, port);
+		socket.setSoTimeout(getTimeout());
+		final ObjectOutputStream sender = new ObjectOutputStream(socket.getOutputStream());
+		final ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
+
+		sender.writeObject(new CreateAccountRequestPacket(username, password));
+		sender.flush();
+
+		final CreateAccountReplyPacket reply;
+
+		try {
+			reply = (CreateAccountReplyPacket) reader.readObject();
+		} catch (SocketTimeoutException e) {
+			throw new TimeoutException();
+		} catch (Exception e) {
+			throw new IOException(e);
+		} finally {
+			socket.close();
+		}
+
+		if (reply.error == null)
+			return reply.sessionID;
+		else if (reply.error == ErrType.INVALID_USERNAME)
+			throw new InvalidUsernameException();
+		else if (reply.error == ErrType.REQUEST_DENIED)
+			throw new AccountCreationDeniedException();
+		else if (reply.error == ErrType.USERNAME_EXISTS)
+			throw new UsernameTakenException();
+		else
+			throw new UnknownAuthenticationException();
 	}
 
 	@Override
