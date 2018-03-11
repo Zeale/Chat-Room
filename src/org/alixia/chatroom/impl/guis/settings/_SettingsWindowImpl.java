@@ -66,8 +66,8 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		settingsBox.setAlignment(Pos.TOP_CENTER);
 
 		// On focus
-		focusedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> contentPane
-				.setOpacity(newValue ? 1 : 0.2));
+		focusedProperty().addListener(
+				(ChangeListener<Boolean>) (observable, oldValue, newValue) -> root.setOpacity(newValue ? 1 : 0.2));
 
 		// Login Nodes
 		final Text accountCategory = new Text("Account");
