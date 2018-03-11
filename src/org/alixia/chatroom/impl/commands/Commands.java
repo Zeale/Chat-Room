@@ -39,6 +39,7 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
+import org.alixia.chatroom.guis.ChatRoomWindow;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BoldText;
@@ -195,7 +196,7 @@ public final class Commands {
 		}
 	};
 
-	public static final Command OPEN_SETTINGS = new ChatRoomCommand() {
+	public static final Command SETTINGS = new ChatRoomCommand() {
 
 		@Override
 		protected boolean match(String name) {
@@ -219,6 +220,7 @@ public final class Commands {
 								try {
 									openSettingsWindow();
 								} catch (Exception e) {
+									e.printStackTrace();
 									println("Failed to open window...", ERROR_COLOR);
 								}
 								return;
@@ -243,6 +245,7 @@ public final class Commands {
 				try {
 					openSettingsWindow();
 				} catch (Exception e) {
+					e.printStackTrace();
 					println("Failed to open window...", ERROR_COLOR);
 				}
 			}
@@ -1242,7 +1245,7 @@ public final class Commands {
 		}
 	};
 
-	public static ChatRoomCommand CLEANUP = new ChatRoomCommand() {
+	public static final ChatRoomCommand CLEANUP = new ChatRoomCommand() {
 
 		@Override
 		protected boolean match(String name) {
