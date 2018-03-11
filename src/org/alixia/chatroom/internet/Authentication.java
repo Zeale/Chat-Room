@@ -1,6 +1,7 @@
 package org.alixia.chatroom.internet;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.UUID;
 
 import org.alixia.chatroom.ChatRoom;
@@ -55,9 +56,11 @@ public final class Authentication {
 				ChatRoom.INSTANCE.setAccount(new Account(username, result));
 				ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(ChatRoom.INSTANCE.getAccount());
 			}
+		} catch (ConnectException e) {
+			LOGGER.log("Failed to connect to the authentication server.");
 		} catch (final IOException e) {
 			e.printStackTrace();
-			LOGGER.log("An error occurred...");
+			LOGGER.log("An unknown error occurred...");
 			return;
 		} catch (TimeoutException e) {
 			LOGGER.log("Could not connect to server...");

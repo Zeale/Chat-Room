@@ -1,9 +1,6 @@
 package org.alixia.chatroom.guis;
 
 import static org.alixia.chatroom.ChatRoom.WARNING_COLOR;
-import static org.alixia.chatroom.impl.guis.settings.ChatRoomGUI.DEFAULT_NODE_ITEM_COLOR;
-import static org.alixia.chatroom.impl.guis.settings.ChatRoomGUI.DEFAULT_WINDOW_BACKGROUND_COLOR;
-import static org.alixia.chatroom.impl.guis.settings.ChatRoomGUI.DEFAULT_WINDOW_BORDER_COLOR;
 
 import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.fxtools.FXTools;
@@ -37,6 +34,10 @@ import javafx.util.Duration;
 
 public class ChatRoomWindow extends Stage {
 
+	public static final Color DEFAULT_WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
+			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
+			DEFAULT_WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
+
 	{
 		initStyle(StageStyle.TRANSPARENT);
 	}
@@ -47,6 +48,7 @@ public class ChatRoomWindow extends Stage {
 
 	{
 		setScene(scene);
+		scene.setFill(Color.TRANSPARENT);
 		contentPane.setBackground(FXTools.getBackgroundFromColor(DEFAULT_WINDOW_BACKGROUND_COLOR));
 	}
 

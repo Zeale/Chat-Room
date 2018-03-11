@@ -3,6 +3,7 @@ package org.alixia.chatroom.internet.authmethods;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.UUID;
@@ -28,7 +29,7 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 	}
 
 	@Override
-	public boolean authenticate(final String username, final UUID sessionID) throws IOException {
+	public boolean authenticate(final String username, final UUID sessionID) throws IOException, ConnectException {
 
 		final Socket sock = new Socket(host, port);
 		final ObjectOutputStream sender = new ObjectOutputStream(sock.getOutputStream());
@@ -50,8 +51,8 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 	}
 
 	@Override
-	public UUID login(final String username, final String password)
-			throws IOException, TimeoutException, UsernameNotFoundException, IncorrectPasswordException {
+	public UUID login(final String username, final String password) throws IOException, TimeoutException,
+			UsernameNotFoundException, IncorrectPasswordException, ConnectException {
 
 		// Create our connection objects
 		final Socket socket = new Socket(host, port);
@@ -85,7 +86,7 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 
 	@Override
 	public UUID createNewAccount(String username, String password)
-			throws IOException, TimeoutException, UsernameTakenException {
+			throws IOException, TimeoutException, UsernameTakenException, ConnectException {
 		// TODO Auto-generated method stub
 		return null;
 	}
