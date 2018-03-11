@@ -2,13 +2,13 @@ package org.alixia.chatroom.impl.guis.settings;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.items.LateLoadItem;
+import org.alixia.chatroom.guis.ChatRoomWindow;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
@@ -16,33 +16,27 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-abstract class _SettingsWindowImpl extends Stage {
+abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 	private final Button close = new PopButton("close");
 
 	private final VBox settingsBox = new VBox();
 	private final ScrollPane scrollWrapper = new ScrollPane(settingsBox);
-	private final AnchorPane contentWrapper = new AnchorPane(scrollWrapper);
 	private LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(
 			() -> new _AdvancedSettingsImpl());
 
-	private final Scene scene = new Scene(contentWrapper);
-
 	{
+		contentPane.getChildren().add(scrollWrapper);
 
 		// Styling scrollWrapper
 		scene.getStylesheets().add("org/alixia/chatroom/stylesheet.css");
@@ -51,17 +45,8 @@ abstract class _SettingsWindowImpl extends Stage {
 		scrollWrapper.setFitToWidth(true);
 
 		initStyle(StageStyle.TRANSPARENT);
-		contentWrapper.setMinSize(600, 400);
-		contentWrapper.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR,
-				BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
-		contentWrapper.setBackground(
-				new Background(new BackgroundFill(new Color(ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR.getRed(),
-						ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR.getGreen(),
-						ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR.getBlue(), 1), null, null)));
 		setAlwaysOnTop(true);
 		setScene(scene);
-
-		scene.setFill(Color.TRANSPARENT);
 
 		// Save & Cancel buttons
 
@@ -72,7 +57,7 @@ abstract class _SettingsWindowImpl extends Stage {
 		AnchorPane.setBottomAnchor(buttonWrapper, 15d);
 		AnchorPane.setLeftAnchor(buttonWrapper, 0d);
 		AnchorPane.setRightAnchor(buttonWrapper, 0d);
-		contentWrapper.getChildren().add(buttonWrapper);
+		contentPane.getChildren().add(buttonWrapper);
 
 		// Settings box
 		AnchorPane.setTopAnchor(scrollWrapper, 15d);
@@ -82,7 +67,7 @@ abstract class _SettingsWindowImpl extends Stage {
 		settingsBox.setAlignment(Pos.TOP_CENTER);
 
 		// On focus
-		focusedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> contentWrapper
+		focusedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> contentPane
 				.setOpacity(newValue ? 1 : 0.2));
 
 		// Login Nodes
@@ -116,7 +101,7 @@ abstract class _SettingsWindowImpl extends Stage {
 		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
 
 		// Handle Ctrl+Alt+Shift+D; this will open the advanced settings window.
-		contentWrapper.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+		contentPane.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
 			@Override
 			public void handle(KeyEvent event) {
@@ -133,12 +118,14 @@ abstract class _SettingsWindowImpl extends Stage {
 			}
 		});
 
-		contentWrapper.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+		contentPane.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			if (event.getCode() == KeyCode.ESCAPE) {
 				close();
 				event.consume();
 			}
 		});
+
+		setMenubarType(false);
 
 	}
 

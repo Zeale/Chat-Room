@@ -52,6 +52,8 @@ public class ChatRoomWindow extends Stage {
 	}
 
 	private final StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
+	private final HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
+			OS.getOS() == OS.WINDOWS ? close : minimize);
 
 	{
 
@@ -264,8 +266,6 @@ public class ChatRoomWindow extends Stage {
 		minimize.setOnMouseClicked(this::onMinimize);
 
 		// Menu bar
-		HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
-				OS.getOS() == OS.WINDOWS ? close : minimize);
 
 		new Object() {
 
@@ -409,4 +409,17 @@ public class ChatRoomWindow extends Stage {
 		}
 
 	}
+
+	public void setMenubarType(boolean full) {
+		if (full)
+			if (menuBar.getChildren().size() == 3)
+				return;
+			else
+				menuBar.getChildren().addAll(minimize, expand);
+		else if (menuBar.getChildren().size() == 1)
+			return;
+		else
+			menuBar.getChildren().removeAll(minimize, expand);
+	}
+
 }
