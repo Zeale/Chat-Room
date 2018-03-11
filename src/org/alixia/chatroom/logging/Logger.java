@@ -73,7 +73,8 @@ public final class Logger {
 
 	public void logBold(final String message) {
 		printIdentifier();
-		new BoldText(message, messageColor).print(console);
+		new BoldText(message + "\n", messageColor).print(console);
+
 	}
 
 	private void printIdentifier() {
