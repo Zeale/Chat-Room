@@ -178,7 +178,10 @@ public final class Commands {
 		@Override
 		protected void act(final String name, final String... args) {
 			if (args.length == 0)
-				println(Authentication.getDefaultAuthenticationMethod().toString(), Color.DARKORANGE);
+				if (Authentication.isAuthServerRunning())
+					println(Authentication.getAuthServer().toString(), Color.DARKORANGE);
+				else
+					println("There is no Authentication Server running.", ERROR_COLOR);
 			else {
 				final String subcommand = args[0];
 				if (subcommand.equalsIgnoreCase("add")) {

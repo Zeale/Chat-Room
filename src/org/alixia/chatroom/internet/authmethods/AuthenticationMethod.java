@@ -3,11 +3,11 @@ package org.alixia.chatroom.internet.authmethods;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.alixia.chatroom.internet.AuthServer;
+import org.alixia.chatroom.internet.BasicAuthServer;
 
 /**
  * A class that contains ways for client classes to contact an
- * {@link AuthServer} and, login to an account, or verify an account's login.
+ * {@link BasicAuthServer} and, login to an account, or verify an account's login.
  *
  * @author Zeale
  *

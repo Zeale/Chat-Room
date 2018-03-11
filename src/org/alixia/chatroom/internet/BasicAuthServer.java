@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 import org.alixia.chatroom.internet.SessionIDPacket.Success;
 
-public class AuthServer {
+public class BasicAuthServer {
 
 	public static final class User implements Serializable {
 
@@ -120,13 +121,20 @@ public class AuthServer {
 				try {
 					final Socket connection = socket.accept();
 					new Thread(() -> handle(connection)).start();
+					errCount = 0;
+				} catch (SocketException e) {
+					run = false;
+					break;
 				} catch (final Throwable e) {
+					if (errCount > 5) {
+						System.err.println("CLOSING AUTHSERVER DUE TO REPETITIVE EXCEPTIONS...");
+						break;
+					}
 					e.printStackTrace();
 					System.out.println();
 					System.err.println("CONTINUING");
 					errCount++;
-					if (errCount > 5)
-						System.err.println("CLOSING AUTHSERVER DUE TO REPETITIVE EXCEPTIONS...");
+
 				}
 			handler = new Thread(this);
 			handler.setDaemon(true);
@@ -137,7 +145,7 @@ public class AuthServer {
 		handler.setDaemon(true);
 	}
 
-	public AuthServer(final int port) throws IOException {
+	public BasicAuthServer(final int port) throws IOException {
 		socket = new ServerSocket(port);
 		handler.start();
 	}
@@ -201,7 +209,6 @@ public class AuthServer {
 			System.gc();
 			System.err.println("Out of memory error @");
 			System.err.println("AuthServer.handle()");
-
 		}
 
 	}
@@ -239,6 +246,28 @@ public class AuthServer {
 
 	public void store(final String path) throws FileNotFoundException, IOException {
 		store(new File(path));
+	}
+
+	public void close() {
+		run = false;
+	}
+
+	public void dispose() throws IOException {
+		close();
+		socket.close();
+	}
+
+	public boolean canRun() {
+		return !socket.isClosed();
+	}
+
+	public boolean isRunning() {
+		return handler.isAlive();
+	}
+
+	public void start() {
+		if (canRun() && !isRunning())
+			handler.start();
 	}
 
 }

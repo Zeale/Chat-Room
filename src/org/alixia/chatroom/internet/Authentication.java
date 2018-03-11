@@ -22,10 +22,14 @@ public final class Authentication {
 
 	private static AuthenticationMethod authMethod = DEFAULT_AUTHENTICATION_METHOD;
 
-	private static AuthServer server;
+	private static BasicAuthServer server;
 
-	public static AuthServer getAuthServer() {
+	public static BasicAuthServer getAuthServer() {
 		return server;
+	}
+
+	public static boolean isAuthServerRunning() {
+		return server != null;
 	}
 
 	public static AuthenticationMethod getDefaultAuthenticationMethod() {
@@ -73,7 +77,19 @@ public final class Authentication {
 
 	public static void startAuthServer(final int port) throws IOException {
 		if (server == null)
-			server = new AuthServer(port);
+			server = new BasicAuthServer(port);
+	}
+
+	public static void closeAuthServer() {
+		if (!isAuthServerRunning())
+			return;
+		server.close();
+		server = null;
+	}
+
+	public static void kickstartAuthServer() {
+		if (server != null && !server.isRunning())
+			server.start();
 	}
 
 	private Authentication() {
