@@ -5,19 +5,16 @@ import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
-import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -38,65 +35,26 @@ abstract class _SettingsWindowImpl extends Stage {
 	private final Button close = new PopButton("close");
 
 	private final VBox settingsBox = new VBox();
-	private final AnchorPane root = new AnchorPane();
+	private final ScrollPane scrollWrapper = new ScrollPane(settingsBox);
+	private final AnchorPane contentWrapper = new AnchorPane(scrollWrapper);
 	private LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(
 			() -> new _AdvancedSettingsImpl());
-	{
-		root.getChildren().addListener(new ListChangeListener<Node>() {
 
-			@Override
-			public void onChanged(Change<? extends Node> c) {
-				while (c.next())
-					if (c.wasAdded())
-						for (Node n : c.getAddedSubList()) {
-							if (n instanceof Parent) {
-								// PickOnBounds is only being disabled for parent objects. I don't want to mess
-								// up any buttons or anything. (Not that doing this to them will, but just to be
-								// safe...)
-								n.setPickOnBounds(false);
-								((Parent) n).getChildrenUnmodifiable().addListener(this);
-							}
-						}
-			}
-		});
-		root.getChildren().add(settingsBox);
-	}
-
-	private final Scene scene = new Scene(root);
+	private final Scene scene = new Scene(contentWrapper);
 
 	{
 
-		root.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-
-			private double offx, offy;
-			private boolean drag;
-
-			{
-				root.addEventFilter(MouseEvent.MOUSE_DRAGGED, event -> {
-					if (!drag)
-						return;
-					setX(offx + event.getScreenX());
-					setY(offy + event.getScreenY());
-				});
-
-				root.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> drag = false);
-			}
-
-			@Override
-			public void handle(MouseEvent event) {
-				if (!(event.getPickResult().getIntersectedNode() == root))
-					return;
-				offx = getX() - event.getScreenX();
-				offy = getY() - event.getScreenY();
-				drag = true;
-			}
-		});
+		// Styling scrollWrapper
+		scene.getStylesheets().add("org/alixia/chatroom/stylesheet.css");
+		scrollWrapper.setBackground(null);
+		scrollWrapper.setFitToHeight(true);
+		scrollWrapper.setFitToWidth(true);
 
 		initStyle(StageStyle.TRANSPARENT);
-		root.setMinSize(600, 400);
-		root.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR, BorderStrokeStyle.SOLID, null,
-				new BorderWidths(2))));
-		root.setBackground(
+		contentWrapper.setMinSize(600, 400);
+		contentWrapper.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR,
+				BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+		contentWrapper.setBackground(
 				new Background(new BackgroundFill(new Color(ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR.getRed(),
 						ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR.getGreen(),
 						ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR.getBlue(), 1), null, null)));
@@ -114,18 +72,18 @@ abstract class _SettingsWindowImpl extends Stage {
 		AnchorPane.setBottomAnchor(buttonWrapper, 15d);
 		AnchorPane.setLeftAnchor(buttonWrapper, 0d);
 		AnchorPane.setRightAnchor(buttonWrapper, 0d);
-		root.getChildren().add(buttonWrapper);
+		contentWrapper.getChildren().add(buttonWrapper);
 
 		// Settings box
-		AnchorPane.setTopAnchor(settingsBox, 15d);
-		AnchorPane.setBottomAnchor(settingsBox, 40d);
-		AnchorPane.setLeftAnchor(settingsBox, 5d);
-		AnchorPane.setRightAnchor(settingsBox, 5d);
+		AnchorPane.setTopAnchor(scrollWrapper, 15d);
+		AnchorPane.setBottomAnchor(scrollWrapper, 40d);
+		AnchorPane.setLeftAnchor(scrollWrapper, 5d);
+		AnchorPane.setRightAnchor(scrollWrapper, 5d);
 		settingsBox.setAlignment(Pos.TOP_CENTER);
 
 		// On focus
-		focusedProperty().addListener(
-				(ChangeListener<Boolean>) (observable, oldValue, newValue) -> root.setOpacity(newValue ? 1 : 0.2));
+		focusedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> contentWrapper
+				.setOpacity(newValue ? 1 : 0.2));
 
 		// Login Nodes
 		Text accountCategory = new Text("Account");
@@ -158,7 +116,7 @@ abstract class _SettingsWindowImpl extends Stage {
 		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
 
 		// Handle Ctrl+Alt+Shift+D; this will open the advanced settings window.
-		root.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+		contentWrapper.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
 			@Override
 			public void handle(KeyEvent event) {
@@ -175,7 +133,7 @@ abstract class _SettingsWindowImpl extends Stage {
 			}
 		});
 
-		root.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+		contentWrapper.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			if (event.getCode() == KeyCode.ESCAPE) {
 				close();
 				event.consume();

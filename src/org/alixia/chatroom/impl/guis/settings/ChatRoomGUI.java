@@ -18,7 +18,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -46,7 +45,6 @@ public final class ChatRoomGUI {
 			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
 			DEFAULT_WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
 	// Nodes are styled and manipulated in the constructor and the tryInit method.
-	public final ImageView settingsButton = new ImageView("/org/alixia/chatroom/assets/graphics/icons/Settings.png");
 	public final TextFlow flow = new TextFlow();
 	public final TextArea input = new TextArea();
 	public final Button sendButton = new PopButton("Send");
@@ -81,11 +79,6 @@ public final class ChatRoomGUI {
 
 		AnchorPane.setRightAnchor(sendButton, 50d);
 		AnchorPane.setBottomAnchor(sendButton, 88.5);
-
-		AnchorPane.setLeftAnchor(settingsButton, 0d);
-		AnchorPane.setTopAnchor(settingsButton, 0d);
-		settingsButton.setFitHeight(35);
-		settingsButton.setFitWidth(35);
 
 		input.setMaxHeight(200);
 
@@ -445,17 +438,8 @@ public final class ChatRoomGUI {
 				root.setBorder(border);
 			}
 		};
-		// The GUI.input TextArea consumes mouse events, so we'll need to add a handler
-		// to
-		// it too.
 
-		input.addEventFilter(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
-
-			@Override
-			public void handle(MouseEvent event) {
-				root.fireEvent(event);
-			}
-		});
+		input.addEventFilter(MouseEvent.MOUSE_MOVED, event -> root.fireEvent(event));
 
 		stage.initStyle(StageStyle.TRANSPARENT);
 	}

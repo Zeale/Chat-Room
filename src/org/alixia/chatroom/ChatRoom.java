@@ -29,7 +29,7 @@ import org.alixia.chatroom.connections.messages.server.ServerMessage;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.impl.guis.settings.ChatRoomGUI;
-import org.alixia.chatroom.impl.guis.settings.Settings;
+import org.alixia.chatroom.impl.guis.settings.SettingsGUI;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.logging.Logger;
 import org.alixia.chatroom.texts.BasicInfoText;
@@ -118,7 +118,7 @@ public class ChatRoom {
 
 	public final ClientManager clients = new ClientManager(clientListener);
 	public final ServerManager servers = new ServerManager();
-	public final LateLoadItem<Settings> settingsInstance = new LateLoadItem<>(() -> new Settings());
+	public final LateLoadItem<SettingsGUI> settingsInstance = new LateLoadItem<>(SettingsGUI::new);
 	private String username = null;
 
 	ChatRoom() {

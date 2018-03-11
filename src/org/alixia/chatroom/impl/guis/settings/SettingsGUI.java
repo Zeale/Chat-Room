@@ -6,7 +6,7 @@ import org.alixia.chatroom.logging.Logger;
 
 import javafx.scene.paint.Color;
 
-public class Settings extends _SettingsWindowImpl {
+public class SettingsGUI extends _SettingsWindowImpl {
 
 	public static final Logger LOGGER = new Logger("SETTINGS", ChatRoom.LOGGER);
 	static {
