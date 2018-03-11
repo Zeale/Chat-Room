@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.UUID;
 
+import org.alixia.chatroom.internet.CreateAccountReplyPacket.ErrType;
 import org.alixia.chatroom.internet.SessionIDPacket.Success;
 
 public class BasicAuthServer {
@@ -150,11 +151,23 @@ public class BasicAuthServer {
 		handler.start();
 	}
 
-	public boolean addUser(final String username, final String password) {
+	public UUID addUser(final String username, final String password) {
 		if (users.containsKey(username))
-			return false;
-		users.put(username, new User(username, password));
-		return true;
+			return null;
+		User user = new User(username, password);
+		users.put(username, user);
+
+		return user.makeID();
+	}
+
+	private boolean accountCreationEnabled = true;
+
+	public boolean isAccountCreationEnabled() {
+		return accountCreationEnabled;
+	}
+
+	public void setAccountCreationEnabled(boolean accountCreationEnabled) {
+		this.accountCreationEnabled = accountCreationEnabled;
 	}
 
 	private void handle(final Socket connection) {
@@ -196,6 +209,22 @@ public class BasicAuthServer {
 							new VerificationPacket(users.containsKey(((VerificationRequestPacket) packet).username)
 									&& users.get(((VerificationRequestPacket) packet).username)
 											.IDsMatch(((VerificationRequestPacket) packet).sessionID)));
+				else if (packet instanceof CreateAccountRequestPacket) {
+					UUID sessid = null;
+					ErrType err = null;
+					if (isAccountCreationEnabled())
+						if (isUsernameOpen(((CreateAccountRequestPacket) packet).name))
+							if (isUsernameValid(((CreateAccountRequestPacket) packet).name))
+								sessid = addUser(((CreateAccountRequestPacket) packet).name,
+										((CreateAccountRequestPacket) packet).password);
+							else
+								err = ErrType.INVALID_USERNAME;
+						else
+							err = ErrType.USERNAME_EXISTS;
+					else
+						err = ErrType.REQUEST_DENIED;
+					sender.writeObject(new CreateAccountReplyPacket(sessid, err));
+				}
 
 				sender.flush();
 			} finally {
@@ -211,6 +240,21 @@ public class BasicAuthServer {
 			System.err.println("AuthServer.handle()");
 		}
 
+	}
+
+	public boolean isUserRegistered(String username) {
+		return users.containsKey(username);
+	}
+
+	public boolean isUsernameOpen(String username) {
+		return !isUserRegistered(username);
+	}
+
+	public boolean isUsernameValid(String username) {
+		for (char c : username.toCharArray())
+			if (Character.isWhitespace(c))
+				return false;
+		return username.length() > 2;
 	}
 
 	public void load(final File path) throws FileNotFoundException, UserDataParseException {
