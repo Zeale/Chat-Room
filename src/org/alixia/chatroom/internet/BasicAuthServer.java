@@ -18,6 +18,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import org.alixia.chatroom.internet.CreateAccountReplyPacket.ErrType;
+import org.alixia.chatroom.internet.LogoutReplyPacket.ErrorType;
 import org.alixia.chatroom.internet.SessionIDPacket.Success;
 
 public class BasicAuthServer {
@@ -25,7 +26,7 @@ public class BasicAuthServer {
 	public static final class User implements Serializable {
 
 		/**
-		 *
+		 * SUID
 		 */
 		private static final long serialVersionUID = 1L;
 
@@ -64,6 +65,10 @@ public class BasicAuthServer {
 
 		public boolean passwordsMatch(final String password) {
 			return password.equals(this.password);
+		}
+
+		public void clearID() {
+			makeID();
 		}
 
 	}
@@ -224,6 +229,11 @@ public class BasicAuthServer {
 					else
 						err = ErrType.REQUEST_DENIED;
 					sender.writeObject(new CreateAccountReplyPacket(sessid, err));
+				} else if (packet instanceof LogoutRequestPacket) {
+					sender.writeObject(new LogoutReplyPacket(users.containsKey(((LogoutRequestPacket) packet).username)
+							? (users.get(((LogoutRequestPacket) packet).username).IDsMatch(
+									((LogoutRequestPacket) packet).sessionID) ? null : ErrorType.INVALID_SESSION_ID)
+							: ErrorType.USERNAME_NOT_FOUND));
 				}
 
 				sender.flush();

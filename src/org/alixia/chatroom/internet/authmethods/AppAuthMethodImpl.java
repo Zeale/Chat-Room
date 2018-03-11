@@ -9,6 +9,9 @@ import java.net.SocketTimeoutException;
 import java.util.UUID;
 
 import org.alixia.chatroom.internet.LoginRequestPacket;
+import org.alixia.chatroom.internet.LogoutReplyPacket;
+import org.alixia.chatroom.internet.LogoutReplyPacket.ErrorType;
+import org.alixia.chatroom.internet.LogoutRequestPacket;
 import org.alixia.chatroom.internet.SessionIDPacket;
 import org.alixia.chatroom.internet.SessionIDPacket.Success;
 import org.alixia.chatroom.internet.VerificationPacket;
@@ -91,6 +94,34 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 			throws IOException, TimeoutException, UsernameTakenException, ConnectException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void logout(String username, UUID sessionID) throws IOException, UsernameNotFoundException, TimeoutException,
+			UnknownAuthenticationException, InvalidSessionIDException {
+		// Create our connection objects
+		final Socket socket = new Socket(host, port);
+		socket.setSoTimeout(getTimeout());
+		final ObjectOutputStream sender = new ObjectOutputStream(socket.getOutputStream());
+		final ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
+
+		sender.writeObject(new LogoutRequestPacket(username, sessionID));
+		sender.flush();
+		final LogoutReplyPacket reply;
+		try {
+			reply = (LogoutReplyPacket) reader.readObject();
+		} catch (SocketTimeoutException e) {
+			throw new TimeoutException();
+		} catch (Exception e) {
+			throw new IOException(e);
+		} finally {
+			socket.close();
+		}
+		if (!reply.isSuccessful())
+			if (reply.error == ErrorType.INVALID_SESSION_ID)
+				throw new InvalidSessionIDException("SessionID: " + sessionID);
+			else if (reply.error == ErrorType.USERNAME_NOT_FOUND)
+				throw new UsernameNotFoundException("Username: " + username);
 	}
 
 }

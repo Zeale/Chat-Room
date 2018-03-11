@@ -18,9 +18,7 @@ class ServerClient {
 	private boolean connectionClosed;
 
 	private final Socket socket;
-
 	private final ObjectInputStream objIn;
-
 	private final ObjectOutputStream objOut;
 
 	private ConnectionListener listener;

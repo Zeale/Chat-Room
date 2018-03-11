@@ -67,4 +67,7 @@ public abstract class AuthenticationMethod {
 	public abstract UUID createNewAccount(String username, String password)
 			throws IOException, TimeoutException, UsernameTakenException, UnknownAuthenticationException;
 
+	public abstract void logout(String username, UUID sessionID) throws IOException, UsernameNotFoundException,
+			TimeoutException, UnknownAuthenticationException, InvalidSessionIDException;
+
 }
