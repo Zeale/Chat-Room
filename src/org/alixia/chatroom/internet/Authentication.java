@@ -59,17 +59,20 @@ public final class Authentication {
 				ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(ChatRoom.INSTANCE.getAccount());
 			}
 		} catch (ConnectException e) {
-			LOGGER.log("Failed to connect to the authentication server.");
+			LOGGER.log(
+					"Failed to connect to the authentication server. (The server might be down. If it isn't, you might not be connected to the internet. If you are, then for some weird reason, the server couldn't be connected to.)");
 		} catch (final IOException e) {
 			e.printStackTrace();
-			LOGGER.log("An unknown error occurred...");
+			LOGGER.log(
+					"An unknown error occurred... The stack trace has been printed to the console. If you have access to the stacktrace, you should send it to the developer.");
 			return;
 		} catch (TimeoutException e) {
-			LOGGER.log("Could not connect to server...");
+			LOGGER.log("The server was successfully connected to, but the connection timed out. The timeout is set to "
+					+ (double) Authentication.getDefaultAuthenticationMethod().getTimeout() / 1000 + " seconds.");
 		} catch (UsernameNotFoundException e) {
-			LOGGER.log("Username not found");
+			LOGGER.log("That username is not registered.");
 		} catch (IncorrectPasswordException e) {
-			LOGGER.log("Wrong password");
+			LOGGER.log("Incorrect password.");
 		}
 
 	}
