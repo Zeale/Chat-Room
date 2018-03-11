@@ -236,8 +236,10 @@ public final class Commands {
 
 			@Override
 			public void consume(final String command, final String... args) {
-				if (command.equals("cancel") && args.length == 0)
+				if (command.equals("/cancel") && args.length == 0) {
+					println("Cancelling login.", SUCCESS_COLOR);
 					return;
+				}
 
 				if (command.isEmpty()) {
 
@@ -250,12 +252,20 @@ public final class Commands {
 				}
 				if (accountName == null) {
 					accountName = command;
-					if (args.length > 0)
+					println("Username: " + accountName, SUCCESS_COLOR);
+					if (args.length > 0) {
 						password = args[0];
-					else
+						println("Password: " + password, SUCCESS_COLOR);
+					} else {
+						println("Please enter a password:", INFO_COLOR);
 						addConsumer(this);
-				} else if (password == null)
+					}
+				} else if (password == null) {
 					password = command;
+					println("Password: " + password, SUCCESS_COLOR);
+					login.run();
+					return;
+				}
 
 			}
 		};
@@ -268,14 +278,17 @@ public final class Commands {
 		@Override
 		protected void act(final String name, final String... args) {
 			if (args.length > 0) {
+				accountName = args[0];
+				println("Username: " + accountName, SUCCESS_COLOR);
 				if (args.length > 1) {
 					password = args[1];
+					println("Password: " + password, SUCCESS_COLOR);
 					login.run();
+					return;
 				} else {
 					println("Please enter a password:", INFO_COLOR);
 					addConsumer(usernameConsumer);
 				}
-				accountName = args[0];
 			} else {
 				println("Please enter a username:", INFO_COLOR);
 				addConsumer(usernameConsumer);

@@ -15,6 +15,8 @@ import org.alixia.chatroom.logging.Logger;
 
 public final class Authentication {
 
+	public static final int DEFAULT_TIMEOUT_MILLIS = 5000;
+
 	public static final int DEFAULT_AUTHENTICATION_PORT = 35560;
 	public static final String DEFAULT_AUTHENTICATION_SERVER = "dusttoash.org";
 

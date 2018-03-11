@@ -32,6 +32,7 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 	public boolean authenticate(final String username, final UUID sessionID) throws IOException, ConnectException {
 
 		final Socket sock = new Socket(host, port);
+		sock.setSoTimeout(getTimeout());
 		final ObjectOutputStream sender = new ObjectOutputStream(sock.getOutputStream());
 		final ObjectInputStream reader = new ObjectInputStream(sock.getInputStream());
 
@@ -56,6 +57,7 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 
 		// Create our connection objects
 		final Socket socket = new Socket(host, port);
+		socket.setSoTimeout(getTimeout());
 		final ObjectOutputStream sender = new ObjectOutputStream(socket.getOutputStream());
 		final ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
 
