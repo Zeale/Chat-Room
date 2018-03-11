@@ -85,7 +85,10 @@ public class Server extends NamedObject {
 
 					if (object instanceof BasicUserMessage) {
 						sendAll(new RelayedUserMessage(client.getUsername(), ((BasicUserMessage) object).text,
-								client.isAnonymous() ? "Anonymous" : client.getAccountName()), client);
+								(client.isAnonymous() || client.getAccountName().equals(client.getUsername()))
+										? "Anonymous"
+										: client.getAccountName()),
+								client);
 						try {
 							client.sendObject(
 									new RelayedUserMessage(client.getUsername(), ((BasicUserMessage) object).text,
