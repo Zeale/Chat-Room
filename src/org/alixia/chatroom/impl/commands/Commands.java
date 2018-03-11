@@ -54,6 +54,7 @@ import org.alixia.chatroom.texts.ConsoleText;
 import org.alixia.chatroom.texts.Println;
 import org.alixia.chatroom.texts.SimpleText;
 
+import javafx.application.Platform;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
@@ -74,6 +75,7 @@ public final class Commands {
 	private static final ServerManager servers = ChatRoom.INSTANCE.servers;
 	private static Printable printer = ChatRoom.INSTANCE.printer;
 	private static Console console = ChatRoom.INSTANCE.console;
+
 	public static final Command HELP = new ChatRoomCommand() {
 
 		@Override
@@ -246,6 +248,10 @@ public final class Commands {
 
 			@Override
 			public void run() {
+				if (Platform.isFxApplicationThread()) {
+					new Thread(this).start();
+					return;
+				}
 				try {
 					ChatRoom.INSTANCE.setAccount(new Account(username,
 							Authentication.getDefaultAuthenticationMethod().createNewAccount(username, password)));
@@ -287,7 +293,6 @@ public final class Commands {
 					if (args.length > 1) {
 						password = args[1];
 						println("Password: " + password, SUCCESS_COLOR);
-						createAccount.run();
 						return;
 					} else {
 						println("Enter a password to continue:", INFO_COLOR);
