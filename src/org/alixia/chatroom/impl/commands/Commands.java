@@ -66,6 +66,113 @@ public final class Commands {
 	private static final ServerManager servers = ChatRoom.INSTANCE.servers;
 	private static Printable printer = ChatRoom.INSTANCE.printer;
 	private static Console console = ChatRoom.INSTANCE.console;
+	public static final Command HELP = new ChatRoomCommand() {
+
+		@Override
+		protected void act(final String name, final String... args) {
+
+			if (args.length == 0) {
+
+				println("Parentheses indicate a necessary parameter.", Color.PURPLE);
+				println("Brackets indicate an unnecessary parameter.", Color.PURPLE);
+				println("Elipses denote that a command has subcommands.", Color.PURPLE);
+
+				printHelp(1);
+				return;
+			} else {
+				// Check if the first arg is a number.
+				HANDLE_HELP_PAGE: {
+
+					for (final char c : args[0].toCharArray())
+						if (!Character.isDigit(c))
+							break HANDLE_HELP_PAGE;
+
+					final Integer page;
+					page = Integer.parseInt(args[0]);
+
+					if (args.length > 1) {
+						print("Ignoring additional args and displaying the help for page ", WARNING_COLOR);
+						print("" + page, Color.WHITE);
+						print(".", WARNING_COLOR);
+					}
+
+					printHelp(page);
+					return;
+				}
+
+				String cmd = "/";
+				for (String s : args)
+					cmd += s + " ";
+				if (!commandManager.runCommand(cmd + "help"))
+					println("Help for that command could not be found...", ERROR_COLOR);
+
+			}
+
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("help") || name.equals("?");
+		}
+
+		public void printBasicHelp(final String syntax, final String description) {
+			print(syntax, Color.CRIMSON);
+			print(" - ", Color.WHITE);
+			println(description, Color.DARKTURQUOISE);
+		}
+
+		public void printHelp(final int page) {
+			switch (page) {
+			case 1:
+				println("SHOWING PAGE 1 OF HELP", Color.BISQUE);
+				// /clear-screen
+				printBasicHelp("/help page",
+						"Provides help for a specific command (if provided) or all commands in general.");
+				printBasicHelp("/clear-screen", "Clears all text (and other nodes) from the console.");
+				// /new
+				println("/new ...", Color.CRIMSON);
+				printBasicHelp("\tclient (server-address) [port] (client-name)",
+						"Creates a new client. The client will be connected to the server specified by (server-address). The port is optional and defaults to "
+								+ DEFAULT_CHAT_PORT
+								+ ". The (client-name) is required and can be used to refer to the new client later.");
+				printBasicHelp("\tserver [port] (server-name)",
+						"Creates a new server with the given port. Do note that your router's firewall (if there is one) will likely block any incoming connections to your computer on any port, unless you port forward. The [port] is optional and defaults to "
+								+ DEFAULT_CHAT_PORT + ".");
+				break;
+			case 2:
+				println("SHOWING PAGE 2 OF HELP", Color.BISQUE);
+				printBasicHelp("/cleanup", "Attempts to free up ram by clearing unused program resources.");
+				printBasicHelp("/client [subcommand]", "Manage your clients...");
+				printBasicHelp("/server [subcommand]", "Manage your servers...");
+				printBasicHelp("/set-name (name)", "Changes your name to (name).");
+				break;
+			case 3:
+				println("SHOWING PAGE 3 OF HELP", Color.BISQUE);
+				printBasicHelp("/update",
+						"Gives information about this version of the program and the latest public version. If this command finds that an update is available, you will be able to download it.");
+				printBasicHelp("/changelog (version)",
+						"Displays the changelog for this version of the program or for version (version), if specified.");
+				printBasicHelp("/call (address) [port]",
+						"Calls the specified (address). If a [port] is given, the (address) is called on the specified [por].");
+				break;
+			case 4:
+				println("SHOWING PAGE 4 OF HELP", Color.BISQUE);
+				printBasicHelp("/settings", "Opens the settings page.");
+				printBasicHelp("/auth-server [subcommand]",
+						"Allows you to manage your authentication server, if you have one running. This is primarily used for the site that hosts authentication for users of this program. (The only reason that someone other than the application developer would have an auth server running is if the developer's server went down permanently. Otherwise, the developer's server should be used for authentication.)");
+				break;
+			case 5:
+				println("SHOWING PAGE 5 OF HELP", Color.BISQUE);
+				printBasicHelp("/login [username] [password]",
+						"This command allows you to log in to your account. If a password isn't specified, it will be prompted for. If not a username or a password is specified, both will be prompted for. (P.S. You can't enter a password without a username straight into this command; it will be taken as your username.)");
+				break;
+			default:
+				println("There is no help available for that page...", ERROR_COLOR);
+			}
+		}
+
+	};
+
 	public static final Command AUTH_SERVER = new ChatRoomCommand() {
 
 		@Override
@@ -922,83 +1029,6 @@ public final class Commands {
 		protected boolean match(final String name) {
 			return name.equalsIgnoreCase("client") || name.equals("c");
 		}
-	};
-
-	public static final Command HELP = new ChatRoomCommand() {
-
-		@Override
-		protected void act(final String name, final String... args) {
-
-			if (args.length == 0) {
-
-				println("Parentheses indicate a necessary parameter.", Color.PURPLE);
-				println("Brackets indicate an unnecessary parameter.", Color.PURPLE);
-				println("Elipses denote that a command has subcommands.", Color.PURPLE);
-
-				printHelp(1);
-				return;
-			} else {
-				// Check if the first arg is a number.
-				HANDLE_HELP_PAGE: {
-
-					for (final char c : args[0].toCharArray())
-						if (!Character.isDigit(c))
-							break HANDLE_HELP_PAGE;
-					final Integer page = Integer.parseInt(args[0]);
-
-					if (args.length > 1) {
-						print("Ignoring additional args and displaying the help for page ", WARNING_COLOR);
-						print("" + page, Color.WHITE);
-						print(".", WARNING_COLOR);
-					}
-
-					printHelp(page);
-					return;
-				}
-				// Handle help for a specific command
-				// This isn't supported by all commands
-				final String subcommand = args[0];
-				if (subcommand.equalsIgnoreCase("new"))
-					if (args.length == 1)
-						printBasicHelp("/new (item)",
-								"Creates a new (item). Some different types of (items) may require different arguments.");
-			}
-
-		}
-
-		@Override
-		protected boolean match(final String name) {
-			return name.equalsIgnoreCase("help") || name.equals("?");
-		}
-
-		public void printBasicHelp(final String syntax, final String description) {
-			print(syntax, Color.CRIMSON);
-			print(" - ", Color.WHITE);
-			println(description, Color.DARKTURQUOISE);
-		}
-
-		public void printHelp(final int page) {
-			switch (page) {
-			case 1:
-				// /clear-screen
-				printBasicHelp("/help [command]",
-						"Provides help for a specific command (if provided) or all commands in general.");
-				printBasicHelp("/clear-screen", "Clears all text (and other nodes) from the console.");
-				// /new
-				println("/new ...", Color.CRIMSON);
-				printBasicHelp("\tclient (server-address) [port] (client-name)",
-						"Creates a new client. The client will be connected to the server specified by (server-address). The port is optional and defaults to "
-								+ DEFAULT_CHAT_PORT
-								+ ". The (client-name) is required and can be used to refer to the new client later.");
-				printBasicHelp("\tserver [port] (server-name)",
-						"Creates a new server with the given port. Do note that your router's firewall (if there is one) will likely block any incoming connections to your computer on any port, unless you port forward. The [port] is optional and defaults to "
-								+ DEFAULT_CHAT_PORT + ".");
-				break;
-			default:
-				println("There is no help available for that page...", ERROR_COLOR);
-			}
-		}
-
 	};
 
 	public static final Command CLEAR_SCREEN = new ChatRoomCommand() {
