@@ -40,6 +40,10 @@ import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.internet.Authentication;
+import org.alixia.chatroom.internet.authmethods.exceptions.InvalidSessionIDException;
+import org.alixia.chatroom.internet.authmethods.exceptions.TimeoutException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UnknownAuthenticationException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UsernameNotFoundException;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BoldText;
 import org.alixia.chatroom.texts.ConsoleText;
@@ -227,6 +231,49 @@ public final class Commands {
 		protected boolean match(final String name) {
 			// Not ignorecase
 			return equalsAny(name, "auth-server", "authserver");
+		}
+	};
+
+	public static final Command LOGOUT = new ChatRoomCommand() {
+
+		@Override
+		protected boolean match(String name) {
+			return equalsAnyIgnoreCase(name, "logout", "log-out");
+		}
+
+		@Override
+		protected void act(String name, String... args) {
+			if (args.length > 0) {
+				println("This command does not take any arguments...", ERROR_COLOR);
+				return;
+			}
+
+			if (!ChatRoom.INSTANCE.isLoggedIn()) {
+				println("You aren't logged in.", INFO_COLOR);
+				return;
+			}
+
+			try {
+				Authentication.getDefaultAuthenticationMethod().logout(ChatRoom.INSTANCE.getAccount().username,
+						ChatRoom.INSTANCE.getAccount().sessionID);
+			} catch (TimeoutException e) {
+				println("Connecting to the server and attempting to log you out timed out.", ERROR_COLOR);
+			} catch (UsernameNotFoundException e) {
+				println("The server could not find the username that you were logged in with!", ERROR_COLOR);
+				e.printStackTrace();
+			} catch (UnknownAuthenticationException e) {
+				println("An unknown error occurred while trying to log you out.", ERROR_COLOR);
+				e.printStackTrace();
+			} catch (InvalidSessionIDException e) {
+				println("Your sessionID had expired; you weren't originally logged in.", ERROR_COLOR);
+				e.printStackTrace();
+			} catch (IOException e) {
+				println("An exception occurred while trying to connect to the server.", ERROR_COLOR);
+				e.printStackTrace();
+			} finally {
+				ChatRoom.INSTANCE.logoutLocal();
+			}
+
 		}
 	};
 	public static final Command LOGIN = new ChatRoomCommand() {

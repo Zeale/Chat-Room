@@ -362,4 +362,8 @@ public class ChatRoom {
 
 	}
 
+	public void logoutLocal() {
+		setAccount(null);
+	}
+
 }
