@@ -26,6 +26,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 
 import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
@@ -40,10 +41,13 @@ import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
 import org.alixia.chatroom.internet.Authentication;
+import org.alixia.chatroom.internet.authmethods.exceptions.AccountCreationDeniedException;
 import org.alixia.chatroom.internet.authmethods.exceptions.InvalidSessionIDException;
+import org.alixia.chatroom.internet.authmethods.exceptions.InvalidUsernameException;
 import org.alixia.chatroom.internet.authmethods.exceptions.TimeoutException;
 import org.alixia.chatroom.internet.authmethods.exceptions.UnknownAuthenticationException;
 import org.alixia.chatroom.internet.authmethods.exceptions.UsernameNotFoundException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UsernameTakenException;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BoldText;
 import org.alixia.chatroom.texts.ConsoleText;
@@ -231,6 +235,102 @@ public final class Commands {
 		protected boolean match(final String name) {
 			// Not ignorecase
 			return equalsAny(name, "auth-server", "authserver");
+		}
+	};
+
+	public static final Command CREATE_NEW_ACCOUNT = new ChatRoomCommand() {
+
+		private String username, password;
+
+		private final Runnable createAccount = new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					ChatRoom.INSTANCE.setAccount(new Account(username,
+							Authentication.getDefaultAuthenticationMethod().createNewAccount(username, password)));
+				} catch (TimeoutException e) {
+					println("Connected to the server, but a timeout occurred. Your account was not created.",
+							ERROR_COLOR);
+				} catch (UsernameTakenException e) {
+					println("That username is already taken! Please try again with another one.", ERROR_COLOR);
+				} catch (InvalidUsernameException e) {
+					println("That username is not allowed.", ERROR_COLOR);
+				} catch (UnknownAuthenticationException e) {
+					println("An unknown error occurred.", ERROR_COLOR);
+					e.printStackTrace();
+				} catch (AccountCreationDeniedException e) {
+					println("This server currently does not allow account creation.", ERROR_COLOR);
+					e.printStackTrace();
+				} catch (ConnectException e) {
+					println("The server could not be connected to. It might be down.", ERROR_COLOR);
+				} catch (IOException e) {
+					println("An error occurred while trying to contact the server.", ERROR_COLOR);
+					e.printStackTrace();
+				}
+				username = password = null;
+			}
+		};
+
+		private final CommandConsumer consumer = new CommandConsumer() {
+
+			@Override
+			public void consume(String command, String... args) {
+				if (command.isEmpty()) {
+					println("You must enter a " + username == null ? "password" : "username" + "to continue",
+							ERROR_COLOR);
+					addConsumer(this);
+					return;
+				} else if (username == null) {
+					username = command;
+					println("Username: " + username, SUCCESS_COLOR);
+					if (args.length > 1) {
+						password = args[1];
+						println("Password: " + password, SUCCESS_COLOR);
+						createAccount.run();
+						return;
+					} else {
+						println("Enter a password to continue:", INFO_COLOR);
+						addConsumer(this);
+						return;
+					}
+				} else if (password == null) {
+					password = command;
+					println("Password: " + password, SUCCESS_COLOR);
+					createAccount.run();
+					return;
+				}
+			}
+		};
+
+		@Override
+		protected boolean match(String name) {
+			return equalsAnyIgnoreCase(name, "create-account", "new-account", "create-new-account", "cna");
+		}
+
+		@Override
+		protected void act(String name, String... args) {
+			if (ChatRoom.INSTANCE.isLoggedIn()) {
+				println("You are already logged in to an account. You can't create a new one.", ERROR_COLOR);
+				return;
+			}
+
+			if (args.length > 0) {
+				username = args[0];
+				println("Username: " + username, SUCCESS_COLOR);
+				if (args.length > 1) {
+					password = args[1];
+					println("Password: " + password, SUCCESS_COLOR);
+					createAccount.run();
+					return;
+				} else {
+					println("Enter a password to continue.", INFO_COLOR);
+					addConsumer(consumer);
+				}
+			} else {
+				addConsumer(consumer);
+				println("Enter a username to continue.", INFO_COLOR);
+			}
 		}
 	};
 
