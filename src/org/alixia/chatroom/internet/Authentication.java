@@ -1,13 +1,15 @@
 package org.alixia.chatroom.internet;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.internet.authmethods.AppAuthMethodImpl;
 import org.alixia.chatroom.internet.authmethods.AuthenticationMethod;
-import org.alixia.chatroom.internet.authmethods.LoginResult;
-import org.alixia.chatroom.internet.authmethods.LoginResult.ErrorType;
+import org.alixia.chatroom.internet.authmethods.exceptions.IncorrectPasswordException;
+import org.alixia.chatroom.internet.authmethods.exceptions.TimeoutException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UsernameNotFoundException;
 import org.alixia.chatroom.logging.Logger;
 
 public final class Authentication {
@@ -46,27 +48,25 @@ public final class Authentication {
 	 *            The user's password.
 	 */
 	public static void login(final String username, final String password) {
-		LoginResult result;
 		try {
-			result = Authentication.getDefaultAuthenticationMethod().login(username, password);
+			UUID result = Authentication.getDefaultAuthenticationMethod().login(username, password);
+			LOGGER.log("Successfully logged in!");
+			if (ChatRoom.INSTANCE.clients.isItemSelected()) {
+				ChatRoom.INSTANCE.setAccount(new Account(username, result));
+				ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(ChatRoom.INSTANCE.getAccount());
+			}
 		} catch (final IOException e) {
 			e.printStackTrace();
 			LOGGER.log("An error occurred...");
 			return;
+		} catch (TimeoutException e) {
+			LOGGER.log("Could not connect to server...");
+		} catch (UsernameNotFoundException e) {
+			LOGGER.log("Username not found");
+		} catch (IncorrectPasswordException e) {
+			LOGGER.log("Wrong password");
 		}
 
-		if (result.isSuccessful()) {
-			LOGGER.log("Successfully logged in!");
-			if (ChatRoom.INSTANCE.clients.isItemSelected()) {
-				ChatRoom.INSTANCE.setAccount(new Account(username, result.sessionID));
-				ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(ChatRoom.INSTANCE.getAccount());
-			}
-		} else if (result.errType == ErrorType.TIMEOUT)
-			LOGGER.log("Could not connect to server...");
-		else if (result.errType == ErrorType.USERNAME_NOT_FOUND)
-			LOGGER.log("Username not found");
-		else if (result.errType == ErrorType.WRONG_PASSWORD)
-			LOGGER.log("Wrong password");
 	}
 
 	public static void setDefaultAuthenticationMethod(final AuthenticationMethod method) {

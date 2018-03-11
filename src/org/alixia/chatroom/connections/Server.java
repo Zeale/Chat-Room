@@ -16,7 +16,7 @@ import org.alixia.chatroom.connections.messages.client.requests.NameChangeReques
 import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
 import org.alixia.chatroom.connections.messages.server.RelayedUserMessage;
 import org.alixia.chatroom.internet.Authentication;
-import org.alixia.chatroom.internet.authmethods.AuthenticationResult;
+import org.alixia.chatroom.internet.authmethods.exceptions.AuthenticationException;
 import org.alixia.chatroom.logging.Logger;
 
 public class Server extends NamedObject {
@@ -104,9 +104,9 @@ public class Server extends NamedObject {
 					} else if (object instanceof Account) {
 						final Account account = (Account) object;
 						try {
-							final AuthenticationResult auth = Authentication.getDefaultAuthenticationMethod()
+							final boolean auth = Authentication.getDefaultAuthenticationMethod()
 									.authenticate(account.username, account.sessionID);
-							if (auth.verified) {
+							if (auth) {
 								// Should only be set when logging in!
 								client.setAccountName(account.username);
 								client.setUsername(account.username);
@@ -122,6 +122,9 @@ public class Server extends NamedObject {
 							} catch (SocketException | RuntimeException e1) {
 								e1.printStackTrace();
 							}
+						} catch (AuthenticationException e) {
+
+							e.printStackTrace();
 						}
 
 					} else if (object instanceof NameChangeRequest) {

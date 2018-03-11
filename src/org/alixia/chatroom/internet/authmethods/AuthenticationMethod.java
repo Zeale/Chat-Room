@@ -4,10 +4,15 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.alixia.chatroom.internet.BasicAuthServer;
+import org.alixia.chatroom.internet.authmethods.exceptions.IncorrectPasswordException;
+import org.alixia.chatroom.internet.authmethods.exceptions.TimeoutException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UnknownAuthenticationException;
+import org.alixia.chatroom.internet.authmethods.exceptions.UsernameNotFoundException;
 
 /**
  * A class that contains ways for client classes to contact an
- * {@link BasicAuthServer} and, login to an account, or verify an account's login.
+ * {@link BasicAuthServer} and, login to an account, or verify an account's
+ * login.
  *
  * @author Zeale
  *
@@ -25,9 +30,10 @@ public abstract class AuthenticationMethod {
 	 * @return An {@link AuthenticationResult} containing data retrieved from the
 	 *         authentication attempt.
 	 * @throws IOException
-	 *             If any error occurs.
+	 *             If any non-authentication-related error occurs.
 	 */
-	public abstract AuthenticationResult authenticate(String username, UUID sessionID) throws IOException;
+	public abstract boolean authenticate(String username, UUID sessionID)
+			throws IOException, TimeoutException, UsernameNotFoundException, UnknownAuthenticationException;
 
 	/**
 	 * Tries to log a user into their account. This should be called by a client
@@ -38,11 +44,15 @@ public abstract class AuthenticationMethod {
 	 *            The user's username.
 	 * @param password
 	 *            The user's password.
-	 * @return A {@link LoginResult} containing data retrieved from the login
-	 *         attempt.
+	 * @return The sessionID of the account if successful and <code>null</code>
+	 *         instead, if the login is unsuccessful.
 	 * @throws IOException
-	 *             If any error occurs.
+	 *             If any non-authentication-related error occurs.
 	 */
-	public abstract LoginResult login(String username, String password) throws IOException;
+	public abstract UUID login(String username, String password) throws IOException, IncorrectPasswordException,
+			UsernameNotFoundException, TimeoutException, UnknownAuthenticationException;
+
+	public abstract UUID createNewAccount(String username, String password)
+			throws IOException, TimeoutException, UsernameTakenException, UnknownAuthenticationException;
 
 }
