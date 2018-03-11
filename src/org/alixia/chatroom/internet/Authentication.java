@@ -13,6 +13,8 @@ import org.alixia.chatroom.internet.authmethods.exceptions.TimeoutException;
 import org.alixia.chatroom.internet.authmethods.exceptions.UsernameNotFoundException;
 import org.alixia.chatroom.logging.Logger;
 
+import javafx.application.Platform;
+
 public final class Authentication {
 
 	public static final int DEFAULT_TIMEOUT_MILLIS = 5000;
@@ -51,6 +53,11 @@ public final class Authentication {
 	 *            The user's password.
 	 */
 	public static void login(final String username, final String password) {
+		// We don't want to vex the application thread. :P
+		if (Platform.isFxApplicationThread()) {
+			new Thread(() -> login(username, password)).start();
+			return;
+		}
 		try {
 			UUID result = Authentication.getDefaultAuthenticationMethod().login(username, password);
 			LOGGER.log("Successfully logged in!");
