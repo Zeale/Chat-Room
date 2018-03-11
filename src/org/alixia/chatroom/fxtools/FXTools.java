@@ -16,10 +16,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public final class FXTools {
-	private FXTools() {
-	}
-
-	public static Background getBackgroundFromColor(Color color) {
+	public static Background getBackgroundFromColor(final Color color) {
 		return new Background(new BackgroundFill(color, null, null));
 	}
 
@@ -67,7 +64,7 @@ public final class FXTools {
 	 * @param node
 	 *            The {@link Node} that will be used to move the WindowManager.
 	 */
-	public static void setPaneDraggableByNode(final Node node, Stage stage) {
+	public static void setPaneDraggableByNode(final Node node, final Stage stage) {
 		/**
 		 * This object is made so that the <code>xOffset</code> and <code>yOffset</code>
 		 * variables can be used inside the lambda expressions without being made final.
@@ -108,7 +105,8 @@ public final class FXTools {
 	 * @param y
 	 *            The starting y position of the text.
 	 */
-	public static void spawnLabel(final String text, final Color color, final double x, final double y, Stage stage) {
+	public static void spawnLabel(final String text, final Color color, final double x, final double y,
+			final Stage stage) {
 		final Popup pc = new Popup();
 		final Label label = new Label(text);
 		label.setMouseTransparent(true);
@@ -119,7 +117,7 @@ public final class FXTools {
 		/* Style label */
 		label.setTextFill(color);
 		label.setBackground(null);
-		double fontSize = 16;
+		final double fontSize = 16;
 		label.setStyle("-fx-font-weight: bold; -fx-font-size: " + fontSize + "px;");
 		/* Set Popup positions */
 		pc.setX(x);
@@ -142,8 +140,11 @@ public final class FXTools {
 		opacityTransition.play();
 	}
 
-	public static void spawnLabelAtMousePos(final String text, final Color color, Stage stage) {
+	public static void spawnLabelAtMousePos(final String text, final Color color, final Stage stage) {
 		spawnLabel(text, color, MouseInfo.getPointerInfo().getLocation().getX(),
 				MouseInfo.getPointerInfo().getLocation().getY(), stage);
+	}
+
+	private FXTools() {
 	}
 }

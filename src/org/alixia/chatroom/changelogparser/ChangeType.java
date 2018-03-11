@@ -3,7 +3,7 @@ package org.alixia.chatroom.changelogparser;
 public enum ChangeType {
 	ADDITION, CHANGE, DELETION, FIX;
 
-	public static ChangeType valueOfChar(String changePrecedent) {
+	public static ChangeType valueOfChar(final String changePrecedent) {
 		switch (changePrecedent.toLowerCase()) {
 		case "+":
 			return ChangeType.ADDITION;

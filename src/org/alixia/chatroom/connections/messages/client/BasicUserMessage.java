@@ -11,7 +11,7 @@ public class BasicUserMessage extends Message {
 
 	public final String text;
 
-	public BasicUserMessage(String text) {
+	public BasicUserMessage(final String text) {
 		this.text = text;
 	}
 

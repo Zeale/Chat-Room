@@ -23,7 +23,7 @@ public class CallServer {
 	private final ServerSocket socket;
 	private boolean run = true;
 
-	private List<SoundServerClient> connections = new LinkedList<>();
+	private final List<SoundServerClient> connections = new LinkedList<>();
 
 	private final Runnable acceptImpl = new Runnable() {
 
@@ -32,22 +32,22 @@ public class CallServer {
 
 			while (run)
 				try {
-					Socket connection = socket.accept();
+					final Socket connection = socket.accept();
 
 					LOGGER.log("Accepted the connection " + connection.getInetAddress());
 					new Thread(() -> {
 						try {
 							handleConnection(connection);
-						} catch (IOException e) {
+						} catch (final IOException e) {
 							e.printStackTrace();
 						}
 					}).start();
-				} catch (SocketException e) {
+				} catch (final SocketException e) {
 					return;
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					System.err.println("Failed to accept a connection to a voice server.");
 					e.printStackTrace();
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					e.printStackTrace();
 				}
 
@@ -67,31 +67,31 @@ public class CallServer {
 		this(0);
 	}
 
-	public CallServer(int port) throws IOException {
+	public CallServer(final int port) throws IOException {
 		socket = new ServerSocket(port);
 		accepter.start();
 	}
 
-	protected void handleConnection(Socket connection) throws IOException {
-		SoundServerClient client = new SoundServerClient(connection, this);
+	protected void handleConnection(final Socket connection) throws IOException {
+		final SoundServerClient client = new SoundServerClient(connection, this);
 		connections.add(client);
 	}
 
-	void sendSound(byte[] data, SoundServerClient sender) {
+	void sendSound(final byte[] data, final SoundServerClient sender) {
 		sendToAll(data, sender);
 	}
 
-	private void sendToAll(byte[] data, SoundServerClient... exceptedClients) {
-		DATA_LOOP: for (SoundServerClient ssc : connections) {
-			for (SoundServerClient essc : exceptedClients)
+	private void sendToAll(final byte[] data, final SoundServerClient... exceptedClients) {
+		DATA_LOOP: for (final SoundServerClient ssc : connections) {
+			for (final SoundServerClient essc : exceptedClients)
 				if (ssc == essc)
 					continue DATA_LOOP;
 			try {
 				ssc.sendData(data);
-			} catch (SocketException e) {
+			} catch (final SocketException e) {
 				System.out.println(ssc);
 				connections.remove(ssc);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException();
 			}
@@ -100,7 +100,7 @@ public class CallServer {
 
 	public void stop() throws IOException {
 		run = false;
-		for (SoundServerClient ssc : connections)
+		for (final SoundServerClient ssc : connections)
 			ssc.close();
 	}
 

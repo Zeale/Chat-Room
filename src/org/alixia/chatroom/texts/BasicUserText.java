@@ -17,7 +17,7 @@ import javafx.stage.Popup;
  * <p>
  * This class is used to print formatted texts to a {@link TextFlow}
  * representing user messages.
- * 
+ *
  * @author Zeale
  *
  */
@@ -25,27 +25,27 @@ public class BasicUserText extends ConsoleText {
 
 	public String username, message, accountName;
 
-	public BasicUserText(String username, String message, String accountName) {
+	public BasicUserText(final String username, final String message, final String accountName) {
 		this.username = username;
 		this.message = message;
 		this.accountName = accountName;
 	}
 
 	@Override
-	public void print(Console console) {
+	public void print(final Console console) {
 
-		Text name = new Text(username), arrow = new Text(" > "), msg = new Text(message);
+		final Text name = new Text(username), arrow = new Text(" > "), msg = new Text(message);
 		formatText(name, arrow, msg);
 
 		if (accountName != null) {
-			boolean specialName = accountName.equals("Kröw") || accountName.equals("Zeale");
+			final boolean specialName = accountName.equals("Kröw") || accountName.equals("Zeale");
 			name.setFill(specialName ? Color.DARKGRAY : Color.RED);
 			if (specialName)
 				name.setFont(Font.font("Brush Script MT", DEFAULT_SIZE + 8));
 
 			new Object() {
-				private Popup popup = new Popup();
-				private Label label = new Label(accountName);
+				private final Popup popup = new Popup();
+				private final Label label = new Label(accountName);
 
 				{
 					label.setTextFill(Color.ORANGERED);

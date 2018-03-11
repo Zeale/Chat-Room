@@ -10,15 +10,15 @@ public class BasicInfoText extends ConsoleText {
 	public String text;
 	public Color color;
 
-	public BasicInfoText(String text, Color color) {
+	public BasicInfoText(final String text, final Color color) {
 		this.text = text;
 		this.color = color;
 	}
 
 	@Override
-	public void print(Console console) {
+	public void print(final Console console) {
 
-		Text text = new Text(this.text);
+		final Text text = new Text(this.text);
 		formatText(text);
 		text.setFill(color);
 		console.printText(text);

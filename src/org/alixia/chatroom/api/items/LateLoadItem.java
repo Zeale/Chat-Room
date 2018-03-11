@@ -8,7 +8,7 @@ import org.alixia.chatroom.api.ItemConstructor;
  * is used to construct what this object wraps. The wrapped object is
  * constructed and returned the first time {@link #get()} is called. From then
  * on, it is simply returned.
- * 
+ *
  * @author Zeale
  *
  * @param <T>
@@ -19,7 +19,7 @@ public class LateLoadItem<T> implements Getable<T> {
 	private T item;
 	private final ItemConstructor<T> constructor;
 
-	public LateLoadItem(ItemConstructor<T> constructor) {
+	public LateLoadItem(final ItemConstructor<T> constructor) {
 		this.constructor = constructor;
 	}
 

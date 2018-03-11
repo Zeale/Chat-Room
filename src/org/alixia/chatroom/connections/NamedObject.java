@@ -4,7 +4,7 @@ class NamedObject {
 
 	private final String name;
 
-	public NamedObject(String name) {
+	public NamedObject(final String name) {
 		this.name = name;
 	}
 

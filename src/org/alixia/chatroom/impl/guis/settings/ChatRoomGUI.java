@@ -11,7 +11,6 @@ import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import javafx.animation.FillTransition;
 import javafx.animation.StrokeTransition;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -55,13 +54,6 @@ public final class ChatRoomGUI {
 	public final Scene scene;
 	public final Stage stage;
 
-	public ChatRoomGUI(Stage stage) {
-		this.stage = stage;
-		stage.setWidth(800);
-		stage.setHeight(600);
-		stage.setScene(scene);
-	}
-
 	{
 
 		flow.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
@@ -88,16 +80,23 @@ public final class ChatRoomGUI {
 
 	}
 
+	public ChatRoomGUI(final Stage stage) {
+		this.stage = stage;
+		stage.setWidth(800);
+		stage.setHeight(600);
+		stage.setScene(scene);
+	}
+
 	public void addBorder() {
 		final Color ITEM_COLOR = DEFAULT_NODE_ITEM_COLOR, BACKGROUND_COLOR = DEFAULT_WINDOW_BORDER_COLOR;
 
-		StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
+		final StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
 
 		close.setPrefSize(26, 26);
 		minimize.setPrefSize(26, 26);
 		expand.setPrefSize(26, 26);
 
-		Background background = new Background(new BackgroundFill(BACKGROUND_COLOR, null, null));
+		final Background background = new Background(new BackgroundFill(BACKGROUND_COLOR, null, null));
 		close.setBackground(background);
 		minimize.setBackground(background);
 		expand.setBackground(background);
@@ -112,7 +111,7 @@ public final class ChatRoomGUI {
 					// Pos is the rect with a positive slope, neg is the negative sloped rect.
 					Shape cross;
 					{
-						Shape pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
+						final Shape pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
 						neg.setRotate(45);
 						pos.setRotate(-45);
 						cross = Shape.union(pos, neg);
@@ -126,8 +125,8 @@ public final class ChatRoomGUI {
 
 					close.getChildren().add(cross);
 
-					StrokeTransition stcross = new StrokeTransition(Duration.seconds(animationDuration), cross);
-					FillTransition ftcross = new FillTransition(Duration.seconds(animationDuration), cross);
+					final StrokeTransition stcross = new StrokeTransition(Duration.seconds(animationDuration), cross);
+					final FillTransition ftcross = new FillTransition(Duration.seconds(animationDuration), cross);
 
 					close.setOnMouseEntered(event -> {
 						stcross.stop();
@@ -160,7 +159,7 @@ public final class ChatRoomGUI {
 
 				{
 					// Expand/Maximize
-					Rectangle max = new Rectangle(20, 20);
+					final Rectangle max = new Rectangle(20, 20);
 					max.setFill(Color.TRANSPARENT);
 					max.setStroke(ITEM_COLOR);
 					max.setStrokeWidth(2.5);
@@ -169,7 +168,7 @@ public final class ChatRoomGUI {
 
 					expand.getChildren().add(max);
 
-					StrokeTransition stexp = new StrokeTransition(Duration.seconds(animationDuration), max);
+					final StrokeTransition stexp = new StrokeTransition(Duration.seconds(animationDuration), max);
 
 					expand.setOnMouseMoved(event -> {
 						stexp.stop();
@@ -193,7 +192,7 @@ public final class ChatRoomGUI {
 
 				{
 					// Minimize
-					Rectangle min = new Rectangle(22, 2);
+					final Rectangle min = new Rectangle(22, 2);
 					StackPane.setAlignment(min, Pos.BOTTOM_CENTER);
 					min.setFill(ITEM_COLOR);
 					min.setStroke(ITEM_COLOR);
@@ -201,14 +200,14 @@ public final class ChatRoomGUI {
 					minimize.setPadding(new Insets(0, 0, 2, 0));
 					minimize.getChildren().add(min);
 
-					StrokeTransition stmin = new StrokeTransition(Duration.seconds(animationDuration), min);
-					FillTransition ftmin = new FillTransition(Duration.seconds(animationDuration), min);
+					final StrokeTransition stmin = new StrokeTransition(Duration.seconds(animationDuration), min);
+					final FillTransition ftmin = new FillTransition(Duration.seconds(animationDuration), min);
 
 					minimize.setOnMouseEntered(event -> {
 						stmin.stop();
 						ftmin.stop();
 
-						Color darkGold = new Color(1, 190d / 255, 0, 1);
+						final Color darkGold = new Color(1, 190d / 255, 0, 1);
 						stmin.setFromValue((Color) min.getStroke());
 						stmin.setToValue(darkGold);
 						ftmin.setFromValue((Color) min.getFill());
@@ -245,7 +244,7 @@ public final class ChatRoomGUI {
 				minimize.getChildren().add(minimizeFill);
 				expand.getChildren().add(expandFill);
 
-				FillTransition ftclose = new FillTransition(Duration.seconds(animationDuration), closeFill),
+				final FillTransition ftclose = new FillTransition(Duration.seconds(animationDuration), closeFill),
 						ftminimize = new FillTransition(Duration.seconds(animationDuration), minimizeFill),
 						ftexpand = new FillTransition(Duration.seconds(animationDuration), expandFill);
 
@@ -306,13 +305,12 @@ public final class ChatRoomGUI {
 			if (event.getButton().equals(MouseButton.MIDDLE)) {
 				stage.setMaximized(false);
 				stage.setFullScreen(!stage.isFullScreen());
-			} else if (event.getButton().equals(MouseButton.PRIMARY)) {
+			} else if (event.getButton().equals(MouseButton.PRIMARY))
 				if (stage.isFullScreen()) {
 					stage.setMaximized(false);
 					stage.setFullScreen(false);
 				} else
 					stage.setMaximized(!stage.isMaximized());
-			}
 		});
 
 		minimize.setOnMouseClicked(event -> {
@@ -321,7 +319,7 @@ public final class ChatRoomGUI {
 		});
 
 		// Menu bar
-		HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
+		final HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
 				OS.getOS() == OS.WINDOWS ? close : minimize);
 
 		new Object() {
@@ -329,28 +327,20 @@ public final class ChatRoomGUI {
 			private double dx, dy;
 
 			{
-				menuBar.setOnMousePressed(new EventHandler<MouseEvent>() {
-
-					@Override
-					public void handle(MouseEvent event) {
-						if (stage.isMaximized() || stage.isFullScreen())
-							return;
-						dx = stage.getX() - event.getScreenX();
-						dy = stage.getY() - event.getScreenY();
-						event.consume();
-					}
+				menuBar.setOnMousePressed(event -> {
+					if (stage.isMaximized() || stage.isFullScreen())
+						return;
+					dx = stage.getX() - event.getScreenX();
+					dy = stage.getY() - event.getScreenY();
+					event.consume();
 				});
 
-				menuBar.setOnMouseDragged(new EventHandler<MouseEvent>() {
-
-					@Override
-					public void handle(MouseEvent event) {
-						if (stage.isMaximized() || stage.isFullScreen())
-							return;
-						stage.setX(event.getScreenX() + dx);
-						stage.setY(event.getScreenY() + dy);
-						event.consume();
-					}
+				menuBar.setOnMouseDragged(event -> {
+					if (stage.isMaximized() || stage.isFullScreen())
+						return;
+					stage.setX(event.getScreenX() + dx);
+					stage.setY(event.getScreenY() + dy);
+					event.consume();
 				});
 			}
 		};
@@ -367,7 +357,7 @@ public final class ChatRoomGUI {
 		else
 			menuBar.setAlignment(Pos.CENTER_LEFT);
 
-		Border border = new Border(
+		final Border border = new Border(
 				new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 2, 2)));
 
 		// Root
@@ -376,7 +366,7 @@ public final class ChatRoomGUI {
 		new ResizeOperator(root, new Resizable() {
 
 			@Override
-			public void expandHor(double amount) {
+			public void expandHor(final double amount) {
 				if (stage.getWidth() + amount < 600)
 					stage.setWidth(600);
 				else
@@ -384,7 +374,7 @@ public final class ChatRoomGUI {
 			}
 
 			@Override
-			public void expandVer(double amount) {
+			public void expandVer(final double amount) {
 				if (stage.getHeight() + amount < 400)
 					stage.setHeight(400);
 				else
@@ -402,12 +392,12 @@ public final class ChatRoomGUI {
 			}
 
 			@Override
-			public void moveX(double amount) {
+			public void moveX(final double amount) {
 				stage.setX(stage.getX() + amount);
 			}
 
 			@Override
-			public void moveY(double amount) {
+			public void moveY(final double amount) {
 				stage.setY(stage.getY() + amount);
 			}
 		}, 10) {
@@ -418,18 +408,17 @@ public final class ChatRoomGUI {
 			}
 
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(final MouseEvent event) {
 				super.handle(event);
 				if (event.getEventType().equals(MouseEvent.MOUSE_ENTERED) && bottom(event))
 					addBar();
 				else if (event.getEventType().equals(MouseEvent.MOUSE_EXITED))
 					removeBar();
-				else if (event.getEventType().equals(MouseEvent.MOUSE_MOVED)) {
+				else if (event.getEventType().equals(MouseEvent.MOUSE_MOVED))
 					if (bottom(event))
 						addBar();
 					else
 						removeBar();
-				}
 
 			}
 

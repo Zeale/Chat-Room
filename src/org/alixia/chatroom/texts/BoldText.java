@@ -15,22 +15,22 @@ public class BoldText extends ConsoleText {
 	public BoldText() {
 	}
 
-	public BoldText(Color color) {
+	public BoldText(final Color color) {
 		this.color = color;
 	}
 
-	public BoldText(String text) {
+	public BoldText(final String text) {
 		this.text = text;
 	}
 
-	public BoldText(String text, Color color) {
+	public BoldText(final String text, final Color color) {
 		this.text = text;
 		this.color = color;
 	}
 
 	@Override
-	public void print(Console console) {
-		Text text = new Text(this.text);
+	public void print(final Console console) {
+		final Text text = new Text(this.text);
 		text.setFont(Font.font(DEFAULT_FAMLIY, FontWeight.EXTRA_BOLD, DEFAULT_SIZE));
 		text.setFill(color);
 		console.printText(text);

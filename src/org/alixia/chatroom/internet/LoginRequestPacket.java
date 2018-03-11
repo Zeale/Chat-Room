@@ -10,7 +10,7 @@ public class LoginRequestPacket implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public final String username, password;
 
-	public LoginRequestPacket(String username, String password) {
+	public LoginRequestPacket(final String username, final String password) {
 		this.username = username;
 		this.password = password;
 	}

@@ -7,15 +7,15 @@ public class MultiCommandConsumer extends CommandConsumer {
 
 	private final List<Command> commands = new LinkedList<>();
 
-	public void addCommands(Command... commands) {
-		for (Command c : commands)
+	public void addCommands(final Command... commands) {
+		for (final Command c : commands)
 			if (!this.commands.contains(c))
 				this.commands.add(c);
 	}
 
 	@Override
-	public void consume(String command, String... args) {
-		for (Command c : commands)
+	public void consume(final String command, final String... args) {
+		for (final Command c : commands)
 			if (c.match(command)) {
 				c.act(command, args);
 				return;

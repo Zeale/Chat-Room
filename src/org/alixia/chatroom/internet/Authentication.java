@@ -24,7 +24,8 @@ public final class Authentication {
 
 	private static AuthServer server;
 
-	private Authentication() {
+	public static AuthServer getAuthServer() {
+		return server;
 	}
 
 	public static AuthenticationMethod getDefaultAuthenticationMethod() {
@@ -34,17 +35,17 @@ public final class Authentication {
 	/**
 	 * Attempts to log the user in given the specified parameters. Results are
 	 * printed to the console using {@link #LOGGER}.
-	 * 
+	 *
 	 * @param username
 	 *            The user's username.
 	 * @param password
 	 *            The user's password.
 	 */
-	public static void login(String username, String password) {
+	public static void login(final String username, final String password) {
 		LoginResult result;
 		try {
 			result = Authentication.getDefaultAuthenticationMethod().login(username, password);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 			LOGGER.log("An error occurred...");
 			return;
@@ -64,18 +65,17 @@ public final class Authentication {
 			LOGGER.log("Wrong password");
 	}
 
-	public static void setDefaultAuthenticationMethod(AuthenticationMethod method) {
+	public static void setDefaultAuthenticationMethod(final AuthenticationMethod method) {
 		if (method == null)
 			throw new IllegalArgumentException();
 		authMethod = method;
 	}
 
-	public static void startAuthServer(int port) throws IOException {
+	public static void startAuthServer(final int port) throws IOException {
 		if (server == null)
 			server = new AuthServer(port);
 	}
 
-	public static AuthServer getAuthServer() {
-		return server;
+	private Authentication() {
 	}
 }

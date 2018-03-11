@@ -11,16 +11,16 @@ public class RelayedUserMessage extends UserMessage {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	public ConsoleText toConsoleText() {
-		return new BasicUserText(author, message, accountName);
-	}
-
 	public final String author, message, accountName;
 
-	public RelayedUserMessage(String author, String message, String accountName) {
+	public RelayedUserMessage(final String author, final String message, final String accountName) {
 		this.author = author;
 		this.message = message;
 		this.accountName = accountName;
+	}
+
+	@Override
+	public ConsoleText toConsoleText() {
+		return new BasicUserText(author, message, accountName);
 	}
 }

@@ -13,7 +13,7 @@ public class Account implements Serializable {
 	public final String username;
 	public final UUID sessionID;
 
-	public Account(String username, UUID sessionID) {
+	public Account(final String username, final UUID sessionID) {
 		this.username = username;
 		this.sessionID = sessionID;
 	}

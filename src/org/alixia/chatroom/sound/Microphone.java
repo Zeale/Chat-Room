@@ -7,47 +7,49 @@ import javax.sound.sampled.TargetDataLine;
 
 public class Microphone {
 
+	public static Microphone getCurrentMicrophone() throws LineUnavailableException {
+		final AudioFormat format = new AudioFormat(8000.0f, 16, 1, true, true);
+		final TargetDataLine microphone = AudioSystem.getTargetDataLine(format);
+
+		return new Microphone(microphone);
+	}
+
+	public static void main(final String[] args) throws LineUnavailableException {
+
+		final Microphone mic = getCurrentMicrophone();
+		System.out.println(mic.microphone);
+
+	}
+
 	private final TargetDataLine microphone;
+
 	private boolean recording;
+
+	public Microphone(final TargetDataLine microphone) {
+		this.microphone = microphone;
+	}
 
 	public boolean isRecording() {
 		return recording;
 	}
 
-	public static void main(String[] args) throws LineUnavailableException {
-
-		Microphone mic = getCurrentMicrophone();
-		System.out.println(mic.microphone);
-
-	}
-
-	public Microphone(TargetDataLine microphone) {
-		this.microphone = microphone;
-	}
-
 	public Sound record() {
-		Sound sound = new Sound();
+		final Sound sound = new Sound();
 
 		return sound;
 	}
 
-	public Sound record(long nanosecs) {
+	public Sound record(final long nanosecs) {
 		if (isRecording())
 			throw new IllegalStateException("This microphone is already recording something...");
-		Sound sound = new Sound();
+		final Sound sound = new Sound();
 
-		Thread recorder = new Thread(new Runnable() {
+		final Thread recorder = new Thread(() -> {
 
-			@Override
-			public void run() {
-
-				while (true) {
-					if (Thread.interrupted())
-						break;
-					// Record into our sound object.
-
-				}
-			}
+			while (true)
+				if (Thread.interrupted())
+					break;
+			// Record into our sound object.
 		});
 		new Thread(new Runnable() {
 
@@ -65,20 +67,5 @@ public class Microphone {
 
 		return sound;
 
-	}
-
-	private void startRecording() {
-		recording = true;
-	}
-
-	private void stopRecording() {
-		recording = false;
-	}
-
-	public static Microphone getCurrentMicrophone() throws LineUnavailableException {
-		AudioFormat format = new AudioFormat(8000.0f, 16, 1, true, true);
-		TargetDataLine microphone = AudioSystem.getTargetDataLine(format);
-
-		return new Microphone(microphone);
 	}
 }

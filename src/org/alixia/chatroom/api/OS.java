@@ -6,7 +6,7 @@ public enum OS {
 
 	// TODO This will need to be updated.
 	public static OS getOS() {
-		String os = System.getProperty("os.name").toLowerCase();
+		final String os = System.getProperty("os.name").toLowerCase();
 		if (os.startsWith("win"))
 			return WINDOWS;
 		else

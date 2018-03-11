@@ -3,7 +3,6 @@ package org.alixia.chatroom.texts;
 import org.alixia.chatroom.api.Console;
 
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 public class SimpleText extends ConsoleText {
 
@@ -14,7 +13,7 @@ public class SimpleText extends ConsoleText {
 	}
 
 	@Override
-	public void print(Console console) {
+	public void print(final Console console) {
 		console.printText(text);
 	}
 

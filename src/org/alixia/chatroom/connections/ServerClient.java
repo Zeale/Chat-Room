@@ -15,40 +15,15 @@ class ServerClient {
 
 	private String username = "Anonymous", accountName;
 
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getAccountName() {
-		return accountName;
-	}
-
-	public void setAccountName(String accountName) {
-		this.accountName = accountName;
-	}
-
 	private boolean connectionClosed;
 
 	private final Socket socket;
 
 	private final ObjectInputStream objIn;
+
 	private final ObjectOutputStream objOut;
 
 	private ConnectionListener listener;
-
-	public void setListener(ConnectionListener listener) {
-		this.listener = listener;
-		if (!outputThread.isAlive())
-			outputThread.start();
-	}
-
-	public ConnectionListener getListener() {
-		return listener;
-	}
 
 	private Thread outputThread = new Thread(new Runnable() {
 
@@ -100,10 +75,6 @@ class ServerClient {
 
 	}
 
-	public boolean isAnonymous() {
-		return getAccountName() == null;
-	}
-
 	public ServerClient(final String hostname, final int port) throws UnknownHostException, IOException {
 		socket = new Socket(hostname, port);
 
@@ -121,6 +92,22 @@ class ServerClient {
 		}
 	}
 
+	public String getAccountName() {
+		return accountName;
+	}
+
+	public ConnectionListener getListener() {
+		return listener;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public boolean isAnonymous() {
+		return getAccountName() == null;
+	}
+
 	private void pause() {
 		try {
 			Thread.sleep(1000);
@@ -130,8 +117,20 @@ class ServerClient {
 	}
 
 	/**
+	 * Resets the output stream. This should ditch any references to objects in the
+	 * stream.
+	 */
+	public void reset() {
+		try {
+			objOut.reset();
+		} catch (final IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
 	 * Sends a text message to the client as the server.
-	 * 
+	 *
 	 * @param message
 	 *            The message to send.
 	 * @throws IOException
@@ -146,23 +145,25 @@ class ServerClient {
 		try {
 			objOut.writeObject(object);
 			objOut.flush();
-		} catch (SocketException e) {
+		} catch (final SocketException e) {
 			throw e;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	/**
-	 * Resets the output stream. This should ditch any references to objects in the
-	 * stream.
-	 */
-	public void reset() {
-		try {
-			objOut.reset();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	public void setAccountName(final String accountName) {
+		this.accountName = accountName;
+	}
+
+	public void setListener(final ConnectionListener listener) {
+		this.listener = listener;
+		if (!outputThread.isAlive())
+			outputThread.start();
+	}
+
+	public void setUsername(final String username) {
+		this.username = username;
 	}
 
 }

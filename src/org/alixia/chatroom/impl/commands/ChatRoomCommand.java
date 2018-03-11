@@ -20,10 +20,10 @@ abstract class ChatRoomCommand extends Command {
 		ChatRoom.INSTANCE.commandManager.addCommand(this);
 	}
 
-	protected void printHelp(String usage, String... descriptions) {
+	protected void printHelp(final String usage, final String... descriptions) {
 		ChatRoom.INSTANCE.print("Usage: " + usage, INFO_COLOR);
 		ChatRoom.INSTANCE.print(" - ", Color.WHITE);
-		for (String s : descriptions)
+		for (final String s : descriptions)
 			ChatRoom.INSTANCE.println(s, SUCCESS_COLOR);
 	}
 

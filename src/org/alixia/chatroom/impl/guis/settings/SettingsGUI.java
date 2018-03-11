@@ -19,13 +19,13 @@ public class SettingsGUI extends _SettingsWindowImpl {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.alixia.chatroom.impl.guis.settings._SettingsWindowImpl#handleLogin(java.
 	 * lang.String, java.lang.String)
 	 */
 	@Override
-	public void handleLogin(String username, String password) {
+	public void handleLogin(final String username, final String password) {
 		Authentication.login(username, password);
 	}
 

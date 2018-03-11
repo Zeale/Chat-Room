@@ -11,7 +11,7 @@ public class NameChangeRequest implements Serializable {
 
 	public final String newName;
 
-	public NameChangeRequest(String newName) {
+	public NameChangeRequest(final String newName) {
 		this.newName = newName;
 	}
 

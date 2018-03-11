@@ -12,7 +12,7 @@ public class VerificationRequestPacket implements Serializable {
 	public final String username;
 	public final UUID sessionID;// I think one UUID should be fine for now ;)
 
-	public VerificationRequestPacket(String username, UUID sessionID) {
+	public VerificationRequestPacket(final String username, final UUID sessionID) {
 		this.username = username;
 		this.sessionID = sessionID;
 	}

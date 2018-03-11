@@ -16,7 +16,7 @@ public class Message implements Serializable {
 		id = UUID.randomUUID();
 	}
 
-	Message(UUID id) {
+	Message(final UUID id) {
 		this.id = id;
 	}
 

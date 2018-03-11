@@ -6,7 +6,6 @@ import org.alixia.chatroom.guis.ChatRoomWindow;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -32,7 +31,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 	private final VBox settingsBox = new VBox();
 	private final ScrollPane scrollWrapper = new ScrollPane(settingsBox);
-	private LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(
+	private final LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(
 			() -> new _AdvancedSettingsImpl());
 
 	{
@@ -52,7 +51,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 		close.setOnAction(event -> close());
 
-		HBox buttonWrapper = new HBox(15, close);
+		final HBox buttonWrapper = new HBox(15, close);
 		buttonWrapper.setAlignment(Pos.CENTER);
 		AnchorPane.setBottomAnchor(buttonWrapper, 15d);
 		AnchorPane.setLeftAnchor(buttonWrapper, 0d);
@@ -71,24 +70,24 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 				.setOpacity(newValue ? 1 : 0.2));
 
 		// Login Nodes
-		Text accountCategory = new Text("Account");
+		final Text accountCategory = new Text("Account");
 		accountCategory.setFont(Font.font(Font.getDefault().getSize() + 14));
 
-		Text usernameInfo = new Text("Username:"), passwordInfo = new Text("Password:");
-		TextField usernameInput = new TextField(), passwordInput = new PasswordField();
+		final Text usernameInfo = new Text("Username:"), passwordInfo = new Text("Password:");
+		final TextField usernameInput = new TextField(), passwordInput = new PasswordField();
 		usernameInput.setPromptText("Username");
 		passwordInput.setPromptText("Passwrd123");
 
 		// Login Wrappers
-		HBox usernameBox = new HBox(15, usernameInfo, usernameInput);
-		HBox passwordBox = new HBox(15, passwordInfo, passwordInput);
+		final HBox usernameBox = new HBox(15, usernameInfo, usernameInput);
+		final HBox passwordBox = new HBox(15, passwordInfo, passwordInput);
 
 		usernameBox.setAlignment(Pos.CENTER);
 		passwordBox.setAlignment(Pos.CENTER);
 
-		Button login = new Button("Login");
+		final Button login = new Button("Login");
 
-		VBox loginWrapper = new VBox(10, accountCategory, usernameBox, passwordBox, login);
+		final VBox loginWrapper = new VBox(10, accountCategory, usernameBox, passwordBox, login);
 		loginWrapper.setAlignment(Pos.CENTER);
 		loginWrapper.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR,
 				BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
@@ -101,21 +100,16 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
 
 		// Handle Ctrl+Alt+Shift+D; this will open the advanced settings window.
-		contentPane.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+		contentPane.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+			if (!(event.getCode() == KeyCode.D && event.isAltDown() && event.isShiftDown() && event.isControlDown()))
+				return;
+			event.consume();
 
-			@Override
-			public void handle(KeyEvent event) {
-				if (!(event.getCode() == KeyCode.D && event.isAltDown() && event.isShiftDown()
-						&& event.isControlDown()))
-					return;
-				event.consume();
+			if (advancedSettings.get().isShowing())
+				advancedSettings.get().close();
+			else
+				advancedSettings.get().show();
 
-				if (advancedSettings.get().isShowing())
-					advancedSettings.get().close();
-				else
-					advancedSettings.get().show();
-
-			}
 		});
 
 		contentPane.addEventFilter(KeyEvent.KEY_PRESSED, event -> {

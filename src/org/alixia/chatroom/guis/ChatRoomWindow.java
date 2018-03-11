@@ -12,7 +12,6 @@ import org.alixia.chatroom.fxtools.ResizeOperator;
 
 import javafx.animation.FillTransition;
 import javafx.animation.StrokeTransition;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -63,7 +62,7 @@ public class ChatRoomWindow extends Stage {
 		minimize.setPrefSize(26, 26);
 		expand.setPrefSize(26, 26);
 
-		Background background = new Background(new BackgroundFill(BACKGROUND_COLOR, null, null));
+		final Background background = new Background(new BackgroundFill(BACKGROUND_COLOR, null, null));
 		close.setBackground(background);
 		minimize.setBackground(background);
 		expand.setBackground(background);
@@ -78,7 +77,7 @@ public class ChatRoomWindow extends Stage {
 					// Pos is the rect with a positive slope, neg is the negative sloped rect.
 					Shape cross;
 					{
-						Shape pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
+						final Shape pos = new Rectangle(24, 2), neg = new Rectangle(24, 2);
 						neg.setRotate(45);
 						pos.setRotate(-45);
 						cross = Shape.union(pos, neg);
@@ -92,8 +91,8 @@ public class ChatRoomWindow extends Stage {
 
 					close.getChildren().add(cross);
 
-					StrokeTransition stcross = new StrokeTransition(Duration.seconds(animationDuration), cross);
-					FillTransition ftcross = new FillTransition(Duration.seconds(animationDuration), cross);
+					final StrokeTransition stcross = new StrokeTransition(Duration.seconds(animationDuration), cross);
+					final FillTransition ftcross = new FillTransition(Duration.seconds(animationDuration), cross);
 
 					close.setOnMouseEntered(event -> {
 						stcross.stop();
@@ -126,7 +125,7 @@ public class ChatRoomWindow extends Stage {
 
 				{
 					// Expand/Maximize
-					Rectangle max = new Rectangle(20, 20);
+					final Rectangle max = new Rectangle(20, 20);
 					max.setFill(Color.TRANSPARENT);
 					max.setStroke(ITEM_COLOR);
 					max.setStrokeWidth(2.5);
@@ -135,7 +134,7 @@ public class ChatRoomWindow extends Stage {
 
 					expand.getChildren().add(max);
 
-					StrokeTransition stexp = new StrokeTransition(Duration.seconds(animationDuration), max);
+					final StrokeTransition stexp = new StrokeTransition(Duration.seconds(animationDuration), max);
 
 					expand.setOnMouseMoved(event -> {
 						stexp.stop();
@@ -159,7 +158,7 @@ public class ChatRoomWindow extends Stage {
 
 				{
 					// Minimize
-					Rectangle min = new Rectangle(22, 2);
+					final Rectangle min = new Rectangle(22, 2);
 					StackPane.setAlignment(min, Pos.BOTTOM_CENTER);
 					min.setFill(ITEM_COLOR);
 					min.setStroke(ITEM_COLOR);
@@ -167,14 +166,14 @@ public class ChatRoomWindow extends Stage {
 					minimize.setPadding(new Insets(0, 0, 2, 0));
 					minimize.getChildren().add(min);
 
-					StrokeTransition stmin = new StrokeTransition(Duration.seconds(animationDuration), min);
-					FillTransition ftmin = new FillTransition(Duration.seconds(animationDuration), min);
+					final StrokeTransition stmin = new StrokeTransition(Duration.seconds(animationDuration), min);
+					final FillTransition ftmin = new FillTransition(Duration.seconds(animationDuration), min);
 
 					minimize.setOnMouseEntered(event -> {
 						stmin.stop();
 						ftmin.stop();
 
-						Color darkGold = new Color(1, 190d / 255, 0, 1);
+						final Color darkGold = new Color(1, 190d / 255, 0, 1);
 						stmin.setFromValue((Color) min.getStroke());
 						stmin.setToValue(darkGold);
 						ftmin.setFromValue((Color) min.getFill());
@@ -211,7 +210,7 @@ public class ChatRoomWindow extends Stage {
 				minimize.getChildren().add(minimizeFill);
 				expand.getChildren().add(expandFill);
 
-				FillTransition ftclose = new FillTransition(Duration.seconds(animationDuration), closeFill),
+				final FillTransition ftclose = new FillTransition(Duration.seconds(animationDuration), closeFill),
 						ftminimize = new FillTransition(Duration.seconds(animationDuration), minimizeFill),
 						ftexpand = new FillTransition(Duration.seconds(animationDuration), expandFill);
 
@@ -272,28 +271,20 @@ public class ChatRoomWindow extends Stage {
 			private double dx, dy;
 
 			{
-				menuBar.setOnMousePressed(new EventHandler<MouseEvent>() {
-
-					@Override
-					public void handle(MouseEvent event) {
-						if (isMaximized() || isFullScreen())
-							return;
-						dx = getX() - event.getScreenX();
-						dy = getY() - event.getScreenY();
-						event.consume();
-					}
+				menuBar.setOnMousePressed(event -> {
+					if (isMaximized() || isFullScreen())
+						return;
+					dx = getX() - event.getScreenX();
+					dy = getY() - event.getScreenY();
+					event.consume();
 				});
 
-				menuBar.setOnMouseDragged(new EventHandler<MouseEvent>() {
-
-					@Override
-					public void handle(MouseEvent event) {
-						if (isMaximized() || isFullScreen())
-							return;
-						setX(event.getScreenX() + dx);
-						setY(event.getScreenY() + dy);
-						event.consume();
-					}
+				menuBar.setOnMouseDragged(event -> {
+					if (isMaximized() || isFullScreen())
+						return;
+					setX(event.getScreenX() + dx);
+					setY(event.getScreenY() + dy);
+					event.consume();
 				});
 			}
 		};
@@ -310,7 +301,7 @@ public class ChatRoomWindow extends Stage {
 		else
 			menuBar.setAlignment(Pos.CENTER_LEFT);
 
-		Border border = new Border(
+		final Border border = new Border(
 				new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2, 2, 2, 2)));
 
 		// Root
@@ -319,7 +310,7 @@ public class ChatRoomWindow extends Stage {
 		new ResizeOperator(root, new Resizable() {
 
 			@Override
-			public void expandHor(double amount) {
+			public void expandHor(final double amount) {
 				if (getWidth() + amount < 600)
 					setWidth(600);
 				else
@@ -327,7 +318,7 @@ public class ChatRoomWindow extends Stage {
 			}
 
 			@Override
-			public void expandVer(double amount) {
+			public void expandVer(final double amount) {
 				if (getHeight() + amount < 400)
 					setHeight(400);
 				else
@@ -345,12 +336,12 @@ public class ChatRoomWindow extends Stage {
 			}
 
 			@Override
-			public void moveX(double amount) {
+			public void moveX(final double amount) {
 				ChatRoomWindow.this.setX(ChatRoomWindow.this.getX() + amount);
 			}
 
 			@Override
-			public void moveY(double amount) {
+			public void moveY(final double amount) {
 				ChatRoomWindow.this.setY(ChatRoomWindow.this.getY() + amount);
 			}
 		}, 10) {
@@ -361,18 +352,17 @@ public class ChatRoomWindow extends Stage {
 			}
 
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(final MouseEvent event) {
 				super.handle(event);
 				if (event.getEventType().equals(MouseEvent.MOUSE_ENTERED) && bottom(event))
 					addBar();
 				else if (event.getEventType().equals(MouseEvent.MOUSE_EXITED))
 					removeBar();
-				else if (event.getEventType().equals(MouseEvent.MOUSE_MOVED)) {
+				else if (event.getEventType().equals(MouseEvent.MOUSE_MOVED))
 					if (bottom(event))
 						addBar();
 					else
 						removeBar();
-				}
 
 			}
 
@@ -386,31 +376,30 @@ public class ChatRoomWindow extends Stage {
 		setHeight(600);
 	}
 
-	protected void onClose(MouseEvent event) {
+	protected void onClose(final MouseEvent event) {
 		if (event.getButton().equals(MouseButton.PRIMARY))
 			close();
 	}
 
-	protected void onMinimize(MouseEvent event) {
-		if (event.getButton().equals(MouseButton.PRIMARY))
-			setIconified(true);
-	}
-
-	protected void onMaximize(MouseEvent event) {
+	protected void onMaximize(final MouseEvent event) {
 		if (event.getButton().equals(MouseButton.MIDDLE)) {
 			setMaximized(false);
 			setFullScreen(!isFullScreen());
-		} else if (event.getButton().equals(MouseButton.PRIMARY)) {
+		} else if (event.getButton().equals(MouseButton.PRIMARY))
 			if (isFullScreen()) {
 				setMaximized(false);
 				setFullScreen(false);
 			} else
 				setMaximized(!isMaximized());
-		}
 
 	}
 
-	public void setMenubarType(boolean full) {
+	protected void onMinimize(final MouseEvent event) {
+		if (event.getButton().equals(MouseButton.PRIMARY))
+			setIconified(true);
+	}
+
+	public void setMenubarType(final boolean full) {
 		if (full)
 			if (menuBar.getChildren().size() == 3)
 				return;

@@ -24,15 +24,7 @@ public final class Logger {
 
 	public String separator = ".";
 
-	public String getSeparator() {
-		return separator;
-	}
-
-	public void setSeparator(String separator) {
-		this.separator = separator;
-	}
-
-	public Logger(String name) {
+	public Logger(final String name) {
 		this.name = name;
 		parent = null;
 	}
@@ -45,10 +37,10 @@ public final class Logger {
 			while (name.contains(".."))
 				name = name.replace("..", ".");
 
-			String[] names = name.split("\\.");
+			final String[] names = name.split("\\.");
 
 			for (int i = 0; i < names.length - 1; i++) {
-				String n = names[i];
+				final String n = names[i];
 				parent = new Logger(n, parent);
 			}
 
@@ -56,10 +48,6 @@ public final class Logger {
 		} else
 			this.name = name;
 		this.parent = parent;
-	}
-
-	public Logger getParent() {
-		return parent;
 	}
 
 	public String getFullName() {
@@ -70,21 +58,29 @@ public final class Logger {
 		return name;
 	}
 
-	public void log(String message) {
+	public Logger getParent() {
+		return parent;
+	}
+
+	public String getSeparator() {
+		return separator;
+	}
+
+	public void log(final String message) {
 		printIdentifier();
 		printer.println(message, messageColor);
 	}
 
-	public void logBold(String message) {
+	public void logBold(final String message) {
 		printIdentifier();
 		new BoldText(message, messageColor).print(console);
 	}
 
 	private void printIdentifier() {
 		boldPrinter.print("[", bracketColor);
-		String[] names = getFullName().split("\\.");
+		final String[] names = getFullName().split("\\.");
 		for (int i = 0; i < names.length - 1; i++) {
-			String s = names[i];
+			final String s = names[i];
 			(boldHeader ? boldPrinter : printer).print(s,
 					parentColor.interpolate(childColor, (double) i / (names.length - 1)));
 			(boldHeader ? boldPrinter : printer).print(separator, separatorColor);
@@ -92,6 +88,10 @@ public final class Logger {
 		(boldHeader ? boldPrinter : printer).print(getName(), childColor);
 		boldPrinter.print("]: ", bracketColor);
 
+	}
+
+	public void setSeparator(final String separator) {
+		this.separator = separator;
 	}
 
 }

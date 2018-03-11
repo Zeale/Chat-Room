@@ -7,8 +7,6 @@ import org.alixia.chatroom.fxtools.FXTools;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.internet.authmethods.AppAuthMethodImpl;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -53,7 +51,7 @@ public class _AdvancedSettingsImpl {
 		settingsBox.setBackground(new Background(new BackgroundFill(DEFAULT_BACKGROUND_COLOR, null, null)));
 		settingsBox.setFillWidth(false);
 
-		DropShadow shadow = new DropShadow();
+		final DropShadow shadow = new DropShadow();
 		shadow.setRadius(50);
 		shadow.setSpread(0);
 
@@ -85,34 +83,27 @@ public class _AdvancedSettingsImpl {
 		apply.setPrefWidth(100);
 		doneBox.getChildren().addAll(hostAuthServer, apply);
 
-		apply.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				try {
-					authOverridePort.setStyle("");
-					Authentication.setDefaultAuthenticationMethod(new AppAuthMethodImpl(authOverrideInput.getText(),
-							Integer.parseInt(authOverridePort.getText())));
-					stage.close();
-				} catch (NumberFormatException e) {
-					authOverridePort.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		apply.setOnAction(event -> {
+			try {
+				authOverridePort.setStyle("");
+				Authentication.setDefaultAuthenticationMethod(new AppAuthMethodImpl(authOverrideInput.getText(),
+						Integer.parseInt(authOverridePort.getText())));
+				stage.close();
+			} catch (final NumberFormatException e1) {
+				authOverridePort.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+			} catch (final Exception e2) {
+				e2.printStackTrace();
 			}
 		});
 
 		// For now, this will simply start the auth server on the default port...
-		hostAuthServer.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				try {
-					Authentication.startAuthServer(Authentication.DEFAULT_AUTHENTICATION_PORT);
-					stage.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-					FXTools.spawnLabelAtMousePos("Failed to start server.", ChatRoom.ERROR_COLOR, stage);
-				}
+		hostAuthServer.setOnAction(event -> {
+			try {
+				Authentication.startAuthServer(Authentication.DEFAULT_AUTHENTICATION_PORT);
+				stage.close();
+			} catch (final IOException e) {
+				e.printStackTrace();
+				FXTools.spawnLabelAtMousePos("Failed to start server.", ChatRoom.ERROR_COLOR, stage);
 			}
 		});
 

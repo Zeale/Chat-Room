@@ -20,16 +20,6 @@ public class Client extends NamedObject {
 
 	private ConnectionListener listener;
 
-	public void setListener(ConnectionListener listener) {
-		this.listener = listener;
-		if (!outputThread.isAlive())
-			outputThread.start();
-	}
-
-	public ConnectionListener getListener() {
-		return listener;
-	}
-
 	private Thread outputThread = new Thread(new Runnable() {
 
 		@Override
@@ -72,11 +62,14 @@ public class Client extends NamedObject {
 			return;
 		}
 	});
+
 	{
 		outputThread.setDaemon(true);
 	}
 
-	public Client(final Socket socket, String name) throws IOException {
+	private boolean paused;
+
+	public Client(final Socket socket, final String name) throws IOException {
 		super(name);
 		this.socket = socket;
 
@@ -85,7 +78,7 @@ public class Client extends NamedObject {
 
 	}
 
-	public Client(final String hostname, final int port, String name) throws UnknownHostException, IOException {
+	public Client(final String hostname, final int port, final String name) throws UnknownHostException, IOException {
 		super(name);
 		socket = new Socket(hostname, port);
 
@@ -103,14 +96,12 @@ public class Client extends NamedObject {
 		}
 	}
 
-	private boolean paused;
+	public ConnectionListener getListener() {
+		return listener;
+	}
 
 	public boolean isPaused() {
 		return paused;
-	}
-
-	public void setPaused(boolean paused) {
-		this.paused = paused;
 	}
 
 	/**
@@ -134,6 +125,18 @@ public class Client extends NamedObject {
 		}
 	}
 
+	/**
+	 * Resets the output stream. This should ditch any references to objects in the
+	 * stream.
+	 */
+	public void reset() {
+		try {
+			objOut.reset();
+		} catch (final IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void sendMessage(final String message) throws IOException {
 		sendObject(message);
 	}
@@ -142,21 +145,19 @@ public class Client extends NamedObject {
 		try {
 			objOut.writeObject(object);
 			objOut.flush();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	/**
-	 * Resets the output stream. This should ditch any references to objects in the
-	 * stream.
-	 */
-	public void reset() {
-		try {
-			objOut.reset();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	public void setListener(final ConnectionListener listener) {
+		this.listener = listener;
+		if (!outputThread.isAlive())
+			outputThread.start();
+	}
+
+	public void setPaused(final boolean paused) {
+		this.paused = paused;
 	}
 
 }

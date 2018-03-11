@@ -11,7 +11,7 @@ public class VerificationPacket implements Serializable {
 
 	public final boolean verified;
 
-	public VerificationPacket(boolean verified) {
+	public VerificationPacket(final boolean verified) {
 		this.verified = verified;
 	}
 

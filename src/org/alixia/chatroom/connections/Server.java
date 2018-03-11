@@ -50,31 +50,38 @@ public class Server extends NamedObject {
 		acceptThread.setDaemon(true);
 	}
 
-	public Server(String name) throws IOException {
-		super(name);
-		socket = new ServerSocket(0);
-		acceptThread.start();
-	}
+	private final List<ServerClient> connections = new LinkedList<>();
 
-	public Server(final int port, String name) throws IOException {
+	public Server(final int port, final String name) throws IOException {
 		super(name);
 		socket = new ServerSocket(port);
 		acceptThread.start();
 	}
 
+	public Server(final String name) throws IOException {
+		super(name);
+		socket = new ServerSocket(0);
+		acceptThread.start();
+	}
+
 	/**
 	 * This is the method that handles new connections.
-	 * 
+	 *
 	 * @param connection
 	 *            The new connection.
 	 */
 	protected void acceptConnection(final Socket connection) {
 		try {
-			ServerClient client = new ServerClient(connection);
+			final ServerClient client = new ServerClient(connection);
 			client.setListener(new ConnectionListener() {
 
 				@Override
-				public void objectReceived(Serializable object) {
+				public void connectionClosed() {
+					sendAll(new BasicServerMessage("Someone left the server!"), client);
+				}
+
+				@Override
+				public void objectReceived(final Serializable object) {
 
 					if (object instanceof BasicUserMessage) {
 						sendAll(new RelayedUserMessage(client.getUsername(), ((BasicUserMessage) object).text,
@@ -89,26 +96,25 @@ public class Server extends NamedObject {
 
 						try {
 							client.sendObject(new ReplyMessage((Message) object));
-						} catch (SocketException e) {
+						} catch (final SocketException e) {
 							connections.remove(client);
 							client.getListener().connectionClosed();
-						} catch (Exception e) {
+						} catch (final Exception e) {
 						}
 					} else if (object instanceof Account) {
-						Account account = (Account) object;
+						final Account account = (Account) object;
 						try {
-							AuthenticationResult auth = Authentication.getDefaultAuthenticationMethod()
+							final AuthenticationResult auth = Authentication.getDefaultAuthenticationMethod()
 									.authenticate(account.username, account.sessionID);
 							if (auth.verified) {
 								// Should only be set when logging in!
 								client.setAccountName(account.username);
 								client.setUsername(account.username);
 								client.sendMessage("Successfully verified your login information.");
-							} else {
+							} else
 								client.sendMessage("Your login information was incorrect...");
-							}
 
-						} catch (IOException e) {
+						} catch (final IOException e) {
 							e.printStackTrace();
 							try {
 								client.sendObject(new BasicServerMessage(
@@ -119,7 +125,7 @@ public class Server extends NamedObject {
 						}
 
 					} else if (object instanceof NameChangeRequest) {
-						String name = ((NameChangeRequest) object).newName;
+						final String name = ((NameChangeRequest) object).newName;
 						try {
 							if (!isUsernameValid(name))
 								client.sendMessage("That username is not valid!");
@@ -127,44 +133,45 @@ public class Server extends NamedObject {
 								client.sendMessage("Your name was set to " + name);
 								client.setUsername(name);
 							}
-						} catch (IOException e) {
+						} catch (final IOException e) {
 							e.printStackTrace();
 						}
 					}
 
 				}
-
-				@Override
-				public void connectionClosed() {
-					sendAll(new BasicServerMessage("Someone left the server!"), client);
-				}
 			});
 			sendAll(new BasicServerMessage("A user has connected!"), client);
 			connections.add(client);
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private boolean isUsernameValid(String name) {
-		for (char c : name.toCharArray())
+	public void blockIncomingConnections() {
+		// The thread will notice that "running" is false and stop itself. We don't need
+		// to stop it.
+		running = false;
+	}
+
+	private boolean isUsernameValid(final String name) {
+		for (final char c : name.toCharArray())
 			if (Character.isWhitespace(c))
 				return false;
 		return name.length() > 3;
 	}
 
-	private void sendAll(Message message, ServerClient... excludedClients) {
+	private void sendAll(final Message message, final ServerClient... excludedClients) {
 
 		OUTER: for (int i = 0; i < connections.size(); i++) {
-			ServerClient sc = connections.get(i);
-			for (ServerClient sc0 : excludedClients)
+			final ServerClient sc = connections.get(i);
+			for (final ServerClient sc0 : excludedClients)
 				if (sc == sc0)
 					continue OUTER;
 
 			try {
 				sc.sendObject(message);
-			} catch (SocketException e) {
+			} catch (final SocketException e) {
 				connections.remove(sc);
 				sc.getListener().connectionClosed();
 				i--;
@@ -183,18 +190,10 @@ public class Server extends NamedObject {
 		if (acceptThread.isAlive())
 			try {
 				acceptThread.start();
-			} catch (IllegalThreadStateException e) {
+			} catch (final IllegalThreadStateException e) {
 				// Do nothing. The thread is (probably) already running
 			}
 	}
-
-	public void blockIncomingConnections() {
-		// The thread will notice that "running" is false and stop itself. We don't need
-		// to stop it.
-		running = false;
-	}
-
-	private List<ServerClient> connections = new LinkedList<>();
 
 	public void stop() throws IOException {
 		blockIncomingConnections();

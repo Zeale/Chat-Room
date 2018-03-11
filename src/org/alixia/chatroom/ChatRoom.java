@@ -46,7 +46,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * 
+ *
  * @author Zeale
  *
  */
@@ -70,20 +70,12 @@ public class ChatRoom {
 	private CallServer callServer;
 	private CallClient callClient;
 
-	public Account getAccount() {
-		return account;
-	}
-
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-
 	private ChatRoomGUI gui;
 
 	public final Printable printer = new Printable() {
 
 		@Override
-		public void print(String text, Color color) {
+		public void print(final String text, final Color color) {
 			ChatRoom.this.print(text, color);
 		}
 
@@ -105,7 +97,7 @@ public class ChatRoom {
 		}
 
 		@Override
-		public void objectReceived(Serializable object) {
+		public void objectReceived(final Serializable object) {
 			if (object instanceof UserMessage)
 				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(console));
 			else if (object instanceof ServerMessage)
@@ -117,15 +109,37 @@ public class ChatRoom {
 	public final CommandManager commandManager = new CommandManager();
 
 	public final ClientManager clients = new ClientManager(clientListener);
+
 	public final ServerManager servers = new ServerManager();
+
 	public final LateLoadItem<SettingsGUI> settingsInstance = new LateLoadItem<>(SettingsGUI::new);
 	private String username = null;
 
 	ChatRoom() {
 	}
 
-	public void executeCommand(String command) {
+	public boolean createNewClient(final String host, final int port, final String id)
+			throws UnknownHostException, IOException {
+		if (clients.containsKey(id))
+			return false;
+		final Client client = new Client(host, port, id);
+		if (isLoggedIn())
+			client.sendObject(ChatRoom.INSTANCE.getAccount());
+		if (username != null)
+			client.sendObject(new NameChangeRequest(username));
+		return clients.addItem(client);
+	}
+
+	public void createNewClient(final String host, final String id) throws UnknownHostException, IOException {
+		createNewClient(host, DEFAULT_CHAT_PORT, id);
+	}
+
+	public void executeCommand(final String command) {
 		commandManager.runCommand(command);
+	}
+
+	public Account getAccount() {
+		return account;
 	}
 
 	public CallClient getCallClient() {
@@ -148,11 +162,15 @@ public class ChatRoom {
 		return account != null;
 	}
 
+	public boolean isUsernameSet() {
+		return username != null;
+	}
+
 	/**
 	 * Called when user pushes send.
 	 */
 	private void onUserSubmit() {
-		String text = getGUI().input.getText();
+		final String text = getGUI().input.getText();
 
 		if (!commandManager.runCommand(text))
 			if (text.isEmpty())
@@ -169,7 +187,7 @@ public class ChatRoom {
 		settingsInstance.get().show();
 	}
 
-	public void print(String text, Color color) {
+	public void print(final String text, final Color color) {
 		new BasicInfoText(text, color).print(console);
 	}
 
@@ -177,22 +195,22 @@ public class ChatRoom {
 		new Println(console);
 	}
 
-	public void println(String text, Color color) {
+	public void println(final String text, final Color color) {
 		print(text, color);
 		println();
 	}
 
 	/**
 	 * Sends text as the user.
-	 * 
+	 *
 	 * @param text
 	 *            The text.
 	 */
-	public void sendText(String text) {
+	public void sendText(final String text) {
 
-		if (clients.isItemSelected()) {
+		if (clients.isItemSelected())
 			clients.getSelectedItem().sendObject(new BasicUserMessage(text));
-		} else {
+		else {
 			print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
 			print("/new help ", Color.ORANGERED);
 			println("For help with connections.", ERROR_COLOR);
@@ -200,15 +218,19 @@ public class ChatRoom {
 
 	}
 
-	public void setCallClient(CallClient callClient) {
+	public void setAccount(final Account account) {
+		this.account = account;
+	}
+
+	public void setCallClient(final CallClient callClient) {
 		this.callClient = callClient;
 	}
 
-	public void setCallServer(CallServer callServer) {
+	public void setCallServer(final CallServer callServer) {
 		this.callServer = callServer;
 	}
 
-	void setStage(Stage stage) {
+	void setStage(final Stage stage) {
 		if (getGUI() != null)
 			throw new RuntimeException("Already initialized");
 
@@ -216,8 +238,8 @@ public class ChatRoom {
 
 		try {
 			tryInit();
-		} catch (Exception e) {
-			Text error = new Text("An error occurred.");
+		} catch (final Exception e) {
+			final Text error = new Text("An error occurred.");
 			error.setFont(Font.font(30));
 			error.setFill(Color.CRIMSON);
 			getGUI().flow.setTextAlignment(TextAlignment.CENTER);
@@ -227,22 +249,7 @@ public class ChatRoom {
 
 	}
 
-	public void createNewClient(String host, String id) throws UnknownHostException, IOException {
-		createNewClient(host, DEFAULT_CHAT_PORT, id);
-	}
-
-	public boolean createNewClient(String host, int port, String id) throws UnknownHostException, IOException {
-		if (clients.containsKey(id))
-			return false;
-		Client client = new Client(host, port, id);
-		if (isLoggedIn())
-			client.sendObject(ChatRoom.INSTANCE.getAccount());
-		if (username != null)
-			client.sendObject(new NameChangeRequest(username));
-		return clients.addItem(client);
-	}
-
-	public void setUsername(String username) {
+	public void setUsername(final String username) {
 		this.username = username;
 		if (ChatRoom.INSTANCE.clients.isItemSelected())
 			clients.getSelectedItem().sendObject(new NameChangeRequest(username));
@@ -311,9 +318,9 @@ public class ChatRoom {
 				// If there is a failure, we won't get to the "break TRY_DOWNLOAD"
 				// statement, so the below try block will be run, and Chat Room will
 				// attempt to open the latest version in the default browser.
-				catch (MalformedURLException e1) {
+				catch (final MalformedURLException e1) {
 					println("There was an error parsing the file's web address.", ERROR_COLOR);
-				} catch (IOException e2) {
+				} catch (final IOException e2) {
 					print("There was an error while trying to retrieve the file from the address: ", ERROR_COLOR);
 					println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
 					println("Attempting to open the file in your browser...", Color.ORANGE);
@@ -331,13 +338,13 @@ public class ChatRoom {
 
 				break TRY_DOWNLOAD;// And continue on to print our success.
 
-			} catch (MalformedURLException e3) {
+			} catch (final MalformedURLException e3) {
 				println("There was an error while trying to locate the file.", ERROR_COLOR);
-			} catch (IOException e4) {
+			} catch (final IOException e4) {
 				println("There was an error while trying to download the file.", ERROR_COLOR);
-			} catch (URISyntaxException e5) {
+			} catch (final URISyntaxException e5) {
 				println("There was an error parsing the file's web address.", ERROR_COLOR);
-			} catch (UnsupportedOperationException e6) {
+			} catch (final UnsupportedOperationException e6) {
 				print("Apparently, your operating system does not support Chat Room opening a link with your default browser. Here is the link to the file: ",
 						ERROR_COLOR);
 				println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
@@ -353,10 +360,6 @@ public class ChatRoom {
 		println("You can close the program and discard this file, then open the new one with the new updates.",
 				Color.WHITE);
 
-	}
-
-	public boolean isUsernameSet() {
-		return username != null;
 	}
 
 }

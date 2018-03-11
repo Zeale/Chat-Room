@@ -7,7 +7,7 @@ public class ReplyMessage extends Message {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ReplyMessage(Message message) {
+	public ReplyMessage(final Message message) {
 		super(message.id);
 	}
 

@@ -19,18 +19,40 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 	private final String host;
 	private final int port;
 
-	public AppAuthMethodImpl(String host, int port) {
+	public AppAuthMethodImpl(final String host, final int port) {
 		this.host = host;
 		this.port = port;
 	}
 
 	@Override
-	public LoginResult login(String username, String password) throws IOException {
+	public AuthenticationResult authenticate(final String username, final UUID sessionID) throws IOException {
+
+		final Socket sock = new Socket(host, port);
+		final ObjectOutputStream sender = new ObjectOutputStream(sock.getOutputStream());
+		final ObjectInputStream reader = new ObjectInputStream(sock.getInputStream());
+
+		sender.writeObject(new VerificationRequestPacket(username, sessionID));
+		sender.flush();
+
+		try {
+			final VerificationPacket reply = (VerificationPacket) reader.readObject();
+
+			return new AuthenticationResult(reply.verified);
+		} catch (final Exception e) {
+			throw new IOException(e);
+		} finally {
+			sock.close();
+		}
+
+	}
+
+	@Override
+	public LoginResult login(final String username, final String password) throws IOException {
 
 		// Create our connection objects
-		Socket socket = new Socket(host, port);
-		ObjectOutputStream sender = new ObjectOutputStream(socket.getOutputStream());
-		ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
+		final Socket socket = new Socket(host, port);
+		final ObjectOutputStream sender = new ObjectOutputStream(socket.getOutputStream());
+		final ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
 
 		// Send the login request
 		sender.writeObject(new LoginRequestPacket(username, password));
@@ -39,43 +61,21 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 		try {
 
 			// Get the reply.
-			SessionIDPacket reply = (SessionIDPacket) reader.readObject();
+			final SessionIDPacket reply = (SessionIDPacket) reader.readObject();
 
 			return reply.success == Success.SUCCESS ? new LoginResult(reply.sessionID, null)
 					: new LoginResult(null,
 							reply.success == Success.USERNAME_NOT_FOUND ? LoginResult.ErrorType.USERNAME_NOT_FOUND
 									: LoginResult.ErrorType.WRONG_PASSWORD);
 
-		} catch (SocketTimeoutException e) {
+		} catch (final SocketTimeoutException e) {
 			// Catch timeouts
 			return new LoginResult(null, ErrorType.TIMEOUT);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new IOException(e);
 		} finally {
 			socket.close();
 		}
-	}
-
-	@Override
-	public AuthenticationResult authenticate(String username, UUID sessionID) throws IOException {
-
-		Socket sock = new Socket(host, port);
-		ObjectOutputStream sender = new ObjectOutputStream(sock.getOutputStream());
-		ObjectInputStream reader = new ObjectInputStream(sock.getInputStream());
-
-		sender.writeObject(new VerificationRequestPacket(username, sessionID));
-		sender.flush();
-
-		try {
-			VerificationPacket reply = (VerificationPacket) reader.readObject();
-
-			return new AuthenticationResult(reply.verified);
-		} catch (Exception e) {
-			throw new IOException(e);
-		} finally {
-			sock.close();
-		}
-
 	}
 
 }

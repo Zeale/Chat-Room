@@ -39,7 +39,6 @@ import org.alixia.chatroom.connections.Server;
 import org.alixia.chatroom.connections.ServerManager;
 import org.alixia.chatroom.connections.voicecall.CallClient;
 import org.alixia.chatroom.connections.voicecall.CallServer;
-import org.alixia.chatroom.guis.ChatRoomWindow;
 import org.alixia.chatroom.internet.Authentication;
 import org.alixia.chatroom.texts.BasicInfoText;
 import org.alixia.chatroom.texts.BoldText;
@@ -58,45 +57,23 @@ public final class Commands {
 	// Literally everything in this class is implementation specific, so it
 	// DEFINITELY belongs in this impl class.
 
-	/**
-	 * This is actually, conveniently, used to load this class (and, thus, all of
-	 * the commands) at startup.
-	 * 
-	 * @return The time (after all static initialization has taken place).
-	 */
-	public static long getTime() {
-		return System.currentTimeMillis();
-	}
-
-	private Commands() {
-	}
-
 	private static final CommandManager commandManager = ChatRoom.INSTANCE.commandManager;
+
 	private static final CallServer callServer = ChatRoom.INSTANCE.getCallServer();
+
 	private static final CallClient callClient = ChatRoom.INSTANCE.getCallClient();
 	private static final ClientManager clients = ChatRoom.INSTANCE.clients;
 	private static final ServerManager servers = ChatRoom.INSTANCE.servers;
 	private static Printable printer = ChatRoom.INSTANCE.printer;
 	private static Console console = ChatRoom.INSTANCE.console;
-
-	public static void sendText(String text) {
-		ChatRoom.INSTANCE.sendText(text);
-	}
-
 	public static final Command AUTH_SERVER = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			// Not ignorecase
-			return equalsAny(name, "auth-server", "authserver");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length == 0)
 				println(Authentication.getDefaultAuthenticationMethod().toString(), Color.DARKORANGE);
 			else {
-				String subcommand = args[0];
+				final String subcommand = args[0];
 				if (subcommand.equalsIgnoreCase("add")) {
 					if (args.length < 3) {
 						print("Usage: ", ERROR_COLOR);
@@ -106,7 +83,7 @@ public final class Commands {
 					try {
 						Authentication.getAuthServer().addUser(args[1], args[2]);
 						println("Successfully added " + args[1], SUCCESS_COLOR);
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						println("An error occurred while trying to add " + args[1], ERROR_COLOR);
 						return;
 					}
@@ -116,18 +93,18 @@ public final class Commands {
 						println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
 						return;
 					}
-					File file = new File(args[1]);
+					final File file = new File(args[1]);
 					if (file.exists())
 						file.delete();
 					try {
 						Authentication.getAuthServer().store(file);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						println("Failed to create the file: " + file.getAbsolutePath() + "."
 								+ (file.exists() ? " Note that this is probably NOT because the file exists." : ""),
 								ERROR_COLOR);
 						e.printStackTrace();
 						return;
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						println("Failed to print data to the file: " + file.getAbsolutePath(), ERROR_COLOR);
 						return;
 					}
@@ -135,15 +112,20 @@ public final class Commands {
 				}
 			}
 		}
-	};
 
+		@Override
+		protected boolean match(final String name) {
+			// Not ignorecase
+			return equalsAny(name, "auth-server", "authserver");
+		}
+	};
 	public static final Command LOGIN = new ChatRoomCommand() {
 
 		private String accountName, password;
 		private final CommandConsumer usernameConsumer = new CommandConsumer() {
 
 			@Override
-			public void consume(String command, String... args) {
+			public void consume(final String command, final String... args) {
 				if (command.equals("cancel") && args.length == 0)
 					return;
 
@@ -174,12 +156,7 @@ public final class Commands {
 		};
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("login");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0) {
 				if (args.length > 1) {
 					password = args[1];
@@ -194,17 +171,17 @@ public final class Commands {
 				addConsumer(usernameConsumer);
 			}
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("login");
+		}
 	};
 
 	public static final Command SETTINGS = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("settings");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0) {
 				if (equalsHelp(args[0])) {
 					printHelp("/" + name,
@@ -213,13 +190,13 @@ public final class Commands {
 					addConsumer(new CommandConsumer() {
 
 						@Override
-						public void consume(String command, String... args) {
+						public void consume(final String command, final String... args) {
 							if (equalsAnyIgnoreCase(command, "yes", "y")) {
 								println("Opening settings window...", SUCCESS_COLOR);
 								// Try block is *currently* useless
 								try {
 									openSettingsWindow();
-								} catch (Exception e) {
+								} catch (final Exception e) {
 									e.printStackTrace();
 									println("Failed to open window...", ERROR_COLOR);
 								}
@@ -244,23 +221,23 @@ public final class Commands {
 				// Try block is *currently* useless
 				try {
 					openSettingsWindow();
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					e.printStackTrace();
 					println("Failed to open window...", ERROR_COLOR);
 				}
 			}
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("settings");
 		}
 	};
 
 	public static final Command HOST_CALL = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "host-call", "hostcall");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 
 			if (callServer != null) {
 				print("There is already an active server. Do ", ERROR_COLOR);
@@ -281,7 +258,7 @@ public final class Commands {
 					if (callServer != null) {
 						try {
 							callServer.stop();
-						} catch (IOException e) {
+						} catch (final IOException e) {
 							println("A data streaming exception occurred while trying to close the server.",
 									ERROR_COLOR);
 							e.printStackTrace();
@@ -296,11 +273,11 @@ public final class Commands {
 			try {
 				ChatRoom.INSTANCE.setCallServer(
 						new CallServer(args.length == 0 ? DEFAULT_CALL_PORT : Integer.parseInt(args[0])));
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				println("An error occurred while trying to create a server.", ERROR_COLOR);
 				e.printStackTrace();
 				return;
-			} catch (NumberFormatException e) {
+			} catch (final NumberFormatException e) {
 				println("The port you entered could not be parsed as a number.", ERROR_COLOR);
 				return;
 			}
@@ -308,26 +285,25 @@ public final class Commands {
 			println("Successfully started hosting a call.", SUCCESS_COLOR);
 		}
 
+		@Override
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "host-call", "hostcall");
+		}
+
 	};
 
 	public static final Command CALL = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("call");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 
 			if (args[0].equalsIgnoreCase("disconnect")) {
 				try {
-					if (callClient == null) {
+					if (callClient == null)
 						print("There is no active call for you to disconnect...", ERROR_COLOR);
-					}
 					callClient.disconnect();
 					ChatRoom.INSTANCE.setCallClient(null);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					e.printStackTrace();
 					println("A data streaming error occurred while trying to disconnect the client.", ERROR_COLOR);
 				}
@@ -389,114 +365,114 @@ public final class Commands {
 								sampleRate = DEFAULT_CALL_SAMPLE_RATE;
 								break;
 							}
-						} catch (NumberFormatException e) {
+						} catch (final NumberFormatException e) {
 							println("Could not parse an audio level preset...", ERROR_COLOR);
 							println("Usage: /" + name + " " + args[0] + " l[level]", Color.ORANGE);
 							return;
 						}
-					} else {
+					} else
 						try {
 							sampleRate = Float.parseFloat(rate);
-						} catch (NumberFormatException e) {
+						} catch (final NumberFormatException e) {
 							println("Could not parse an audio level...", ERROR_COLOR);
 							println("Usage: /" + name + " " + args[0] + " [number]", Color.ORANGE);
 							return;
 						}
-					}
 				}
 
 				ChatRoom.INSTANCE.setCallClient(
 						new CallClient(location, DEFAULT_CALL_PORT, new AudioFormat(sampleRate, 16, 1, true, true)));
-			} catch (LineUnavailableException e) {
+			} catch (final LineUnavailableException e) {
 				println("Failed to make the call client. Your microphone could not be accessed...", ERROR_COLOR);
 				e.printStackTrace();
-			} catch (UnknownHostException e) {
+			} catch (final UnknownHostException e) {
 				println("Failed to connect to the server. The server could not be found (i.e. its address could not be determined).",
 						ERROR_COLOR);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				println("Failed to connect to the server due to some data streaming error.", ERROR_COLOR);
 				e.printStackTrace();
 			}
 
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("call");
 		}
 	};
 
 	public static final Command _ESCAPE = new Command() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.startsWith("/");
+		protected void act(final String name, final String... args) {
+			String text = name.substring(1);
+			for (final String s : args)
+				text += " " + s;
+			sendText(text);
 		}
 
 		@Override
-		protected void act(String name, String... args) {
-			String text = name.substring(1);
-			for (String s : args)
-				text += " " + s;
-			sendText(text);
+		protected boolean match(final String name) {
+			return name.startsWith("/");
 		}
 	};
 
 	public static final Command ESCAPE = new Command() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("escape");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			String text = "";
-			for (String s : args)
+			for (final String s : args)
 				text += s + " ";
 			sendText(text);
 
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("escape");
 		}
 	};
 
 	public static final Command CHANGELOG = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("changelog");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 
 			if (args.length == 0) {
-				ChangelogParser parser = new ChangelogParser("/changelog.txt");
+				final ChangelogParser parser = new ChangelogParser("/changelog.txt");
 				parser.printChangelog(printer);
 
 			} else {
 				if (args.length > 1)
 					println("Excessive args. Using only what is needed.", WARNING_COLOR);
-				String arg = args[0];
-				if (equalsHelp(arg)) {
+				final String arg = args[0];
+				if (equalsHelp(arg))
 					// TODO Change this code when moving to better versioning.
 					printHelp("/" + name + " [version-number]",
 							"Prints the changelog for the current version of the program (if no arguments are provided in the command), or the changelog of a specific version of this program (if an argument is provided and a matching version is found on the program's website).",
 							"As of right now, versions are simply numbers, starting at one and going up. Later, versions may have more normal names, such as v0.1.7.2 or something. (The versioning format with periods is quite ubiquitous as of now.)");
-				} else {
+				else {
 					int ver;
 					try {
 						// TODO Change this code when moving to better versioning.
 						ver = Integer.parseInt(arg);
-						URL location = new URL("http://dusttoash.org/chat-room/changelogs/changelog-" + ver + ".txt");
+						final URL location = new URL(
+								"http://dusttoash.org/chat-room/changelogs/changelog-" + ver + ".txt");
 
-						ChangelogParser parser = new ChangelogParser(location.openStream());
+						final ChangelogParser parser = new ChangelogParser(location.openStream());
 						print("Version: ", Color.MEDIUMAQUAMARINE);
 						parser.printChangelog(printer);
 
-					} catch (NumberFormatException e) {
+					} catch (final NumberFormatException e) {
 						println("Failed to parse your argument, " + arg + " as a number.", ERROR_COLOR);
 						return;
-					} catch (MalformedURLException e) {
+					} catch (final MalformedURLException e) {
 						println("Something went wrong when parsing the URL that was made to try and get data on the version you specified. This isn't a connection error.",
 								ERROR_COLOR);
 						e.printStackTrace();
 						return;
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						println("Failed to get the version data from the remote server.", ERROR_COLOR);
 						e.printStackTrace();
 					}
@@ -504,22 +480,22 @@ public final class Commands {
 				}
 			}
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("changelog");
+		}
 	};
 
 	public static final Command UPDATE = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("update");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			// Update the program
 
 			if (args.length > 0) {
 
-				String argument = args[0];
+				final String argument = args[0];
 				if (argument.equalsIgnoreCase("force") || argument.equals("-f")) {
 					println("Forcefully updating the program.", ERROR_COLOR);
 					println("This ignores checks to see whether or not your version is the latest. If the update command is causing problems with version checking, this command is useful.",
@@ -543,7 +519,7 @@ public final class Commands {
 				println("Attempting to connect to the download site.", INFO_COLOR);
 
 				try {
-					Reader versionInput = new InputStreamReader(
+					final Reader versionInput = new InputStreamReader(
 							new URL("http://dusttoash.org/chat-room/version").openStream());
 
 					// This parses things backwards...
@@ -554,7 +530,7 @@ public final class Commands {
 					while ((n = versionInput.read()) != -1)
 						if (Character.isDigit(n))
 							rawInput += (char) n;
-					char[] charArray = rawInput.toCharArray();
+					final char[] charArray = rawInput.toCharArray();
 					for (int i = charArray.length - 1; i > -1; i--)
 						latest += Math.pow(10, inc++) * Integer.parseInt("" + charArray[i]);
 
@@ -565,14 +541,14 @@ public final class Commands {
 					println(".", SUCCESS_COLOR);
 					println();
 
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					println("An error occurred while trying to connect to the download server. The latest version could not be determined.",
 							ERROR_COLOR);
 				}
 
 				println("Attempting to determine the version that you have.", INFO_COLOR);
 				try {
-					Reader versionInput = new InputStreamReader(getClass().getResourceAsStream("/version"));
+					final Reader versionInput = new InputStreamReader(getClass().getResourceAsStream("/version"));
 					int n;
 					int inc = 0;
 					while ((n = versionInput.read()) != -1)
@@ -585,22 +561,21 @@ public final class Commands {
 					print("" + current, Color.WHITE);
 					println(".", SUCCESS_COLOR);
 
-				} catch (NullPointerException e) {
+				} catch (final NullPointerException e) {
 					println("The version of your copy of this application could not be determined.", ERROR_COLOR);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					println("There was an error while reading some data inside the app. Your local version could not be determined.",
 							ERROR_COLOR);
 				}
 
-				if (currSuccess && lateSuccess) {
-
+				if (currSuccess && lateSuccess)
 					// Need update
 					if (latest > current) {
 						print("There is a newer version of ", Color.ORANGE);
 						print("Chat Room ", Color.ORANGERED);
 						println("available.", Color.ORANGE);
 
-						SimpleText text = new SimpleText();
+						final SimpleText text = new SimpleText();
 
 						// Since this is a lambda expression, the object is not recreated each time.
 						text.text.setOnMouseClicked(event -> {
@@ -618,17 +593,17 @@ public final class Commands {
 						println(" to download the update.", Color.ORANGE);
 					} else
 					// Fully updated
-					if (latest == current) {
+					if (latest == current)
 						println("You have the latest version. :D", SUCCESS_COLOR);
-					} else
-					// Above update...
-					{
+					else
 						println("Your version is above the latest publicly released version. Congrats...?", INFO_COLOR);
-					}
-
-				}
 
 			}
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("update");
 		}
 	};
 
@@ -638,17 +613,17 @@ public final class Commands {
 
 			public String text;
 
-			public SpecialConsoleText(String text) {
+			public SpecialConsoleText(final String text) {
 				this.text = text;
 			}
 
 			@Override
-			public void print(Console console) {
+			public void print(final Console console) {
 
 				console.printAll(println(), println(), println());
-				for (char c : text.toCharArray()) {
+				for (final char c : text.toCharArray()) {
 					// The text
-					Text t = new Text("" + c);
+					final Text t = new Text("" + c);
 
 					// Default formatting
 					formatText(t);
@@ -658,7 +633,7 @@ public final class Commands {
 					t.setFont(Font.font(t.getFont().getFamily(), Math.random() * 10 + 35)); // 35 ~ 45
 
 					// Add a dropshadow
-					DropShadow ds = new DropShadow();
+					final DropShadow ds = new DropShadow();
 					ds.setColor(new Color(Math.random(), Math.random(), Math.random(), 1));
 					t.setEffect(ds);
 
@@ -672,19 +647,14 @@ public final class Commands {
 		}
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "setname", "set-name") || name.equals("sn");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length == 0) {
 				println("I can't set your name unless you tell me what you want it to be... >:(", ERROR_COLOR);
 				print("Usage: ", ERROR_COLOR);
 				println("/set-name (name)", Color.ORANGE);
 			} else {
 
-				String arg = args[0];
+				final String arg = args[0];
 				if (equalsHelp(arg)) {
 					printHelp("/set-name (name)",
 							"Sets your username in chat. This can be set anywhere and will take effect once you connect to a server with a client and send a message.");
@@ -715,23 +685,23 @@ public final class Commands {
 					println("By the way, I didn't set your name. :)", ERROR_COLOR);
 					return;
 				}
-				String username = args[0];
+				final String username = args[0];
 				ChatRoom.INSTANCE.setUsername(username);
 				print("Your name was changed to ", INFO_COLOR);
 				println(username, Color.CHARTREUSE);
 			}
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "setname", "set-name") || name.equals("sn");
 		}
 	};
 
 	public static final Command CLIENTS = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("clients");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0)
 
 				if (equalsHelp(args[0])) {
@@ -749,7 +719,7 @@ public final class Commands {
 			}
 			println("Here is a list of all the registered clients you have.", INFO_COLOR);
 			boolean first = true;
-			for (Client c : clients.values()) {
+			for (final Client c : clients.values()) {
 				if (!first)
 					print(", ", SUCCESS_COLOR);
 				else
@@ -759,17 +729,17 @@ public final class Commands {
 			println();
 
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("clients");
+		}
 	};
 
 	public static final Command SERVERS = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("servers");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0)
 				if (equalsHelp(args[0])) {
 					printHelp("/servers ['list']",
@@ -786,7 +756,7 @@ public final class Commands {
 			}
 			println("Here is a list of all the registered servers you have.", INFO_COLOR);
 			boolean first = true;
-			for (Server s : servers.values()) {
+			for (final Server s : servers.values()) {
 				if (!first)
 					print(", ", SUCCESS_COLOR);
 				else
@@ -795,17 +765,17 @@ public final class Commands {
 			}
 			println();
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("servers");
+		}
 	};
 
 	public static final Command SERVER = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("server") || name.equals("s");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length == 0) {
 				print("Too few arguments. Usage: ", ERROR_COLOR);
 				println("/" + name + " (subcommand)", Color.ORANGE);
@@ -813,10 +783,10 @@ public final class Commands {
 			}
 
 			final String subcommand = args[0];
-			if (equalsHelp(subcommand)) {
+			if (equalsHelp(subcommand))
 				printHelp("/" + name + " (subcommand)",
 						"Allows you to modify or edit a server. You can edit the server that you have selected right now or you can modify a specific server by giving its name along with your command. If there is no selected server, you will need to provide a name.");
-			} else if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
+			else if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
 
 				if (args.length > 1 && equalsHelp(args[1])) {
 					printHelp("/server " + subcommand, "Stops a specific, or the currently selected server.");
@@ -853,17 +823,17 @@ public final class Commands {
 
 			}
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("server") || name.equals("s");
+		}
 	};
 
 	public static final Command CLIENT = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("client") || name.equals("c");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length == 0) {
 				print("Usage: ", ERROR_COLOR);
 				println("/" + name + " (subcommand)", Color.ORANGE);
@@ -884,16 +854,15 @@ public final class Commands {
 						print("You do not have a client selected. Did you mean to close a specific client?\nUsage: ",
 								ERROR_COLOR);
 						println("/" + name + " " + subcommand + " [client-name]", Color.ORANGE);
-					} else {
+					} else
 						clients.removeItem(clients.getSelectedItem().getName());
-					}
 
 				} else {
 					if (clients.isEmpty()) {
 						println("There are no active clients for you to close.", ERROR_COLOR);
 						return;
 					}
-					String clientName = args[1];
+					final String clientName = args[1];
 					if (clients.removeItem(clientName)) {
 						print("The client with the name ", SUCCESS_COLOR);
 						print(clientName, Color.WHITE);
@@ -918,18 +887,15 @@ public final class Commands {
 						println("Too many arguments. Using only what is needed.", WARNING_COLOR);
 						println("Usage: /" + name + " " + subcommand + " (client-name)", WARNING_COLOR);
 					}
-					String clientName = args[1];
+					final String clientName = args[1];
 					if (clientName.equals(clients.getSelectedItem().getName()))
 						println("That client is already selected.", WARNING_COLOR);
-					else {
-
-						if (!clients.containsKey(clientName)) {
-							print("There isn't a client registered with the name ", ERROR_COLOR);
-							println(clientName, Color.ORANGE);
-						} else {
-							clients.selectItem(clientName);
-							println("Selected the specified client.", SUCCESS_COLOR);
-						}
+					else if (!clients.containsKey(clientName)) {
+						print("There isn't a client registered with the name ", ERROR_COLOR);
+						println(clientName, Color.ORANGE);
+					} else {
+						clients.selectItem(clientName);
+						println("Selected the specified client.", SUCCESS_COLOR);
 					}
 				}
 			} else if (subcommand.equalsIgnoreCase("list")) {
@@ -951,17 +917,17 @@ public final class Commands {
 			}
 
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("client") || name.equals("c");
+		}
 	};
 
 	public static final Command HELP = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("help") || name.equals("?");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 
 			if (args.length == 0) {
 
@@ -975,10 +941,10 @@ public final class Commands {
 				// Check if the first arg is a number.
 				HANDLE_HELP_PAGE: {
 
-					for (char c : args[0].toCharArray())
+					for (final char c : args[0].toCharArray())
 						if (!Character.isDigit(c))
 							break HANDLE_HELP_PAGE;
-					Integer page = Integer.parseInt(args[0]);
+					final Integer page = Integer.parseInt(args[0]);
 
 					if (args.length > 1) {
 						print("Ignoring additional args and displaying the help for page ", WARNING_COLOR);
@@ -991,24 +957,27 @@ public final class Commands {
 				}
 				// Handle help for a specific command
 				// This isn't supported by all commands
-				String subcommand = args[0];
-				if (subcommand.equalsIgnoreCase("new")) {
-					if (args.length == 1) {
+				final String subcommand = args[0];
+				if (subcommand.equalsIgnoreCase("new"))
+					if (args.length == 1)
 						printBasicHelp("/new (item)",
 								"Creates a new (item). Some different types of (items) may require different arguments.");
-					}
-				}
 			}
 
 		}
 
-		public void printBasicHelp(String syntax, String description) {
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("help") || name.equals("?");
+		}
+
+		public void printBasicHelp(final String syntax, final String description) {
 			print(syntax, Color.CRIMSON);
 			print(" - ", Color.WHITE);
 			println(description, Color.DARKTURQUOISE);
 		}
 
-		public void printHelp(int page) {
+		public void printHelp(final int page) {
 			switch (page) {
 			case 1:
 				// /clear-screen
@@ -1035,18 +1004,18 @@ public final class Commands {
 	public static final Command CLEAR_SCREEN = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "cls", "clear-screen", "clearscreen");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0 && equalsHelp(args[0])) {
 				printHelp("/" + name,
 						"This simply clears all the items inside your console. Any text from commands or other users will be cleared.");
 				return;
 			}
 			ChatRoom.INSTANCE.getGUI().flow.getChildren().clear();
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "cls", "clear-screen", "clearscreen");
 		}
 	};
 
@@ -1059,12 +1028,7 @@ public final class Commands {
 			argumentManager.addCommand(new ChatRoomCommand() {
 
 				@Override
-				protected boolean match(String name) {
-					return name.equalsIgnoreCase("client") || name.equals("c");
-				}
-
-				@Override
-				protected void act(String name, String... args) {
+				protected void act(final String name, final String... args) {
 					if (args.length > 0 && equalsHelp(args[0])) {
 						printHelp("/new " + name + " (host-name) [port] (client-name)", "Creates a new " + name
 								+ " given a (host-name), optionally, a [port], and a (client-name).");
@@ -1092,9 +1056,9 @@ public final class Commands {
 						try {
 
 							// No port
-							if (args.length == 2) {
+							if (args.length == 2)
 								clientName = args[1];
-							} else {
+							else {
 								if (args.length > 3)
 									println("Too many arguments... Parsing only what is needed: (the first three args).",
 											WARNING_COLOR);
@@ -1109,30 +1073,35 @@ public final class Commands {
 							// client.sendObject(new NameChangeRequest(ChatRoom.INSTANCE.getUsername()));
 
 							// TODO The case of a taken name should be handled before the client is created.
-							if (!ChatRoom.INSTANCE.createNewClient(hostname, port, clientName)) {
+							if (!ChatRoom.INSTANCE.createNewClient(hostname, port, clientName))
 								println("A client with this name already exists. Please choose a new name and try again.",
 										ERROR_COLOR);
-							} else if (!clients.isItemSelected()) {
+							else if (!clients.isItemSelected()) {
 								println("Since there is currently not a selected client, this new one that you've just created will be selected.",
 										Color.CORNFLOWERBLUE);
 								clients.selectItem(clientName);
 							}
-						} catch (NumberFormatException e) {
+						} catch (final NumberFormatException e) {
 							println("The second argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
 									ERROR_COLOR);
-						} catch (UnknownHostException e) {
+						} catch (final UnknownHostException e) {
 							println("The address could not be parsed as a valid server address, or the ip address of the host could not be determined.",
 									ERROR_COLOR);
-						} catch (ConnectException e) {
+						} catch (final ConnectException e) {
 							print("There is no server listening for connections on the address ", ERROR_COLOR);
 							print(hostname, Color.DARKRED);
 							print(" and the port ", ERROR_COLOR);
 							print("" + port, Color.DARKRED);
-						} catch (IOException e) {
+						} catch (final IOException e) {
 							println("Some kind of unknown error occurred while trying to connect.", ERROR_COLOR);
 							e.printStackTrace();
 						}
 					}
+				}
+
+				@Override
+				protected boolean match(final String name) {
+					return name.equalsIgnoreCase("client") || name.equals("c");
 				}
 			});
 
@@ -1140,12 +1109,7 @@ public final class Commands {
 			argumentManager.addCommand(new ChatRoomCommand() {
 
 				@Override
-				protected boolean match(String name) {
-					return name.equalsIgnoreCase("server") || name.equals("s");
-				}
-
-				@Override
-				protected void act(String name, String... args) {
+				protected void act(final String name, final String... args) {
 
 					if (args.length < 1) {
 						print("Too few arguments. See ", ERROR_COLOR);
@@ -1194,23 +1158,23 @@ public final class Commands {
 									SUCCESS_COLOR);
 						}
 
-					} catch (NumberFormatException e) {
+					} catch (final NumberFormatException e) {
 						println("Couldn't parse a port number for the server. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, for example, but 0 and 65536 will not.)",
 								ERROR_COLOR);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						println("An error occurred while trying to host the server.", ERROR_COLOR);
 					}
+				}
+
+				@Override
+				protected boolean match(final String name) {
+					return name.equalsIgnoreCase("server") || name.equals("s");
 				}
 			});
 		}
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("new");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length == 0) {
 				print("No arguments specified. Do ", ERROR_COLOR);
 				print("/new help ", Color.ORANGE);
@@ -1229,43 +1193,58 @@ public final class Commands {
 				println(args[0], Color.ORANGE);
 			}
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("new");
+		}
 	};
 
 	public static final ChatRoomCommand STATISTICS = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "stats", "statistics");
+		protected void act(final String name, final String... args) {
+			println("Not yet implemented.", ERROR_COLOR);
+			// TODO Implement
 		}
 
 		@Override
-		protected void act(String name, String... args) {
-			println("Not yet implemented.", ERROR_COLOR);
-			// TODO Implement
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "stats", "statistics");
 		}
 	};
 
 	public static final ChatRoomCommand CLEANUP = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "clean", "cleanup");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
-			long start = System.currentTimeMillis();
+		protected void act(final String name, final String... args) {
+			final long start = System.currentTimeMillis();
 			System.gc();
-			long time = System.currentTimeMillis() - start;
+			final long time = System.currentTimeMillis() - start;
 			println("Cleaned up garbage!", SUCCESS_COLOR);
 			print("Cleanup took ", SUCCESS_COLOR);
 			new BoldText("" + time, Color.FIREBRICK).print(console);
 			println(" milliseconds.", SUCCESS_COLOR);
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "clean", "cleanup");
+		}
 	};
 
-	private static void executeCommand(String command) {
+	private static void executeCommand(final String command) {
 		commandManager.runCommand(command);
+	}
+
+	/**
+	 * This is actually, conveniently, used to load this class (and, thus, all of
+	 * the commands) at startup.
+	 *
+	 * @return The time (after all static initialization has taken place).
+	 */
+	public static long getTime() {
+		return System.currentTimeMillis();
 	}
 
 	private static void openSettingsWindow() {
@@ -1273,7 +1252,7 @@ public final class Commands {
 		ChatRoom.INSTANCE.settingsInstance.get().requestFocus();
 	}
 
-	private static void print(String text, Color color) {
+	private static void print(final String text, final Color color) {
 		new BasicInfoText(text, color).print(console);
 	}
 
@@ -1281,9 +1260,13 @@ public final class Commands {
 		new Println(console);
 	}
 
-	private static void println(String text, Color color) {
+	private static void println(final String text, final Color color) {
 		print(text, color);
 		println();
+	}
+
+	public static void sendText(final String text) {
+		ChatRoom.INSTANCE.sendText(text);
 	}
 
 	private static void updateProgram() {
@@ -1301,9 +1284,9 @@ public final class Commands {
 				// If there is a failure, we won't get to the "break TRY_DOWNLOAD"
 				// statement, so the below try block will be run, and Chat Room will
 				// attempt to open the latest version in the default browser.
-				catch (MalformedURLException e1) {
+				catch (final MalformedURLException e1) {
 					println("There was an error parsing the file's web address.", ERROR_COLOR);
-				} catch (IOException e2) {
+				} catch (final IOException e2) {
 					print("There was an error while trying to retrieve the file from the address: ", ERROR_COLOR);
 					println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
 					println("Attempting to open the file in your browser...", Color.ORANGE);
@@ -1321,13 +1304,13 @@ public final class Commands {
 
 				break TRY_DOWNLOAD;// And continue on to print our success.
 
-			} catch (MalformedURLException e3) {
+			} catch (final MalformedURLException e3) {
 				println("There was an error while trying to locate the file.", ERROR_COLOR);
-			} catch (IOException e4) {
+			} catch (final IOException e4) {
 				println("There was an error while trying to download the file.", ERROR_COLOR);
-			} catch (URISyntaxException e5) {
+			} catch (final URISyntaxException e5) {
 				println("There was an error parsing the file's web address.", ERROR_COLOR);
-			} catch (UnsupportedOperationException e6) {
+			} catch (final UnsupportedOperationException e6) {
 				print("Apparently, your operating system does not support Chat Room opening a link with your default browser. Here is the link to the file: ",
 						ERROR_COLOR);
 				println("http://dusttoash.org/chat-room/ChatRoom.jar", Color.WHITE);
@@ -1343,6 +1326,9 @@ public final class Commands {
 		println("You can close the program and discard this file, then open the new one with the new updates.",
 				Color.WHITE);
 
+	}
+
+	private Commands() {
 	}
 
 }

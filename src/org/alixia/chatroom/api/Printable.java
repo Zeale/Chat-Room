@@ -9,7 +9,7 @@ public interface Printable {
 		print("\n", Color.WHITE);
 	}
 
-	default void println(String text, Color color) {
+	default void println(final String text, final Color color) {
 		print(text, color);
 		println();
 	}
