@@ -16,7 +16,7 @@ import org.alixia.chatroom.connections.messages.client.requests.NameChangeReques
 import org.alixia.chatroom.connections.messages.server.BasicServerMessage;
 import org.alixia.chatroom.connections.messages.server.RelayedUserMessage;
 import org.alixia.chatroom.internet.Authentication;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.AuthenticationResult;
+import org.alixia.chatroom.internet.authmethods.AuthenticationResult;
 import org.alixia.chatroom.logging.Logger;
 
 public class Server extends NamedObject {

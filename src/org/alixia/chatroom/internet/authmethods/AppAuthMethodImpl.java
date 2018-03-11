@@ -12,7 +12,7 @@ import org.alixia.chatroom.internet.SessionIDPacket;
 import org.alixia.chatroom.internet.SessionIDPacket.Success;
 import org.alixia.chatroom.internet.VerificationPacket;
 import org.alixia.chatroom.internet.VerificationRequestPacket;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult.ErrorType;
+import org.alixia.chatroom.internet.authmethods.LoginResult.ErrorType;
 
 public class AppAuthMethodImpl extends AuthenticationMethod {
 

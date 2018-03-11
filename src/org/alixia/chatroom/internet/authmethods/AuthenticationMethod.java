@@ -13,35 +13,6 @@ import org.alixia.chatroom.internet.BasicAuthServer;
  *
  */
 public abstract class AuthenticationMethod {
-	public static class AuthenticationResult {
-
-		public final boolean verified;
-
-		public AuthenticationResult(final boolean verified) {
-			this.verified = verified;
-		}
-
-	}
-
-	public static class LoginResult {
-		public enum ErrorType {
-			USERNAME_NOT_FOUND, WRONG_PASSWORD, TIMEOUT;
-		}
-
-		public final UUID sessionID;
-
-		public final ErrorType errType;
-
-		public LoginResult(final UUID sessionID, final ErrorType errType) {
-			this.sessionID = sessionID;
-			this.errType = errType;
-		}
-
-		public boolean isSuccessful() {
-			return sessionID != null;
-		}
-	}
-
 	/**
 	 * Verifies a user's login. This should be called by a ChatRoom host when a user
 	 * tries to connect. A sessionID is given to the ChatRoom host which will verify

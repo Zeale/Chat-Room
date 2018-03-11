@@ -6,8 +6,8 @@ import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.internet.authmethods.AppAuthMethodImpl;
 import org.alixia.chatroom.internet.authmethods.AuthenticationMethod;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult;
-import org.alixia.chatroom.internet.authmethods.AuthenticationMethod.LoginResult.ErrorType;
+import org.alixia.chatroom.internet.authmethods.LoginResult;
+import org.alixia.chatroom.internet.authmethods.LoginResult.ErrorType;
 import org.alixia.chatroom.logging.Logger;
 
 public final class Authentication {
