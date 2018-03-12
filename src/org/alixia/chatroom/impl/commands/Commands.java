@@ -194,7 +194,25 @@ public final class Commands {
 					println("There is no Authentication Server running.", ERROR_COLOR);
 			else {
 				final String subcommand = args[0];
-				if (subcommand.equalsIgnoreCase("add")) {
+				if (equalsHelp(subcommand)) {
+					printHelp("/" + name + " [subcommand]",
+							"Allows you to manage your Authentication Server or see information about it (if it's running).");
+					printSubcommandHelp(name, "help", "Prints the help for authentication server commands.");
+					printSubcommandHelp(name, "add (username) (password)",
+							"Adds an account to the authentication server. After running this command, the user will be able to log in with the given information.");
+					printSubcommandHelp(name, "save (file-path.extension)",
+							"Saves the accounts in this Authentication Server to a file. This way, it can be loaded the next time this program is run and users can log in with their account information.",
+							"Example: /" + name + " save C:/Users/Username/Desktop/Data.abc",
+							"The data can be loaded back into the program with /" + name
+									+ " load (file-path.extension)");
+					printSubcommandHelp(name, "load (file-path.extension)",
+							"Loads the user data from a file into the running authentication server. This data can then be used to log in by users connecting to the authentication server.");
+				} else if (subcommand.equalsIgnoreCase("add")) {
+					if (args.length > 1 && equalsHelp(args[1])) {
+						printHelp("/" + name + " " + subcommand + " (username) (password)",
+								"This command lets you create an account in this server's database. Once the account is made, it can be used to log in. Logging in can be done from the /login command or the settings page (in /settings).");
+						return;
+					}
 					if (args.length < 3) {
 						print("Usage: ", ERROR_COLOR);
 						println("/" + name + " " + subcommand + " (username) (password)", ERROR_COLOR);
@@ -211,6 +229,14 @@ public final class Commands {
 					if (args.length < 2) {
 						print("Usage: ", ERROR_COLOR);
 						println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
+						print("Do ", INFO_COLOR);
+						print("/" + name + " " + subcommand + " help ", Color.ORANGERED);
+						println("for more details.", INFO_COLOR);
+						return;
+					}
+					if (equalsHelp(args[1])) {
+						printHelp("/" + name + " " + subcommand + " (file-path.extension)",
+								"Saves the user accounts stored in this authentication server to a file. The accounts can then be loaded back up after the program has restarted, or they can be transported to a different computer and used there, etc.");
 						return;
 					}
 					final File file = new File(args[1]);
@@ -236,7 +262,7 @@ public final class Commands {
 		@Override
 		protected boolean match(final String name) {
 			// Not ignorecase
-			return equalsAny(name, "auth-server", "authserver");
+			return equalsAny(name, "auth-server", "authserver", "#as");
 		}
 	};
 

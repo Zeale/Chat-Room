@@ -27,4 +27,33 @@ abstract class ChatRoomCommand extends Command {
 			ChatRoom.INSTANCE.println(s, SUCCESS_COLOR);
 	}
 
+	private int subcmdLevel = 1;
+
+	protected void incSubcmdLevel() {
+		subcmdLevel++;
+	}
+
+	protected void decSubcmdLevel() {
+		subcmdLevel--;
+	}
+
+	protected int getSubcmdLevel() {
+		return subcmdLevel;
+	}
+
+	private final static String[] bulletingOrder = { "-", "+", "~", "•", "" + (char) 9830 };
+
+	protected void printSubcommandHelp(String name, String usage, String... descriptions) {
+		String indentation = "";
+		for (int i = 0; i < subcmdLevel; i++)
+			indentation += '\t';
+
+		ChatRoom.INSTANCE.print(
+				indentation + bulletingOrder[bulletingOrder.length % subcmdLevel] + " Usage: /" + name + " " + usage,
+				Color.ORANGE);
+		ChatRoom.INSTANCE.print(" - ", Color.ORANGERED);
+		for (String s : descriptions)
+			ChatRoom.INSTANCE.println(indentation + s, Color.INDIANRED);
+	}
+
 }
