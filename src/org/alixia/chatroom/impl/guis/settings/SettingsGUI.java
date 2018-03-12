@@ -1,8 +1,8 @@
 package org.alixia.chatroom.impl.guis.settings;
 
 import org.alixia.chatroom.ChatRoom;
-import org.alixia.chatroom.internet.Authentication;
-import org.alixia.chatroom.logging.Logger;
+import org.alixia.chatroom.api.internet.Authentication;
+import org.alixia.chatroom.api.logging.Logger;
 
 import javafx.scene.paint.Color;
 

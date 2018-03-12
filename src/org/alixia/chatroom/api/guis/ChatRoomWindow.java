@@ -1,4 +1,4 @@
-package org.alixia.chatroom.impl.guis.settings;
+package org.alixia.chatroom.api.guis;
 
 import static org.alixia.chatroom.ChatRoom.WARNING_COLOR;
 
@@ -6,18 +6,12 @@ import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.fxtools.FXTools;
 import org.alixia.chatroom.api.fxtools.Resizable;
 import org.alixia.chatroom.api.fxtools.ResizeOperator;
-import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.animation.FillTransition;
 import javafx.animation.StrokeTransition;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -34,67 +28,37 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-public final class ChatRoomGUI {
+public class ChatRoomWindow extends Stage {
 
 	public static final Color DEFAULT_WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
 			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
 			DEFAULT_WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
-	// Nodes are styled and manipulated in the constructor and the tryInit method.
-	public final TextFlow flow = new TextFlow();
-	public final TextArea input = new TextArea();
-	public final Button sendButton = new PopButton("Send");
-	public final ScrollPane flowWrapper = new ScrollPane(flow);
-	public final AnchorPane contentWrapper = new AnchorPane(flowWrapper, input, sendButton);
-	public final BorderPane root = new BorderPane();
 
-	public final Scene scene;
-	public final Stage stage;
+	{
+		initStyle(StageStyle.TRANSPARENT);
+	}
+
+	protected final AnchorPane contentPane = new AnchorPane();
+	protected final BorderPane root = new BorderPane(contentPane);
+	protected final Scene scene = new Scene(root);
+
+	{
+		setScene(scene);
+		scene.setFill(Color.TRANSPARENT);
+		contentPane.setBackground(FXTools.getBackgroundFromColor(DEFAULT_WINDOW_BACKGROUND_COLOR));
+	}
+
+	private final StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
+	private final HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
+			OS.getOS() == OS.WINDOWS ? close : minimize);
 
 	{
 
-		flow.heightProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> flowWrapper
-				.setVvalue(newValue.doubleValue()));
-
-		flow.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
-		input.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
-		input.setStyle("-fx-text-fill: darkgray; ");
-
-		AnchorPane.setLeftAnchor(flowWrapper, 50d);
-		AnchorPane.setRightAnchor(flowWrapper, 50d);
-		AnchorPane.setTopAnchor(flowWrapper, 0d);
-		AnchorPane.setBottomAnchor(flowWrapper, 250d);
-
-		AnchorPane.setBottomAnchor(input, 0d);
-		AnchorPane.setLeftAnchor(input, 0d);
-		AnchorPane.setRightAnchor(input, 0d);
-
-		AnchorPane.setRightAnchor(sendButton, 50d);
-		AnchorPane.setBottomAnchor(sendButton, 88.5);
-
-		input.setMaxHeight(200);
-
-		contentWrapper.setBackground(FXTools.getBackgroundFromColor(DEFAULT_WINDOW_BACKGROUND_COLOR));
-
-		scene = new Scene(root);
-
-	}
-
-	public ChatRoomGUI(final Stage stage) {
-		this.stage = stage;
-		stage.setWidth(800);
-		stage.setHeight(600);
-		stage.setScene(scene);
-	}
-
-	public void addBorder() {
 		final Color ITEM_COLOR = DEFAULT_NODE_ITEM_COLOR, BACKGROUND_COLOR = DEFAULT_WINDOW_BORDER_COLOR;
-
-		final StackPane close = new StackPane(), minimize = new StackPane(), expand = new StackPane();
 
 		close.setPrefSize(26, 26);
 		minimize.setPrefSize(26, 26);
@@ -298,33 +262,11 @@ public final class ChatRoomGUI {
 
 		}
 
-		close.setOnMouseClicked(event -> {
-			if (event.getButton().equals(MouseButton.PRIMARY)) {
-				stage.close();
-				Platform.exit();
-			}
-		});
-
-		expand.setOnMouseClicked(event -> {
-			if (event.getButton().equals(MouseButton.MIDDLE)) {
-				stage.setMaximized(false);
-				stage.setFullScreen(!stage.isFullScreen());
-			} else if (event.getButton().equals(MouseButton.PRIMARY))
-				if (stage.isFullScreen()) {
-					stage.setMaximized(false);
-					stage.setFullScreen(false);
-				} else
-					stage.setMaximized(!stage.isMaximized());
-		});
-
-		minimize.setOnMouseClicked(event -> {
-			if (event.getButton().equals(MouseButton.PRIMARY))
-				stage.setIconified(true);
-		});
+		close.setOnMouseClicked(this::onClose);
+		expand.setOnMouseClicked(this::onMaximize);
+		minimize.setOnMouseClicked(this::onMinimize);
 
 		// Menu bar
-		final HBox menuBar = new HBox(OS.getOS() == OS.WINDOWS ? minimize : close, expand,
-				OS.getOS() == OS.WINDOWS ? close : minimize);
 
 		new Object() {
 
@@ -332,18 +274,18 @@ public final class ChatRoomGUI {
 
 			{
 				menuBar.setOnMousePressed(event -> {
-					if (stage.isMaximized() || stage.isFullScreen())
+					if (isMaximized() || isFullScreen())
 						return;
-					dx = stage.getX() - event.getScreenX();
-					dy = stage.getY() - event.getScreenY();
+					dx = getX() - event.getScreenX();
+					dy = getY() - event.getScreenY();
 					event.consume();
 				});
 
 				menuBar.setOnMouseDragged(event -> {
-					if (stage.isMaximized() || stage.isFullScreen())
+					if (isMaximized() || isFullScreen())
 						return;
-					stage.setX(event.getScreenX() + dx);
-					stage.setY(event.getScreenY() + dy);
+					setX(event.getScreenX() + dx);
+					setY(event.getScreenY() + dy);
 					event.consume();
 				});
 			}
@@ -371,38 +313,38 @@ public final class ChatRoomGUI {
 
 			@Override
 			public void expandHor(final double amount) {
-				if (stage.getWidth() + amount < 600)
-					stage.setWidth(600);
+				if (getWidth() + amount < 600)
+					setWidth(600);
 				else
-					stage.setWidth(stage.getWidth() + amount);
+					setWidth(getWidth() + amount);
 			}
 
 			@Override
 			public void expandVer(final double amount) {
-				if (stage.getHeight() + amount < 400)
-					stage.setHeight(400);
+				if (getHeight() + amount < 400)
+					setHeight(400);
 				else
-					stage.setHeight(stage.getHeight() + amount);
+					setHeight(getHeight() + amount);
 			}
 
 			@Override
 			public double getX() {
-				return stage.getX();
+				return ChatRoomWindow.this.getX();
 			}
 
 			@Override
 			public double getY() {
-				return stage.getY();
+				return ChatRoomWindow.this.getY();
 			}
 
 			@Override
 			public void moveX(final double amount) {
-				stage.setX(stage.getX() + amount);
+				ChatRoomWindow.this.setX(ChatRoomWindow.this.getX() + amount);
 			}
 
 			@Override
 			public void moveY(final double amount) {
-				stage.setY(stage.getY() + amount);
+				ChatRoomWindow.this.setY(ChatRoomWindow.this.getY() + amount);
 			}
 		}, 10) {
 
@@ -431,9 +373,44 @@ public final class ChatRoomGUI {
 			}
 		};
 
-		input.addEventFilter(MouseEvent.MOUSE_MOVED, event -> root.fireEvent(event));
+		// Last bit of initialization:
+		setWidth(800);
+		setHeight(600);
+	}
 
-		stage.initStyle(StageStyle.TRANSPARENT);
+	protected void onClose(final MouseEvent event) {
+		if (event.getButton().equals(MouseButton.PRIMARY))
+			close();
+	}
+
+	protected void onMaximize(final MouseEvent event) {
+		if (event.getButton().equals(MouseButton.MIDDLE)) {
+			setMaximized(false);
+			setFullScreen(!isFullScreen());
+		} else if (event.getButton().equals(MouseButton.PRIMARY))
+			if (isFullScreen()) {
+				setMaximized(false);
+				setFullScreen(false);
+			} else
+				setMaximized(!isMaximized());
+
+	}
+
+	protected void onMinimize(final MouseEvent event) {
+		if (event.getButton().equals(MouseButton.PRIMARY))
+			setIconified(true);
+	}
+
+	public void setMenubarType(final boolean full) {
+		if (full)
+			if (menuBar.getChildren().size() == 3)
+				return;
+			else
+				menuBar.getChildren().addAll(minimize, expand);
+		else if (menuBar.getChildren().size() == 1)
+			return;
+		else
+			menuBar.getChildren().removeAll(minimize, expand);
 	}
 
 }

@@ -1,7 +1,7 @@
 package org.alixia.chatroom;
 
+import org.alixia.chatroom.api.texts.BoldText;
 import org.alixia.chatroom.impl.commands.Commands;
-import org.alixia.chatroom.texts.BoldText;
 
 import javafx.application.Application;
 import javafx.scene.paint.Color;

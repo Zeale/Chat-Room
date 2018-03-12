@@ -4,7 +4,7 @@ import static org.alixia.chatroom.ChatRoom.INFO_COLOR;
 import static org.alixia.chatroom.ChatRoom.SUCCESS_COLOR;
 
 import org.alixia.chatroom.ChatRoom;
-import org.alixia.chatroom.commands.Command;
+import org.alixia.chatroom.api.commands.Command;
 
 import javafx.scene.paint.Color;
 

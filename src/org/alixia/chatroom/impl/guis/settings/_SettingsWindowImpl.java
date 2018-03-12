@@ -1,8 +1,8 @@
 package org.alixia.chatroom.impl.guis.settings;
 
 import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.guis.ChatRoomWindow;
 import org.alixia.chatroom.api.items.LateLoadItem;
-import org.alixia.chatroom.guis.ChatRoomWindow;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
