@@ -341,6 +341,16 @@ public final class Commands {
 
 		@Override
 		protected void act(String name, String... args) {
+
+			if (args.length > 0 && equalsHelp(args[0])) {
+				printHelp("/" + name + " [username [password]]",
+						"Creates an account using the given username and password. If a password is not provided but a username is, the password will be prompted for. If neither a username nor a password are provided, they will both be prompted for. If a password is given, but a username isn't, it will be treated as the username, and a password will be prompted for.",
+						"This command won't work if you are logged into an account already.",
+						(Authentication.isAuthServerRunning() ? "Since" : "If")
+								+ " you are already running an authentication server, you should use the \"add user\" command (/auth-server add (username) (password)) to create an account. It is easier and can't result in connection errors. You can then log in to your account with the /login command.");
+				return;
+			}
+
 			if (ChatRoom.INSTANCE.isLoggedIn()) {
 				println("You are already logged in to an account. You can't create a new one.", ERROR_COLOR);
 				return;
@@ -375,6 +385,11 @@ public final class Commands {
 		@Override
 		protected void act(String name, String... args) {
 			if (args.length > 0) {
+				if (equalsHelp(args[0])) {
+					printHelp("/" + name,
+							"This command logs you out of an account if you are logged in to one. You may have to reconnect to some servers for the change to be visible on them.");
+					return;
+				}
 				println("This command does not take any arguments...", ERROR_COLOR);
 				return;
 			}
@@ -456,6 +471,11 @@ public final class Commands {
 		@Override
 		protected void act(final String name, final String... args) {
 			if (args.length > 0) {
+				if (args.length == 1 && equalsHelp(args[0])) {
+					printHelp("/" + name + " [username [password]]",
+							"Attempts to log you into your account, given your username and password. If a password is provided, a username is required before it for this command to work correctly. Otherwise, missing arguments will be prompted for.");
+					return;
+				}
 				accountName = args[0];
 				println("Username: " + accountName, SUCCESS_COLOR);
 				if (args.length > 1) {
@@ -931,7 +951,9 @@ public final class Commands {
 
 					// Assing some stuff
 					t.setFill(new Color(Math.random(), Math.random(), Math.random(), 1));
-					t.setFont(Font.font(t.getFont().getFamily(), Math.random() * 10 + 35)); // 35 ~ 45
+					t.setFont(Font.font(t.getFont().getFamily(), Math.random() * 10 + 35)); // 35
+																							// ~
+																							// 45
 
 					// Add a dropshadow
 					final DropShadow ds = new DropShadow();
