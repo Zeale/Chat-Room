@@ -1,4 +1,4 @@
-package org.alixia.chatroom.api.internet.authmethods;
+package org.alixia.chatroom.impl.internet.authmethods;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -19,6 +19,7 @@ import org.alixia.chatroom.api.internet.VerificationRequestPacket;
 import org.alixia.chatroom.api.internet.CreateAccountReplyPacket.ErrType;
 import org.alixia.chatroom.api.internet.LogoutReplyPacket.ErrorType;
 import org.alixia.chatroom.api.internet.SessionIDPacket.Success;
+import org.alixia.chatroom.api.internet.authmethods.AuthenticationMethod;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.AccountCreationDeniedException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.IncorrectPasswordException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.InvalidSessionIDException;

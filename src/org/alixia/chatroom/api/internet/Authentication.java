@@ -6,12 +6,12 @@ import java.util.UUID;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.Account;
-import org.alixia.chatroom.api.internet.authmethods.AppAuthMethodImpl;
 import org.alixia.chatroom.api.internet.authmethods.AuthenticationMethod;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.IncorrectPasswordException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.TimeoutException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.UsernameNotFoundException;
 import org.alixia.chatroom.api.logging.Logger;
+import org.alixia.chatroom.impl.internet.authmethods.AppAuthMethodImpl;
 
 import javafx.application.Platform;
 
