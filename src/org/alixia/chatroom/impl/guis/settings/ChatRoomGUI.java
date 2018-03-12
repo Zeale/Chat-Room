@@ -11,6 +11,7 @@ import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import javafx.animation.FillTransition;
 import javafx.animation.StrokeTransition;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -55,6 +56,9 @@ public final class ChatRoomGUI {
 	public final Stage stage;
 
 	{
+
+		flow.heightProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> flowWrapper
+				.setVvalue(newValue.doubleValue()));
 
 		flow.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
 		input.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
