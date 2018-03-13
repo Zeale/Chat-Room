@@ -1464,18 +1464,43 @@ public final class Commands {
 
 		@Override
 		protected void act(final String name, final String... args) {
-			final long start = System.currentTimeMillis();
+
+			final long ram = Runtime.getRuntime().totalMemory(), start = System.currentTimeMillis();
 			System.gc();
-			final long time = System.currentTimeMillis() - start;
-			println("Cleaned up garbage!", SUCCESS_COLOR);
-			print("Cleanup took ", SUCCESS_COLOR);
-			new BoldText("" + time, Color.FIREBRICK).print(console);
-			println(" milliseconds.", SUCCESS_COLOR);
+			final long time = System.currentTimeMillis() - start,
+					freedMemory = ram - Runtime.getRuntime().totalMemory();
+
+			if (freedMemory < 0) {
+				println("Garbage cleanup somehow created more garbage...", ERROR_COLOR);
+				print("Cleanup took ", ERROR_COLOR);
+				new BoldText("" + time, Color.FIREBRICK).print(console);
+				print(" milliseconds and used ", ERROR_COLOR);
+				new BoldText(-freedMemory + "", Color.ORANGERED).print(console);
+				println(" bytes...", SUCCESS_COLOR);
+				println();
+				println("Maybe you should try running cleanup again?...", INFO_COLOR);
+			} else if (freedMemory == 0) {
+				println("Garbage collection found no garbage, so nothing was cleaned. (This either means that ChatRoom has no garbage to clean, or that the garbage could not be cleaned for some reason. Likely the former.)",
+						SUCCESS_COLOR);
+				print("The attempted cleanup took ", SUCCESS_COLOR);
+				new BoldText("" + time, Color.FIREBRICK).print(console);
+				print(" milliseconds and freed ", SUCCESS_COLOR);
+				new BoldText("nothing", Color.ORANGERED).print(console);
+				println(".", SUCCESS_COLOR);
+			} else {
+				println("Cleaned up garbage!", SUCCESS_COLOR);
+				print("Cleanup took ", SUCCESS_COLOR);
+				new BoldText("" + time, Color.FIREBRICK).print(console);
+				print(" milliseconds and freed ", SUCCESS_COLOR);
+				new BoldText(freedMemory + "", Color.ORANGERED).print(console);
+				println(" bytes!", SUCCESS_COLOR);
+			}
+
 		}
 
 		@Override
 		protected boolean match(final String name) {
-			return equalsAnyIgnoreCase(name, "clean", "cleanup");
+			return equalsAnyIgnoreCase(name, "clean", "cleanup", "clear-lag", "clearlag", "clean-up");
 		}
 	};
 
