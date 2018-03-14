@@ -276,8 +276,9 @@ public final class Commands {
 					return;
 				}
 				try {
-					ChatRoom.INSTANCE.setAccount(new Account(username,
+					ChatRoom.INSTANCE.login(new Account(username,
 							Authentication.getDefaultAuthenticationMethod().createNewAccount(username, password)));
+					println("Successfully created a new account and logged you in to it!", SUCCESS_COLOR);
 				} catch (TimeoutException e) {
 					println("Connected to the server, but a timeout occurred. Your account was not created.",
 							ERROR_COLOR);
@@ -397,8 +398,11 @@ public final class Commands {
 			}
 
 			try {
+				// The following isn't really necessary...
 				Authentication.getDefaultAuthenticationMethod().logout(ChatRoom.INSTANCE.getAccount().username,
 						ChatRoom.INSTANCE.getAccount().sessionID);
+				ChatRoom.INSTANCE.logout();
+				println("Successfully logged you out.", SUCCESS_COLOR);
 			} catch (TimeoutException e) {
 				println("Connecting to the server and attempting to log you out timed out.", ERROR_COLOR);
 			} catch (UsernameNotFoundException e) {
@@ -414,7 +418,7 @@ public final class Commands {
 				println("An exception occurred while trying to connect to the server.", ERROR_COLOR);
 				e.printStackTrace();
 			} finally {
-				ChatRoom.INSTANCE.logoutLocal();
+				ChatRoom.INSTANCE.logout();
 			}
 
 		}

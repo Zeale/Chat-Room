@@ -61,10 +61,7 @@ public final class Authentication {
 		try {
 			UUID result = Authentication.getDefaultAuthenticationMethod().login(username, password);
 			LOGGER.log("Successfully logged in!");
-			ChatRoom.INSTANCE.setAccount(new Account(username, result));
-			if (ChatRoom.INSTANCE.clients.isItemSelected())
-				ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(ChatRoom.INSTANCE.getAccount());
-
+			ChatRoom.INSTANCE.login(new Account(username, result));
 		} catch (ConnectException e) {
 			LOGGER.log(
 					"Failed to connect to the authentication server. (The server might be down. If it isn't, you might not be connected to the internet. If you are, then for some weird reason, the server couldn't be connected to.)");

@@ -11,6 +11,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.Console;
@@ -219,10 +220,6 @@ public class ChatRoom {
 
 	}
 
-	public void setAccount(final Account account) {
-		this.account = account;
-	}
-
 	public void setCallClient(final CallClient callClient) {
 		this.callClient = callClient;
 	}
@@ -252,7 +249,6 @@ public class ChatRoom {
 
 	public void setUsername(final String username) {
 		this.username = username;
-		// TODO TAG
 		if (ChatRoom.INSTANCE.clients.isItemSelected())
 			clients.getSelectedItem().sendObject(new NameChangeRequest(username));
 	}
@@ -364,8 +360,14 @@ public class ChatRoom {
 
 	}
 
-	public void logoutLocal() {
-		setAccount(null);
+	public void logout() {
+		account = null;
+	}
+
+	public void login(Account account) {
+		this.account = account;
+		if (ChatRoom.INSTANCE.clients.isItemSelected())
+			ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(ChatRoom.INSTANCE.getAccount());
 	}
 
 }
