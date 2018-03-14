@@ -748,7 +748,14 @@ public final class Commands {
 		}
 	};
 
+	// THIS IS A REGULAR COMMAND OBJECT; it must be added to the command manager
+	// manually.
 	public static final Command _ESCAPE = new Command() {
+
+		// Add this to the manager
+		{
+			ChatRoom.INSTANCE.commandManager.addCommand(this);
+		}
 
 		@Override
 		protected void act(final String name, final String... args) {
@@ -764,7 +771,7 @@ public final class Commands {
 		}
 	};
 
-	public static final Command ESCAPE = new Command() {
+	public static final Command ESCAPE = new ChatRoomCommand() {
 
 		@Override
 		protected void act(final String name, final String... args) {
