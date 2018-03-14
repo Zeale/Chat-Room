@@ -12,6 +12,7 @@ import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.connections.messages.Message;
 import org.alixia.chatroom.api.connections.messages.ReplyMessage;
 import org.alixia.chatroom.api.connections.messages.client.BasicUserMessage;
+import org.alixia.chatroom.api.connections.messages.client.requests.LogoutRequest;
 import org.alixia.chatroom.api.connections.messages.client.requests.NameChangeRequest;
 import org.alixia.chatroom.api.connections.messages.server.BasicServerMessage;
 import org.alixia.chatroom.api.connections.messages.server.RelayedUserMessage;
@@ -162,6 +163,26 @@ public class Server extends NamedObject {
 							e.printStackTrace();
 						}
 
+					} else if (object instanceof LogoutRequest) {
+						if (client.isLoggedIn()) {
+							String oldName = client.getUsername(), oldAccountName = client.getAccountName();
+							client.clearLogin();
+							try {
+								client.sendMessage("Successfully logged you out!");
+								SERVER_LOGGER.log(oldName + ", (" + oldAccountName + "), logged out of their account.");
+							} catch (IOException e) {
+								SERVER_LOGGER.log(
+										"An error occurred while trying to notify a client that the client was logged out.");
+								e.printStackTrace();
+							}
+						} else
+							try {
+								client.sendMessage("You were never logged in in the first place.");
+							} catch (IOException e) {
+								SERVER_LOGGER.log(
+										"An error occurred while telling a client that the client's login attempt failed since they weren't originally logged in.");
+								e.printStackTrace();
+							}
 					}
 
 				}

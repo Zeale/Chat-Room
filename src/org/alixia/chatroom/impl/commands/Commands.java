@@ -401,8 +401,7 @@ public final class Commands {
 				// The following isn't really necessary...
 				Authentication.getDefaultAuthenticationMethod().logout(ChatRoom.INSTANCE.getAccount().username,
 						ChatRoom.INSTANCE.getAccount().sessionID);
-				ChatRoom.INSTANCE.logout();
-				println("Successfully logged you out.", SUCCESS_COLOR);
+				println("Successfully logged you out of the authentication server.", SUCCESS_COLOR);
 			} catch (TimeoutException e) {
 				println("Connecting to the server and attempting to log you out timed out.", ERROR_COLOR);
 			} catch (UsernameNotFoundException e) {
@@ -419,6 +418,7 @@ public final class Commands {
 				e.printStackTrace();
 			} finally {
 				ChatRoom.INSTANCE.logout();
+				println("Successfully logged you out locally.", SUCCESS_COLOR);
 			}
 
 		}

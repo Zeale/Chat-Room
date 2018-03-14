@@ -11,7 +11,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.UUID;
 
 import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.Console;
@@ -24,6 +23,7 @@ import org.alixia.chatroom.api.connections.ConnectionListener;
 import org.alixia.chatroom.api.connections.ServerManager;
 import org.alixia.chatroom.api.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.api.connections.messages.client.UserMessage;
+import org.alixia.chatroom.api.connections.messages.client.requests.LogoutRequest;
 import org.alixia.chatroom.api.connections.messages.client.requests.NameChangeRequest;
 import org.alixia.chatroom.api.connections.messages.server.ServerMessage;
 import org.alixia.chatroom.api.connections.voicecall.CallClient;
@@ -362,6 +362,8 @@ public class ChatRoom {
 
 	public void logout() {
 		account = null;
+		if (ChatRoom.INSTANCE.clients.isItemSelected())
+			ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(new LogoutRequest());
 	}
 
 	public void login(Account account) {
