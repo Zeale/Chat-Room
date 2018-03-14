@@ -10,6 +10,7 @@ import static org.alixia.chatroom.ChatRoom.WARNING_COLOR;
 
 import java.awt.Desktop;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,6 +22,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Collection;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
@@ -41,6 +43,8 @@ import org.alixia.chatroom.api.connections.ServerManager;
 import org.alixia.chatroom.api.connections.voicecall.CallClient;
 import org.alixia.chatroom.api.connections.voicecall.CallServer;
 import org.alixia.chatroom.api.internet.Authentication;
+import org.alixia.chatroom.api.internet.BasicAuthServer.User;
+import org.alixia.chatroom.api.internet.BasicAuthServer.UserDataParseException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.AccountCreationDeniedException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.InvalidSessionIDException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.InvalidUsernameException;
@@ -48,6 +52,7 @@ import org.alixia.chatroom.api.internet.authmethods.exceptions.TimeoutException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.UnknownAuthenticationException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.UsernameNotFoundException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.UsernameTakenException;
+import org.alixia.chatroom.api.logging.Logger;
 import org.alixia.chatroom.api.texts.BasicInfoText;
 import org.alixia.chatroom.api.texts.BoldText;
 import org.alixia.chatroom.api.texts.ConsoleText;
@@ -203,7 +208,11 @@ public final class Commands {
 							"The data can be loaded back into the program with /" + name
 									+ " load (file-path.extension)");
 					printSubcommandHelp(name, "load (file-path.extension)",
-							"Loads the user data from a file into the running authentication server. This data can then be used to log in by users connecting to the authentication server.");
+							"Loads the user data from a file into the running authentication server. This data can then be used to log in by users connecting to the authentication server. NOTICE: Read the help in   /"
+									+ name
+									+ " load help   before running the command; this command will clear any currently loaded accounts.");
+					printSubcommandHelp(name, "print-users",
+							"Prints the usernames of all the users inside the authentication server.");
 				} else if (subcommand.equalsIgnoreCase("add")) {
 					if (args.length > 1 && equalsHelp(args[1])) {
 						printHelp("/" + name + " " + subcommand + " (username) (password)",
@@ -233,7 +242,7 @@ public final class Commands {
 					}
 					if (equalsHelp(args[1])) {
 						printHelp("/" + name + " " + subcommand + " (file-path.extension)",
-								"Saves the user accounts stored in this authentication server to a file. The accounts can then be loaded back up after the program has restarted, or they can be transported to a different computer and used there, etc.");
+								"Saves the user accounts stored in this authentication server to a file. The accounts can then be loaded back up after the program has restarted, or they can be transported to a different computer and used there, etc. This will overwrite any data in the specified file with the auth server accounts.");
 						return;
 					}
 					final File file = new File(args[1]);
@@ -252,6 +261,57 @@ public final class Commands {
 						return;
 					}
 					println("Successfully printed the user data to the file, " + file.getAbsolutePath(), SUCCESS_COLOR);
+				} else if (subcommand.equalsIgnoreCase("load")) {
+					if (args.length < 2) {
+						print("Usage: ", ERROR_COLOR);
+						println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
+						print("Do ", INFO_COLOR);
+						print("/" + name + " " + subcommand + " help ", Color.ORANGERED);
+						println("for more details.", INFO_COLOR);
+						return;
+					}
+					if (equalsHelp(args[1])) {
+						printHelp("/" + name + " " + subcommand + " (file-path.extension)",
+								"Loads the user accounts stored inside a saved file. NOTE that this will overwrite ALL the accounts currently stored in the auth server. If the file has one account and the auth server has 50 accounts, running this command will clear all 50 accounts in the auth server and replace them with the one loaded account. This account will not modify the file it reads in any way.");
+						return;
+					}
+
+					File file = new File(args[1]);
+					println("Attempting to locate file...", INFO_COLOR);
+					if (!file.exists()) {
+						println("The specified file does not exist...", ERROR_COLOR);
+						return;
+					}
+					println("The file was found!", SUCCESS_COLOR);
+					try {
+						Authentication.getAuthServer().load(file);
+						println("The server successfully loaded the file.", SUCCESS_COLOR);
+					} catch (FileNotFoundException e) {
+						println("The authentication server says that it couldn't find the file...", ERROR_COLOR);
+						e.printStackTrace();
+					} catch (UserDataParseException e) {
+						println("The authentication server failed to parse the text in the file. An error message is as follows...",
+								ERROR_COLOR);
+						Logger logger = new Logger("Loader", Authentication.AUTH_SERVER_LOGGER);
+						logger.log(e.getMessage());
+						logger.logBold("Error occurred on line: " + e.line);
+
+						e.printStackTrace();
+					}
+
+				} else if (equalsAnyIgnoreCase(subcommand, "print-users", "print-names", "printusers", "printnames",
+						"pusers", "pnames", "pu", "pn")) {
+					Collection<User> users = Authentication.getAuthServer().getUsers();
+					if (users.isEmpty()) {
+						println("There are no user accounts in the authentication server; there is nothing to print.",
+								INFO_COLOR);
+						return;
+					}
+					int numb = 1;
+					for (User u : users) {
+						print(numb + ". ", INFO_COLOR);
+						println(u.username, SUCCESS_COLOR);
+					}
 				}
 			}
 		}

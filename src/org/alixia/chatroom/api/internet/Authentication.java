@@ -25,7 +25,8 @@ public final class Authentication {
 	private static final AuthenticationMethod DEFAULT_AUTHENTICATION_METHOD = new AppAuthMethodImpl(
 			DEFAULT_AUTHENTICATION_SERVER, DEFAULT_AUTHENTICATION_PORT);
 
-	public static Logger LOGGER = new Logger("AUTHENTICATER");
+	public static final Logger LOGGER = new Logger("AUTHENTICATER"),
+			AUTH_SERVER_LOGGER = new Logger("AUTHENTICATION-SERVER");
 
 	private static AuthenticationMethod authMethod = DEFAULT_AUTHENTICATION_METHOD;
 

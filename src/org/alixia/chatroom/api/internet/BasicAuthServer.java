@@ -11,16 +11,16 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.UUID;
 
 import org.alixia.chatroom.api.internet.CreateAccountReplyPacket.ErrType;
 import org.alixia.chatroom.api.internet.LogoutReplyPacket.ErrorType;
 import org.alixia.chatroom.api.internet.SessionIDPacket.Success;
-
-import java.util.Scanner;
-import java.util.UUID;
 
 public class BasicAuthServer {
 
@@ -114,6 +114,10 @@ public class BasicAuthServer {
 	}
 
 	private Map<String, User> users = new HashMap<>();
+
+	public Collection<User> getUsers() {
+		return users.values();
+	}
 
 	private final ServerSocket socket;
 
