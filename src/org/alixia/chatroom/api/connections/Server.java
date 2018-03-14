@@ -108,7 +108,7 @@ public class Server extends NamedObject {
 							if (auth) {
 
 								for (ServerClient sc : connections)
-									if (sc.getAccountName().equals(account.username)) {
+									if (sc.isLoggedIn() && sc.getAccountName().equals(account.username)) {
 										sc.clearLogin();
 										// The user will receive this message on their computer, so it's ok to say "this
 										// one," in reference to the computer that they will be sitting at while reading
