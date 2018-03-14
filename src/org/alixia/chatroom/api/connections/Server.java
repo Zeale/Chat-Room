@@ -84,27 +84,23 @@ public class Server extends NamedObject {
 				public void objectReceived(final Serializable object) {
 
 					if (object instanceof BasicUserMessage) {
+
 						sendAll(new RelayedUserMessage(client.getUsername(), ((BasicUserMessage) object).text,
-								(client.isAnonymous() || client.getAccountName().equals(client.getUsername()))
-										? "Anonymous"
-										: client.getAccountName()),
-								client);
-						try {
-							client.sendObject(
-									new RelayedUserMessage(client.getUsername(), ((BasicUserMessage) object).text,
-											client.isAnonymous() ? "This is you." : client.getAccountName()));
-						} catch (SocketException | RuntimeException e1) {
-							e1.printStackTrace();
-						}
+								client.isLoggedIn() ? client.getAccountName() : "Anonymous"));
 
 						try {
 							client.sendObject(new ReplyMessage((Message) object));
 						} catch (final SocketException e) {
+							SERVER_LOGGER.log(client.getUsername()
+									+ (client.isLoggedIn() ? (", (" + client.getAccountName() + ")") : "")
+									+ " has left the server.");
 							connections.remove(client);
 							client.getListener().connectionClosed();
 						} catch (final Exception e) {
 						}
+
 					} else if (object instanceof Account) {
+
 						final Account account = (Account) object;
 						try {
 							final boolean auth = Authentication.getDefaultAuthenticationMethod()
@@ -112,7 +108,10 @@ public class Server extends NamedObject {
 							if (auth) {
 								// Should only be set when logging in!
 								client.setAccountName(account.username);
-								client.setUsername(account.username);
+								// If they have not set their username with /setname yet, then we'll change
+								// their username from "Anonymous" to be their account name.
+								if (!client.hasSetUsername())
+									client.setUsername(account.username);
 								client.sendMessage("Successfully verified your login information.");
 							} else
 								client.sendMessage("Your login information was incorrect...");
@@ -131,17 +130,27 @@ public class Server extends NamedObject {
 						}
 
 					} else if (object instanceof NameChangeRequest) {
+
 						final String name = ((NameChangeRequest) object).newName;
 						try {
+
 							if (!isUsernameValid(name))
 								client.sendMessage("That username is not valid!");
 							else {
 								client.sendMessage("Your name was set to " + name);
+
+								String log = client.getUsername();
 								client.setUsername(name);
+
+								if (client.isLoggedIn() && !client.getAccountName().equals(client.getUsername()))
+									log += " (" + client.getAccountName() + ")";
+								log += " has changed their name to " + ((NameChangeRequest) object).newName;
+								SERVER_LOGGER.log(log);
 							}
 						} catch (final IOException e) {
 							e.printStackTrace();
 						}
+
 					}
 
 				}

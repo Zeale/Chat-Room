@@ -102,8 +102,24 @@ class ServerClient {
 		return username;
 	}
 
+	/**
+	 * Returns whether or not this client has an account name set.
+	 * 
+	 * @return <code>true</code> if {@link #getAccountName()} will return null,
+	 *         <code>false</code> otherwise.
+	 */
 	public boolean isAnonymous() {
 		return getAccountName() == null;
+	}
+
+	/**
+	 * Returns <code>true</code> if this client is logged in, <code>false</code>
+	 * otherwise.
+	 * 
+	 * @return !{@link #isAnonymous()}.
+	 */
+	public boolean isLoggedIn() {
+		return !isAnonymous();
 	}
 
 	private void pause() {
@@ -160,7 +176,14 @@ class ServerClient {
 			outputThread.start();
 	}
 
+	private boolean usernameSet;
+
+	public boolean hasSetUsername() {
+		return usernameSet;
+	}
+
 	public void setUsername(final String username) {
+		usernameSet = true;
 		this.username = username;
 	}
 

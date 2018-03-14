@@ -536,7 +536,6 @@ public final class Commands {
 				}
 			} else {
 				println("Opening settings window...", SUCCESS_COLOR);
-				// Try block is *currently* useless
 				try {
 					openSettingsWindow();
 				} catch (final Exception e) {

@@ -123,6 +123,7 @@ public class ChatRoom {
 		if (clients.containsKey(id))
 			return false;
 		final Client client = new Client(host, port, id);
+		// TODO TAG
 		if (isLoggedIn())
 			client.sendObject(ChatRoom.INSTANCE.getAccount());
 		if (username != null)
@@ -251,6 +252,7 @@ public class ChatRoom {
 
 	public void setUsername(final String username) {
 		this.username = username;
+		// TODO TAG
 		if (ChatRoom.INSTANCE.clients.isItemSelected())
 			clients.getSelectedItem().sendObject(new NameChangeRequest(username));
 	}
