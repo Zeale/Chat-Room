@@ -68,9 +68,6 @@ public final class Commands {
 
 	private static final CommandManager commandManager = ChatRoom.INSTANCE.commandManager;
 
-	private static final CallServer callServer = ChatRoom.INSTANCE.getCallServer();
-
-	private static final CallClient callClient = ChatRoom.INSTANCE.getCallClient();
 	private static final ClientManager clients = ChatRoom.INSTANCE.clients;
 	private static final ServerManager servers = ChatRoom.INSTANCE.servers;
 	private static Printable printer = ChatRoom.INSTANCE.printer;
@@ -560,7 +557,7 @@ public final class Commands {
 		@Override
 		protected void act(final String name, final String... args) {
 
-			if (callServer != null) {
+			if (ChatRoom.INSTANCE.getCallServer() != null) {
 				print("There is already an active server. Do ", ERROR_COLOR);
 				print("/" + name + " close ", Color.ORANGE);
 				println("to close the current call server.", ERROR_COLOR);
@@ -576,9 +573,9 @@ public final class Commands {
 				}
 
 				if (args[0].equalsIgnoreCase("close")) {
-					if (callServer != null) {
+					if (ChatRoom.INSTANCE.getCallServer() != null) {
 						try {
-							callServer.stop();
+							ChatRoom.INSTANCE.getCallServer().stop();
 						} catch (final IOException e) {
 							println("A data streaming exception occurred while trying to close the server.",
 									ERROR_COLOR);
@@ -617,12 +614,18 @@ public final class Commands {
 
 		@Override
 		protected void act(final String name, final String... args) {
+			if (args.length == 0) {
+				print("You must pass an argument to this command. E.g., ", ERROR_COLOR);
+				print("/" + name + " dusttoash.org", Color.ORANGERED);
+				println(".", ERROR_COLOR);
+				return;
+			}
 
 			if (args[0].equalsIgnoreCase("disconnect")) {
 				try {
-					if (callClient == null)
+					if (ChatRoom.INSTANCE.getCallClient() == null)
 						print("There is no active call for you to disconnect...", ERROR_COLOR);
-					callClient.disconnect();
+					ChatRoom.INSTANCE.getCallClient().disconnect();
 					ChatRoom.INSTANCE.setCallClient(null);
 				} catch (final IOException e) {
 					e.printStackTrace();
@@ -631,7 +634,7 @@ public final class Commands {
 				return;
 			}
 
-			if (callClient != null) {
+			if (ChatRoom.INSTANCE.getCallClient() != null) {
 				print("There is already a call active. Do ", ERROR_COLOR);
 				print("/" + name + " disconnect ", Color.ORANGE);
 				println("to disconnect from the current call.", ERROR_COLOR);
@@ -640,79 +643,99 @@ public final class Commands {
 				return;
 			}
 
-			if (args.length < 1)
-				println("Please enter an address...", ERROR_COLOR);
-
 			if (equalsHelp(args[0])) {
 				printHelp("/" + name + " (server-address) [audio-level]",
 						"Calls a callserver with the specified address.",
 						"The (server-address) is the internet url or ip that is used to connect to the server.",
 						"The [audio-level] is not a required parameter, but can be given. The [audio-level] allows you to specify the quality of the audio being sent to and from the server.",
 						"I'm not too sure how this program works, but I don't think that anyone else will be able to hear you if they have different audio levels and they try to join the same call. Having different people in the same call with different audio levels may make some of them have to restart the program (or something). Again, not too big of a deal, but...",
-						"There are 6 preset audio levels which can be selected by passing \"l\" (without quotes) and then a number from 1-6. Examples:",
+						"There are 6 preset audio levels which can be selected by passing \"l\" (lowercase L, without quotes) and then a number from 1-6. Examples:",
 						"\"l2\"", "\"l1\"", "\"l6\"",
 						"You can also directly specify the audio level by simply entering a number without an \"l\" infront of it.",
-						"The audio level is the sample rate of the sound data streamed to others in the call.");
+						"The audio level is the sample rate of the sound data streamed to others in the call. The higher the sample rate, the better the audio quality.");
 				return;
 			}
 
-			try {
-				String location = args[0];
-				float sampleRate = DEFAULT_CALL_SAMPLE_RATE;
+			final String location = equalsAnyIgnoreCase(args[0], "self", "s") ? "localhost" : args[0];
+			float sampleRate = DEFAULT_CALL_SAMPLE_RATE;
 
-				if (equalsAnyIgnoreCase(args[0], "self", "s"))
-					location = "localhost";
-				if (args.length > 1) {
-					final String rate = args[1];
-					if (rate.toLowerCase().startsWith("l")) {
-						int level;
-						try {
-							level = Integer.parseInt(rate.substring(1));
-							switch (level) {
-							case 1:
-								sampleRate = 8000;
-								break;
-							case 2:
-								sampleRate = 12000;
-							case 3:
-								sampleRate = 24000;
-							case 4:
-								sampleRate = 48000;
-							case 5:
-								sampleRate = 96000;
-							case 6:
-								sampleRate = 192000;
-							default:
-								sampleRate = DEFAULT_CALL_SAMPLE_RATE;
-								break;
-							}
-						} catch (final NumberFormatException e) {
-							println("Could not parse an audio level preset...", ERROR_COLOR);
-							println("Usage: /" + name + " " + args[0] + " l[level]", Color.ORANGE);
-							return;
+			if (args.length > 1) {
+				final String rate = args[1];
+				if (rate.toLowerCase().startsWith("l")) {
+					int level;
+					try {
+						level = Integer.parseInt(rate.substring(1));
+						switch (level) {
+						case 1:
+							sampleRate = 8000;
+							break;
+						case 2:
+							sampleRate = 12000;
+							break;
+						case 3:
+							sampleRate = 24000;
+							break;
+						case 4:
+							sampleRate = 48000;
+							break;
+						case 5:
+							sampleRate = 96000;
+							break;
+						case 6:
+							sampleRate = 192000;
+							break;
+						default:
+							sampleRate = DEFAULT_CALL_SAMPLE_RATE;
+							break;
 						}
-					} else
-						try {
-							sampleRate = Float.parseFloat(rate);
-						} catch (final NumberFormatException e) {
-							println("Could not parse an audio level...", ERROR_COLOR);
-							println("Usage: /" + name + " " + args[0] + " [number]", Color.ORANGE);
-							return;
-						}
-				}
-
-				ChatRoom.INSTANCE.setCallClient(
-						new CallClient(location, DEFAULT_CALL_PORT, new AudioFormat(sampleRate, 16, 1, true, true)));
-			} catch (final LineUnavailableException e) {
-				println("Failed to make the call client. Your microphone could not be accessed...", ERROR_COLOR);
-				e.printStackTrace();
-			} catch (final UnknownHostException e) {
-				println("Failed to connect to the server. The server could not be found (i.e. its address could not be determined).",
-						ERROR_COLOR);
-			} catch (final IOException e) {
-				println("Failed to connect to the server due to some data streaming error.", ERROR_COLOR);
-				e.printStackTrace();
+						println("Audio level (AKA sample rate) set to " + sampleRate + ".", SUCCESS_COLOR);
+					} catch (final NumberFormatException e) {
+						println("Could not parse an audio level preset...", ERROR_COLOR);
+						println("Usage: /" + name + " " + args[0] + " l[level]", Color.ORANGE);
+						return;
+					}
+				} else
+					try {
+						sampleRate = Float.parseFloat(rate);
+						println("Audio level (AKA sample rate) set to " + sampleRate + ".", SUCCESS_COLOR);
+					} catch (final NumberFormatException e) {
+						println("Could not parse an audio level...", ERROR_COLOR);
+						println("Usage: /" + name + " " + args[0] + " [number]", Color.ORANGE);
+						return;
+					}
 			}
+
+			final float sampleRateResult = sampleRate;
+
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					print("Calling ", INFO_COLOR);
+					print(location, Color.CYAN);
+					print(" at the sample rate ", INFO_COLOR);
+					print("" + sampleRateResult, Color.CYAN);
+					println(".", INFO_COLOR);
+					try {
+						ChatRoom.INSTANCE.setCallClient(new CallClient(location, DEFAULT_CALL_PORT,
+								new AudioFormat(sampleRateResult, 16, 1, true, true)));
+					} catch (ConnectException e) {
+						println("The call server could not be connected to. It seems that there is not a server running on the specified address.",
+								ERROR_COLOR);
+					} catch (final LineUnavailableException e) {
+						println("Failed to make the call client. Your microphone could not be accessed...",
+								ERROR_COLOR);
+						e.printStackTrace();
+					} catch (final UnknownHostException e) {
+						println("Failed to connect to the server. The server could not be found (i.e. its address could not be determined).",
+								ERROR_COLOR);
+					} catch (final IOException e) {
+						println("Failed to connect to the server due to some data streaming error.", ERROR_COLOR);
+						e.printStackTrace();
+					}
+
+				}
+			}, "CALL-STARTER-THREAD").start();
 
 		}
 
