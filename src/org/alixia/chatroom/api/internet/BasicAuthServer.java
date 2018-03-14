@@ -99,7 +99,7 @@ public class BasicAuthServer {
 					throw new UserDataParseException(
 							"No colon separator found in line (:). A colon is used to separate the username from the password of a user. Each line has a different user's data on it. Without a colon on a line, there's no telling of what part is the username or password.",
 							line);
-				final String username = line.substring(0, line.indexOf(":") + 1);
+				final String username = line.substring(0, line.indexOf(":"));
 				final String password = line.substring(line.indexOf(":") + 1);
 
 				users.put(username, new User(username, password));
