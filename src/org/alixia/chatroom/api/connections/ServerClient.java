@@ -13,7 +13,9 @@ import org.alixia.chatroom.api.connections.messages.server.BasicServerMessage;
 
 class ServerClient {
 
-	private String username = "Anonymous", accountName;
+	public static final String DEFAULT_USERNAME = "Anonymous";
+
+	private String username = DEFAULT_USERNAME, accountName;
 
 	private boolean connectionClosed;
 
@@ -185,6 +187,16 @@ class ServerClient {
 	public void setUsername(final String username) {
 		usernameSet = true;
 		this.username = username;
+	}
+
+	/**
+	 * Basically, logs this {@link ServerClient} out, from the perspective of the
+	 * server.
+	 * 
+	 */
+	public void clearLogin() {
+		username = DEFAULT_USERNAME;
+		accountName = null;
 	}
 
 }

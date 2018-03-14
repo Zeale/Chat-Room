@@ -106,6 +106,17 @@ public class Server extends NamedObject {
 							final boolean auth = Authentication.getDefaultAuthenticationMethod()
 									.authenticate(account.username, account.sessionID);
 							if (auth) {
+
+								for (ServerClient sc : connections)
+									if (sc.getAccountName().equals(account.username)) {
+										sc.clearLogin();
+										// The user will receive this message on their computer, so it's ok to say "this
+										// one," in reference to the computer that they will be sitting at while reading
+										// the message. :)
+										sc.sendMessage(
+												"Your account was used to log in to this server from another computer, so you were logged out from this one.");
+									}
+
 								// Should only be set when logging in!
 								client.setAccountName(account.username);
 								// If they have not set their username with /setname yet, then we'll change
