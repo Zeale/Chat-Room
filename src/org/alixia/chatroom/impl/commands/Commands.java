@@ -905,9 +905,13 @@ public final class Commands {
 					final Reader versionInput = new InputStreamReader(getClass().getResourceAsStream("/version"));
 					int n;
 					int inc = 0;
+					String rawInput = "";
 					while ((n = versionInput.read()) != -1)
 						if (Character.isDigit(n))
-							current += Math.pow(10, inc++) * Integer.parseInt("" + (char) n);
+							rawInput += (char) n;
+					final char[] charArray = rawInput.toCharArray();
+					for (int i = charArray.length - 1; i > -1; i--)
+						current += Math.pow(10, inc++) * Integer.parseInt("" + charArray[i]);
 
 					currSuccess = true;
 
