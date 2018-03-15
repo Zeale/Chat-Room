@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class Client extends NamedObject {
+public class Client {
 
 	private boolean connectionClosed;
 
@@ -43,8 +43,10 @@ public class Client extends NamedObject {
 				} catch (final SocketException e) {
 					socketExceptionCount++;
 					pauseRun();
-					if (socketExceptionCount > 3)
+					if (socketExceptionCount > 3) {
 						closeConnection();
+						return;
+					}
 				} catch (ClassNotFoundException | IOException e1) {
 					e1.printStackTrace();
 				}
@@ -69,8 +71,7 @@ public class Client extends NamedObject {
 
 	private boolean paused;
 
-	public Client(final Socket socket, final String name) throws IOException {
-		super(name);
+	public Client(final Socket socket) throws IOException {
 		this.socket = socket;
 
 		objOut = new ObjectOutputStream(socket.getOutputStream());
@@ -78,8 +79,7 @@ public class Client extends NamedObject {
 
 	}
 
-	public Client(final String hostname, final int port, final String name) throws UnknownHostException, IOException {
-		super(name);
+	public Client(final String hostname, final int port) throws UnknownHostException, IOException {
 		socket = new Socket(hostname, port);
 
 		objOut = new ObjectOutputStream(socket.getOutputStream());
@@ -94,6 +94,8 @@ public class Client extends NamedObject {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
+		if (listener != null)
+			listener.connectionClosed();
 	}
 
 	public ConnectionListener getListener() {

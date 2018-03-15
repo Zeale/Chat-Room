@@ -18,9 +18,8 @@ import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.api.commands.CommandManager;
 import org.alixia.chatroom.api.connections.Client;
-import org.alixia.chatroom.api.connections.ClientManager;
 import org.alixia.chatroom.api.connections.ConnectionListener;
-import org.alixia.chatroom.api.connections.ServerManager;
+import org.alixia.chatroom.api.connections.Server;
 import org.alixia.chatroom.api.connections.messages.client.BasicUserMessage;
 import org.alixia.chatroom.api.connections.messages.client.UserMessage;
 import org.alixia.chatroom.api.connections.messages.client.requests.LogoutRequest;
@@ -93,11 +92,6 @@ public class ChatRoom {
 	private final ConnectionListener clientListener = new ConnectionListener() {
 
 		@Override
-		public void connectionClosed() {
-			clients.unselectItem();
-		}
-
-		@Override
 		public void objectReceived(final Serializable object) {
 			if (object instanceof UserMessage)
 				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(console));
@@ -105,13 +99,18 @@ public class ChatRoom {
 				Platform.runLater(() -> ((ServerMessage) object).toConsoleText().print(console));
 
 		}
+
+		@Override
+		public void connectionClosed() {
+			println("You disconnected from the server.", INFO_COLOR);
+			client = null;
+		}
 	};
 
 	public final CommandManager commandManager = new CommandManager();
 
-	public final ClientManager clients = new ClientManager(clientListener);
-
-	public final ServerManager servers = new ServerManager();
+	private Client client;
+	private Server server;
 
 	public final LateLoadItem<SettingsGUI> settingsInstance = new LateLoadItem<>(SettingsGUI::new);
 	private String username = null;
@@ -119,21 +118,22 @@ public class ChatRoom {
 	ChatRoom() {
 	}
 
-	public boolean createNewClient(final String host, final int port, final String id)
-			throws UnknownHostException, IOException {
-		if (clients.containsKey(id))
-			return false;
-		final Client client = new Client(host, port, id);
-		// TODO TAG
+	public boolean createNewClient(final String host, final int port)
+			throws UnknownHostException, IOException, IllegalArgumentException {
+		final Client client = new Client(host, port);
+
+		client.setListener(clientListener);
+
 		if (isLoggedIn())
 			client.sendObject(ChatRoom.INSTANCE.getAccount());
 		if (username != null)
 			client.sendObject(new NameChangeRequest(username));
-		return clients.addItem(client);
+		this.client = client;
+		return true;
 	}
 
-	public void createNewClient(final String host, final String id) throws UnknownHostException, IOException {
-		createNewClient(host, DEFAULT_CHAT_PORT, id);
+	public void createNewClient(final String host) throws UnknownHostException, IOException {
+		createNewClient(host, DEFAULT_CHAT_PORT);
 	}
 
 	public void executeCommand(final String command) {
@@ -202,6 +202,21 @@ public class ChatRoom {
 		println();
 	}
 
+	public Client getClient() {
+		return client;
+	}
+
+	/**
+	 * Returns whether or not there is a connection to a server. If there is an
+	 * active client, this method returns <code>true</code>. Otherwise, it returns
+	 * false.
+	 * 
+	 * @return <code>{@link #getClient()}!=null</code>
+	 */
+	public boolean isClientOpen() {
+		return getClient() != null;
+	}
+
 	/**
 	 * Sends text as the user.
 	 *
@@ -210,8 +225,8 @@ public class ChatRoom {
 	 */
 	public void sendText(final String text) {
 
-		if (clients.isItemSelected())
-			clients.getSelectedItem().sendObject(new BasicUserMessage(text));
+		if (isClientOpen())
+			getClient().sendObject(new BasicUserMessage(text));
 		else {
 			print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
 			print("/new help ", Color.ORANGERED);
@@ -249,8 +264,8 @@ public class ChatRoom {
 
 	public void setUsername(final String username) {
 		this.username = username;
-		if (ChatRoom.INSTANCE.clients.isItemSelected())
-			clients.getSelectedItem().sendObject(new NameChangeRequest(username));
+		if (isClientOpen())
+			getClient().sendObject(new NameChangeRequest(username));
 	}
 
 	private void tryInit() {
@@ -269,8 +284,14 @@ public class ChatRoom {
 		getGUI().stage.setMinWidth(600);
 
 		getGUI().stage.setOnCloseRequest(event -> {
-			servers.close();
-			clients.close();
+			if (isServerOpen())
+				try {
+					getServer().stop();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			if (isClientOpen())
+				getClient().closeConnection();
 		});
 
 		getGUI().input.setOnKeyPressed(event -> {
@@ -299,6 +320,14 @@ public class ChatRoom {
 		print("/help ", Color.WHITE);
 		println("for more help.", Color.PURPLE);
 
+	}
+
+	public Server getServer() {
+		return server;
+	}
+
+	public boolean isServerOpen() {
+		return server != null;
 	}
 
 	public void updateProgram() {
@@ -362,14 +391,20 @@ public class ChatRoom {
 
 	public void logout() {
 		account = null;
-		if (ChatRoom.INSTANCE.clients.isItemSelected())
-			ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(new LogoutRequest());
+		if (isClientOpen())
+			getClient().sendObject(new LogoutRequest());
 	}
 
 	public void login(Account account) {
 		this.account = account;
-		if (ChatRoom.INSTANCE.clients.isItemSelected())
-			ChatRoom.INSTANCE.clients.getSelectedItem().sendObject(ChatRoom.INSTANCE.getAccount());
+		if (isClientOpen())
+			getClient().sendObject(ChatRoom.INSTANCE.getAccount());
+	}
+
+	public void startServer(int port) throws RuntimeException, IOException {
+		if (isServerOpen())
+			throw new RuntimeException("Server already running.");
+		server = new Server(port);
 	}
 
 }

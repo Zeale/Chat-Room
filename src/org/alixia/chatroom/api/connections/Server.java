@@ -20,7 +20,7 @@ import org.alixia.chatroom.api.internet.Authentication;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.AuthenticationException;
 import org.alixia.chatroom.api.logging.Logger;
 
-public class Server extends NamedObject {
+public class Server {
 
 	public static final Logger SERVER_LOGGER = new Logger("SERVER");
 
@@ -53,16 +53,18 @@ public class Server extends NamedObject {
 
 	private final List<ServerClient> connections = new LinkedList<>();
 
-	public Server(final int port, final String name) throws IOException {
-		super(name);
+	public Server(final int port) throws IOException {
 		socket = new ServerSocket(port);
 		acceptThread.start();
 	}
 
-	public Server(final String name) throws IOException {
-		super(name);
+	public Server() throws IOException {
 		socket = new ServerSocket(0);
 		acceptThread.start();
+	}
+
+	public int getPort() {
+		return socket.getLocalPort();
 	}
 
 	/**

@@ -36,10 +36,6 @@ import org.alixia.chatroom.api.changelogparser.ChangelogParser;
 import org.alixia.chatroom.api.commands.Command;
 import org.alixia.chatroom.api.commands.CommandConsumer;
 import org.alixia.chatroom.api.commands.CommandManager;
-import org.alixia.chatroom.api.connections.Client;
-import org.alixia.chatroom.api.connections.ClientManager;
-import org.alixia.chatroom.api.connections.Server;
-import org.alixia.chatroom.api.connections.ServerManager;
 import org.alixia.chatroom.api.connections.voicecall.CallClient;
 import org.alixia.chatroom.api.connections.voicecall.CallServer;
 import org.alixia.chatroom.api.internet.Authentication;
@@ -73,8 +69,6 @@ public final class Commands {
 
 	private static final CommandManager commandManager = ChatRoom.INSTANCE.commandManager;
 
-	private static final ClientManager clients = ChatRoom.INSTANCE.clients;
-	private static final ServerManager servers = ChatRoom.INSTANCE.servers;
 	private static Printable printer = ChatRoom.INSTANCE.printer;
 	private static Console console = ChatRoom.INSTANCE.console;
 
@@ -1118,135 +1112,154 @@ public final class Commands {
 		}
 	};
 
-	public static final Command CLIENTS = new ChatRoomCommand() {
-
-		@Override
-		protected void act(final String name, final String... args) {
-			if (args.length > 0)
-
-				if (equalsHelp(args[0])) {
-					printHelp("/clients ['list']",
-							"Lists out all the clients you have available, by their names. The ['list'] option is optional and does nothing more. It must be typed literally, however, such as in ");
-					print("/clients list", WARNING_COLOR);
-					print(".", SUCCESS_COLOR);
-					return;
-				} else if (!args[0].equalsIgnoreCase("list"))
-					println("This command doesn’t take any arguments.", WARNING_COLOR);
-
-			if (clients.isEmpty()) {
-				println("You have no registered clients.", ERROR_COLOR);
-				return;
-			}
-			println("Here is a list of all the registered clients you have.", INFO_COLOR);
-			boolean first = true;
-			for (final Client c : clients.values()) {
-				if (!first)
-					print(", ", SUCCESS_COLOR);
-				else
-					first = false;
-				print(c.getName(), Color.WHITE);
-			}
-			println();
-
-		}
-
-		@Override
-		protected boolean match(final String name) {
-			return name.equalsIgnoreCase("clients");
-		}
-	};
-
-	public static final Command SERVERS = new ChatRoomCommand() {
-
-		@Override
-		protected void act(final String name, final String... args) {
-			if (args.length > 0)
-				if (equalsHelp(args[0])) {
-					printHelp("/servers ['list']",
-							"Lists out all the servers you have available, by their names. The ['list'] option is optional and does nothing more. It must be typed literally, however, such as in ");
-					print("/servers list", WARNING_COLOR);
-					print(".", SUCCESS_COLOR);
-					return;
-				} else if (!args[0].equalsIgnoreCase("list"))
-					println("This command doesn’t take any arguments.", WARNING_COLOR);
-
-			if (servers.isEmpty()) {
-				println("You have no registered servers.", ERROR_COLOR);
-				return;
-			}
-			println("Here is a list of all the registered servers you have.", INFO_COLOR);
-			boolean first = true;
-			for (final Server s : servers.values()) {
-				if (!first)
-					print(", ", SUCCESS_COLOR);
-				else
-					first = false;
-				print(s.getName(), Color.WHITE);
-			}
-			println();
-		}
-
-		@Override
-		protected boolean match(final String name) {
-			return name.equalsIgnoreCase("servers");
-		}
-	};
-
 	public static final Command SERVER = new ChatRoomCommand() {
 
 		@Override
 		protected void act(final String name, final String... args) {
+			// "/server" - When the user enters this, we want to print information about the
+			// server they are hosting or tell them that they don't have one running.
 			if (args.length == 0) {
 				print("Too few arguments. Usage: ", ERROR_COLOR);
 				println("/" + name + " (subcommand)", Color.ORANGE);
 				return;
 			}
 
+			// Cache the subcommand
 			final String subcommand = args[0];
+
+			// "/server help" - Print help for the /server command
 			if (equalsHelp(subcommand))
 				printHelp("/" + name + " (subcommand)",
-						"Allows you to modify or edit a server. You can edit the server that you have selected right now or you can modify a specific server by giving its name along with your command. If there is no selected server, you will need to provide a name.");
-			else if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect")) {
+						"Allows you to manage " + (ChatRoom.INSTANCE.isServerOpen() ? "your" : "a") + " server.");
+			else
+			// "/server stop" - Stop the server if it's running. If it isn't, tell the user.
+			// (Unless they entered "/server stop help". In this case, we'd print help for
+			// the stop subcmd.)
+			if (equalsAnyIgnoreCase(subcommand, "stop", "end", "end-connection", "close", "disconnect"))
 
-				if (args.length > 1 && equalsHelp(args[1])) {
-					printHelp("/server " + subcommand, "Stops a specific, or the currently selected server.");
+				// Handle a help request.
+				if (args.length > 1 && equalsHelp(args[1]))
+					printHelp("/" + name + " " + subcommand, "Stops your server, if you have one running.");
+				else
+				// Handle no server to close.
+				if (!ChatRoom.INSTANCE.isServerOpen())
+					println("You don't have a server open...", ERROR_COLOR);
+				else
+					try {
+						ChatRoom.INSTANCE.getServer().stop();
+						println("Your server was stopped successfully. ", SUCCESS_COLOR);
+					} catch (IOException e) {
+						e.printStackTrace();
+						println("An error occurred while trying to close the server.", ERROR_COLOR);
+					}
+			else if (equalsAnyIgnoreCase(subcommand, "start", "make", "new", "connect", "m", "s", "n", "c")) {
+
+				if (ChatRoom.INSTANCE.isServerOpen()) {
+					println("You already have a server open and, thus, cannot create a new one.", ERROR_COLOR);
 					return;
 				}
 
-				if (servers.isEmpty()) {
-					println("There are no running servers for you to close.", ERROR_COLOR);
-					return;
-				}
-				final String serverName;
-				if (args.length < 2)
-					if (!servers.isItemSelected()) {
-						print("You don't have a server selected. Did you want to close a specific server?\nUsage: ",
-								ERROR_COLOR);
-						println("/" + name + " " + subcommand + " [server-name]", Color.ORANGE);
-						return;
-					} else
-						servers.removeItem(serverName = servers.getSelectedItem().getName());
-				else {
-					serverName = args[1];
-					if (!servers.containsKey(serverName)) {
-						print("There is no server by the name of ", ERROR_COLOR);
-						print(serverName, Color.ORANGE);
-						print(".", ERROR_COLOR);
+				int port;
+				if (args.length > 0)
+					try {
+						port = Integer.parseInt(args[0]);
+					} catch (NumberFormatException e) {
+						println("The port you entered could not be parsed as a number.", ERROR_COLOR);
 						return;
 					}
-					servers.removeItem(serverName);
+				else
+					port = ChatRoom.DEFAULT_CHAT_PORT;
+
+				try {
+					// This throws a runtime exception if there is already a server running, but we
+					// check for that above so we don't need to catch it here.
+					ChatRoom.INSTANCE.startServer(port);
+				} catch (IOException e) {
+					e.printStackTrace();
+					println("Failed to open the server.", ERROR_COLOR);
 				}
 
-				print("The server, ", SUCCESS_COLOR);
-				print(serverName, Color.WHITE);
-				print(", was removed successfully.", SUCCESS_COLOR);
-
 			}
+
 		}
 
 		@Override
 		protected boolean match(final String name) {
 			return name.equalsIgnoreCase("server") || name.equals("s");
+		}
+	};
+
+	public static final Command CONNECT = new ChatRoomCommand() {
+
+		@Override
+		protected boolean match(String name) {
+			return name.equalsIgnoreCase("connect");
+		}
+
+		@Override
+		protected void act(String name, String... args) {
+			if (args.length == 0) {
+				print("Please append a subcommand or type ", ERROR_COLOR);
+				print("/" + name + " help", Color.WHITE);
+				println(" for more help.", ERROR_COLOR);
+			} else if (equalsHelp(args[0])) {
+				printHelp("/" + name + " (address) [port]", "Allows you to connect to a server.");
+			} else {
+				String address = args[0];
+				int port;
+				try {
+					port = args.length == 1 ? ChatRoom.DEFAULT_CHAT_PORT : Integer.parseInt(args[1]);
+				} catch (NumberFormatException e) {
+					println("Could not parse your port into a number.", ERROR_COLOR);
+					return;
+				}
+
+				if (ChatRoom.INSTANCE.isClientOpen()) {
+					print("You are already connected to a server. Use the ", ERROR_COLOR);
+					print("/client start", Color.WHITE);
+					println(" command to disconnect and connect to a new one.", ERROR_COLOR);
+				}
+				try {
+					ChatRoom.INSTANCE.createNewClient(address, port);
+					println("Successfully connected to the server!", SUCCESS_COLOR);
+				} catch (UnknownHostException e) {
+					println("A server could not be located on the specified address. Did you type it correctly?",
+							ERROR_COLOR);
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					print("The port you gave is a number, but it is not in the correct range. Please enter a port ",
+							ERROR_COLOR);
+					print("between", Color.FIREBRICK);
+					println(" 0 and 65536.", ERROR_COLOR);
+				} catch (IOException e) {
+					println("A connection error occurred while trying to communicate with the server.", ERROR_COLOR);
+					e.printStackTrace();
+				}
+
+			}
+		}
+	};
+
+	public static final Command DISCONNECT = new ChatRoomCommand() {
+
+		@Override
+		protected boolean match(String name) {
+			return name.equalsIgnoreCase("disconnect");
+		}
+
+		@Override
+		protected void act(String name, String... args) {
+			if (args.length > 0)
+				if (equalsHelp(args[0]))
+					printHelp("/" + name, "Disconnects you from a server, if you are currently connected to one.");
+				else
+					println("That subcommand was not found.", ERROR_COLOR);
+			else if (ChatRoom.INSTANCE.isClientOpen()) {
+				ChatRoom.INSTANCE.getClient().closeConnection();
+				println("Successfully disconnected from the server.", SUCCESS_COLOR);
+			} else
+				println("You are not connected to a server.", ERROR_COLOR);
+
 		}
 	};
 
@@ -1268,72 +1281,60 @@ public final class Commands {
 					return;
 				}
 
-				if (args.length < 2) {
-					// No clientName specified. "/client stop"
-					if (!clients.isItemSelected()) {
-						print("You do not have a client selected. Did you mean to close a specific client?\nUsage: ",
-								ERROR_COLOR);
-						println("/" + name + " " + subcommand + " [client-name]", Color.ORANGE);
+				else {
+					if (ChatRoom.INSTANCE.isClientOpen()) {
+						ChatRoom.INSTANCE.getClient().closeConnection();
+						println("Successfully closed the connection.", SUCCESS_COLOR);
 					} else
-						clients.removeItem(clients.getSelectedItem().getName());
+						println("There is no open client for you to close...", ERROR_COLOR);
+				}
 
-				} else {
-					if (clients.isEmpty()) {
-						println("There are no active clients for you to close.", ERROR_COLOR);
-						return;
-					}
-					final String clientName = args[1];
-					if (clients.removeItem(clientName)) {
-						print("The client with the name ", SUCCESS_COLOR);
-						print(clientName, Color.WHITE);
-						println(" was removed successfully!", SUCCESS_COLOR);
-					} else {
-						print("A command by the name of ", ERROR_COLOR);
-						print(clientName, Color.ORANGE);
-						println(" was not found.", ERROR_COLOR);
-					}
-				}
-			} else if (subcommand.equalsIgnoreCase("select")) {
-				if (args.length < 2) {
-					println("You must specify what client you want me to select.", ERROR_COLOR);
-					println("Usage: /client select (client-name)", ERROR_COLOR);
-				} else {
-					if (equalsHelp(args[1])) {
-						printHelp("/" + name + " " + subcommand + " (client-name)",
-								"Selects one of your registered clients given its name.");
-						return;
-					}
-					if (args.length > 2) {
-						println("Too many arguments. Using only what is needed.", WARNING_COLOR);
-						println("Usage: /" + name + " " + subcommand + " (client-name)", WARNING_COLOR);
-					}
-					final String clientName = args[1];
-					if (clientName.equals(clients.getSelectedItem().getName()))
-						println("That client is already selected.", WARNING_COLOR);
-					else if (!clients.containsKey(clientName)) {
-						print("There isn't a client registered with the name ", ERROR_COLOR);
-						println(clientName, Color.ORANGE);
-					} else {
-						clients.selectItem(clientName);
-						println("Selected the specified client.", SUCCESS_COLOR);
-					}
-				}
-			} else if (subcommand.equalsIgnoreCase("list")) {
-				if (equalsHelp(args[1])) {
-					printHelp("/" + name + " " + subcommand,
-							"Lists your registered clients. This command takes no arguments.");
-					return;
-				}
-				executeCommand("/clients list");
 			} else if (equalsHelp(subcommand)) {
 				printHelp("/" + name + " (subcommand)", "Allows you to see information about or manipulate clients.");
 				print("Possible subcommands: ", SUCCESS_COLOR);
-				print("list", Color.WHITE);
-				print(", ", SUCCESS_COLOR);
-				print("select", Color.WHITE);
-				print(", and ", SUCCESS_COLOR);
 				print("stop", Color.WHITE);
 				println(".", SUCCESS_COLOR);
+			} else if (equalsAnyIgnoreCase(subcommand, "start", "make", "new", "connect", "m", "s", "n", "c")) {
+				if (args.length < 2) {
+					println("Please specify a server address (and a server port if needed).", ERROR_COLOR);
+					print("Example: ", Color.WHITE);
+					println("/" + name + " " + subcommand + " dusttoash.org 35560", Color.LIGHTCORAL);
+				} else
+					try {
+						if (args.length == 2) {
+							print("Connecting to ", INFO_COLOR);
+							print(args[1], Color.WHITE);
+							println(".", INFO_COLOR);
+
+							ChatRoom.INSTANCE.createNewClient(args[1]);
+							println("Successfully connected to the server.", SUCCESS_COLOR);
+						} else if (args.length == 3) {
+							print("Connecting to ", INFO_COLOR);
+							print(args[1], Color.WHITE);
+							print(" on the port ", INFO_COLOR);
+							print(args[2], Color.WHITE);
+							println(".", INFO_COLOR);
+
+							ChatRoom.INSTANCE.createNewClient(args[1], Integer.parseInt(args[2]));
+							println("Successfully connected to the server.", SUCCESS_COLOR);
+						}
+					} catch (UnknownHostException e) {
+						e.printStackTrace();
+						println("Could not locate the server... Did you type in the right address?", ERROR_COLOR);
+					} catch (IOException e) {
+						e.printStackTrace();
+						println("Some sort of connection error occurred while trying to connect to the server.",
+								ERROR_COLOR);
+					} catch (NumberFormatException e) {
+						print("The port you entered, (", ERROR_COLOR);
+						print(args[2], Color.PURPLE);
+						println("), could not be parsed as a numerical port. (Remember that it must be between 0 and 65536, not including either.)",
+								ERROR_COLOR);
+					} catch (IllegalArgumentException e) {
+						println("The port you entered was out of range. It must be BETWEEN 0 and 65536, but not 0 or 65536.",
+								ERROR_COLOR);
+					}
+
 			}
 
 		}
@@ -1359,187 +1360,6 @@ public final class Commands {
 		@Override
 		protected boolean match(final String name) {
 			return equalsAnyIgnoreCase(name, "cls", "clear-screen", "clearscreen");
-		}
-	};
-
-	public static final Command NEW = new ChatRoomCommand() {
-
-		CommandManager argumentManager = new CommandManager();
-
-		{
-			// /new Client
-			argumentManager.addCommand(new ChatRoomCommand() {
-
-				@Override
-				protected void act(final String name, final String... args) {
-					if (args.length > 0 && equalsHelp(args[0])) {
-						printHelp("/new " + name + " (host-name) [port] (client-name)", "Creates a new " + name
-								+ " given a (host-name), optionally, a [port], and a (client-name).");
-						return;
-					}
-					if (args.length < 2) {
-						print("Not enough arguments. Please input a server address and a name for the client. E.g., ",
-								ERROR_COLOR);
-						// Using 'name', we can get the exact command name that they put in, whether
-						// they did /new client, or /new c.
-						println("/new " + name + " dusttoash.org 25000 MyClient", Color.ORANGE);
-						print("dusttoash.org ", Color.ORANGE);
-						print("would be the server address, and ", ERROR_COLOR);
-						print("MyClient ", Color.ORANGE);
-						println("would be this new client's name.", ERROR_COLOR);
-						print("See ", ERROR_COLOR);
-						print("/help ", Color.ORANGE);
-						println("for more information.", ERROR_COLOR);
-					} else {
-
-						final String hostname = args[0];
-						int port = DEFAULT_CHAT_PORT;
-						final String clientName;
-
-						try {
-
-							// No port
-							if (args.length == 2)
-								clientName = args[1];
-							else {
-								if (args.length > 3)
-									println("Too many arguments... Parsing only what is needed: (the first three args).",
-											WARNING_COLOR);
-								port = Integer.parseInt(args[1]);
-								clientName = args[2];
-
-							}
-
-							// The following makes the server respond with a "Name successfully chagned"
-							// message.
-							//
-							// client.sendObject(new NameChangeRequest(ChatRoom.INSTANCE.getUsername()));
-
-							// TODO The case of a taken name should be handled before the client is created.
-							if (!ChatRoom.INSTANCE.createNewClient(hostname, port, clientName))
-								println("A client with this name already exists. Please choose a new name and try again.",
-										ERROR_COLOR);
-							else if (!clients.isItemSelected()) {
-								println("Since there is currently not a selected client, this new one that you've just created will be selected.",
-										Color.CORNFLOWERBLUE);
-								clients.selectItem(clientName);
-							}
-						} catch (final NumberFormatException e) {
-							println("The second argument could not be parsed as a port. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, but 0 and 65536 will not.)",
-									ERROR_COLOR);
-						} catch (final UnknownHostException e) {
-							println("The address could not be parsed as a valid server address, or the ip address of the host could not be determined.",
-									ERROR_COLOR);
-						} catch (final ConnectException e) {
-							print("There is no server listening for connections on the address ", ERROR_COLOR);
-							print(hostname, Color.DARKRED);
-							print(" and the port ", ERROR_COLOR);
-							print("" + port, Color.DARKRED);
-						} catch (final IOException e) {
-							println("Some kind of unknown error occurred while trying to connect.", ERROR_COLOR);
-							e.printStackTrace();
-						}
-					}
-				}
-
-				@Override
-				protected boolean match(final String name) {
-					return name.equalsIgnoreCase("client") || name.equals("c");
-				}
-			});
-
-			// /new Server
-			argumentManager.addCommand(new ChatRoomCommand() {
-
-				@Override
-				protected void act(final String name, final String... args) {
-
-					if (args.length < 1) {
-						print("Too few arguments. See ", ERROR_COLOR);
-						print("/new " + name + " help ", Color.ORANGE);
-						println("for more info.", ERROR_COLOR);
-						return;
-					}
-
-					try {
-
-						final String serverName;
-						final Integer port;
-
-						Server server;
-
-						if (args.length > 0 && equalsHelp(args[0])) {
-							printHelp("/new " + name + " [port] (server-name)",
-									"This command creates a new server with an optional [port] parameter and a (server-name). The (server-name) is just for you to modify the server later with the /server command. It does not appear to any users who connect or serve any purpose apart from reference.");
-							return;
-						}
-
-						// Handle 2+ args (name and port)
-						if (args.length > 1) {
-							if (args.length > 2)
-								println("Too many arguments... Using only what is needed: (args 1 & 2).",
-										WARNING_COLOR);
-							serverName = args[1];
-							port = Integer.parseInt(args[1]);
-
-						} // Handle 1 arg (name)
-						else {
-							port = DEFAULT_CHAT_PORT;
-							serverName = args[0];
-						}
-
-						server = new Server(port, serverName);
-
-						if (!servers.addItem(server)) {
-							println("There already exists a server with the name " + serverName
-									+ ". Please choose a different name and try again.", ERROR_COLOR);
-							server.stop();
-						}
-						if (!servers.isItemSelected()) {
-							servers.selectItem(serverName);
-							println("You did not previously have a server selected, so the one you just made was selected automatically.",
-									SUCCESS_COLOR);
-						}
-
-					} catch (final NumberFormatException e) {
-						println("Couldn't parse a port number for the server. The port must be a number between 0 and 65536, not inclusive. (So 15, 3500, and 65535 will work, for example, but 0 and 65536 will not.)",
-								ERROR_COLOR);
-					} catch (final IOException e) {
-						println("An error occurred while trying to host the server.", ERROR_COLOR);
-					}
-				}
-
-				@Override
-				protected boolean match(final String name) {
-					return name.equalsIgnoreCase("server") || name.equals("s");
-				}
-			});
-		}
-
-		@Override
-		protected void act(final String name, final String... args) {
-			if (args.length == 0) {
-				print("No arguments specified. Do ", ERROR_COLOR);
-				print("/new help ", Color.ORANGE);
-				println("for help.", ERROR_COLOR);
-			} else if (equalsHelp(args[0])) {
-				printHelp("/" + name + " (item)",
-						"This command lets you create new (items), such as clients or servers.",
-						"Clients let you connect to a server and send or receive messages.",
-						"Servers are what other people connect to using clients.",
-						"To find more information about making/hosting a server, do /" + name + " server help",
-						"To find more information about connecting to a server with a client, do /" + name
-								+ " client help");
-				return;
-			} else if (!argumentManager.runCommand(args)) {
-				print("Unknown argument: ", ERROR_COLOR);
-				println(args[0], Color.ORANGE);
-			}
-		}
-
-		@Override
-		protected boolean match(final String name) {
-			return name.equalsIgnoreCase("new");
 		}
 	};
 
@@ -1600,10 +1420,6 @@ public final class Commands {
 			return equalsAnyIgnoreCase(name, "clean", "cleanup", "clear-lag", "clearlag", "clean-up");
 		}
 	};
-
-	private static void executeCommand(final String command) {
-		commandManager.runCommand(command);
-	}
 
 	/**
 	 * This is actually, conveniently, used to load this class (and, thus, all of
