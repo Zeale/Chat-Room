@@ -1160,9 +1160,9 @@ public final class Commands {
 				}
 
 				int port;
-				if (args.length > 0)
+				if (args.length > 1)
 					try {
-						port = Integer.parseInt(args[0]);
+						port = Integer.parseInt(args[1]);
 					} catch (NumberFormatException e) {
 						println("The port you entered could not be parsed as a number.", ERROR_COLOR);
 						return;
@@ -1174,6 +1174,7 @@ public final class Commands {
 					// This throws a runtime exception if there is already a server running, but we
 					// check for that above so we don't need to catch it here.
 					ChatRoom.INSTANCE.startServer(port);
+					println("Successfully started a server.", SUCCESS_COLOR);
 				} catch (IOException e) {
 					e.printStackTrace();
 					println("Failed to open the server.", ERROR_COLOR);
