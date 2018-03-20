@@ -86,6 +86,13 @@ public final class Version implements Comparable<Version> {
 
 	}
 
+	public String getVersionPoints() {
+		String points = "";
+		for (int i = 0; i < this.points.length - 1; i++)
+			points += this.points[i] + ".";
+		return points + this.points[this.points.length - 1];
+	}
+
 	private static boolean hasBuildNumber(String point) {
 		// The last point of a version string gets passed into this method. This point
 		// should contain any sequence of numbers, immediately followed by a 'b' and the
@@ -136,6 +143,13 @@ public final class Version implements Comparable<Version> {
 		 * through the lack of a specified version type.
 		 */
 		REGULAR;
+
+		@Override
+		public String toString() {
+			String name = name().toLowerCase();
+			char firstChar = name.charAt(0);
+			return name.replaceFirst("" + firstChar, "" + Character.toUpperCase(firstChar));
+		}
 	}
 
 	/**

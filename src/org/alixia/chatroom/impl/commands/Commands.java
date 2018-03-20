@@ -32,6 +32,7 @@ import org.alixia.chatroom.api.Account;
 import org.alixia.chatroom.api.Console;
 import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
+import org.alixia.chatroom.api.Version;
 import org.alixia.chatroom.api.changelogparser.ChangelogParser;
 import org.alixia.chatroom.api.commands.Command;
 import org.alixia.chatroom.api.commands.CommandConsumer;
@@ -847,11 +848,9 @@ public final class Commands {
 		@Override
 		protected void act(final String name, final String... args) {
 
-			if (args.length == 0) {
-				final ChangelogParser parser = new ChangelogParser("/changelog.txt");
-				parser.printChangelog(printer);
-
-			} else {
+			if (args.length == 0)
+				new ChangelogParser("/changelog.txt").printChangelog(printer);
+			else {
 				if (args.length > 1)
 					println("Excessive args. Using only what is needed.", WARNING_COLOR);
 				final String arg = args[0];
@@ -892,6 +891,36 @@ public final class Commands {
 		@Override
 		protected boolean match(final String name) {
 			return name.equalsIgnoreCase("changelog");
+		}
+	};
+
+	public static final Command VERSION = new ChatRoomCommand() {
+
+		@Override
+		protected boolean match(String name) {
+			return equalsAnyIgnoreCase(name, "ver", "version");
+		}
+
+		@Override
+		protected void act(String name, String... args) {
+			if (args.length > 0 && equalsHelp(args[0])) {
+				printHelp("/" + name,
+						"Gives you formatted information about the version of this program that you have running.");
+				print("You can do ", INFO_COLOR);
+				print("/update", Color.ORANGERED);
+				println(" to see if (and, optionally, download) a pending, newer version.", INFO_COLOR);
+			} else {
+				Version version = new ChangelogParser("/changelog.txt").getVersion();
+				println("Version " + version.version + ":", Color.SADDLEBROWN);
+				println();
+				Color idColor = Color.BROWN.brighter();
+				print("Version Number (V#): ", idColor);
+				println(version.getVersionPoints(), Color.DARKORANGE);
+				print("Version Build Number (B#): ", idColor);
+				println(version.buildNumber + "", Color.DARKORANGE);
+				print("Version Build Type (BT): ", idColor);
+				println("" + version.buildType.toString(), Color.DARKORANGE);
+			}
 		}
 	};
 

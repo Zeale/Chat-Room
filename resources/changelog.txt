@@ -1,5 +1,7 @@
-0.1.8:
+0.1.8-nightly:
 
 ~ Updated the way that accounts react with the rest of the program.
 • Fixed some account and authentication related bugs.
 + Added Cleanup command.
++ Added version command.
++ Forgot just about every change that was made in this version, or what version this actually is.

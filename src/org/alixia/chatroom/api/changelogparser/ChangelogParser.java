@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.Printable;
+import org.alixia.chatroom.api.Version;
 
 import javafx.scene.paint.Color;
 
@@ -13,6 +14,7 @@ public class ChangelogParser {
 
 	private final InputStreamReader reader;
 	private String updateName;
+	private Version version;
 
 	public ChangelogParser(final InputStream stream) {
 		reader = new InputStreamReader(stream);
@@ -20,6 +22,10 @@ public class ChangelogParser {
 
 	public ChangelogParser(final String absolutePath) {
 		reader = new InputStreamReader(getClass().getResourceAsStream(absolutePath));
+	}
+
+	public boolean hasHeader() {
+		return updateName != null;
 	}
 
 	/**
@@ -78,6 +84,8 @@ public class ChangelogParser {
 			try {
 				reader.reset();
 			} catch (final IOException e1) {
+				System.err.println(
+						"Failed to reset a ChangeLogParser stream. This shouldn't be an issue if this is the first time this parser is being used.");
 			}
 
 		int c;
@@ -92,11 +100,18 @@ public class ChangelogParser {
 				throw new ParseException("End of file reached before starting reading of header.");
 
 			// We are at the first character of the update's title.
-			header += (char) c;
-			boolean foundColon = false;
+			String version = "" + (header += (char) c);
+			boolean foundColon = false, versionTerminated = false;
 			while (true) {
 				// Get next char.
 				c = reader.read();
+
+				if (!versionTerminated)
+					if (!(Character.isDigit(c) || c == '.' || Character.isLetter(c) || c == '-'))
+						versionTerminated = true;
+					else
+						version += (char) c;
+
 				if (c == -1)// End of file
 					throw new ParseException(
 							"End of file reached before header was terminated (with a colon and a line feed).");
@@ -129,10 +144,19 @@ public class ChangelogParser {
 			if (header.isEmpty())
 				throw new ParseException("Empty header");
 			updateName = header;
+			System.out.println(version);
+			this.version = new Version(version);
 
 		} catch (final IOException e) {
 			throw new ParseException(e);
+
 		}
+	}
+
+	public Version getVersion() {
+		if (!hasHeader())
+			parseUpdateHeader();
+		return version;
 	}
 
 	public void printChangelog(final Printable printable) {
