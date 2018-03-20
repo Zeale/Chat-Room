@@ -16,12 +16,14 @@ public class ChangelogParser {
 	private String updateName;
 	private Version version;
 
-	public ChangelogParser(final InputStream stream) {
+	public ChangelogParser(final InputStream stream) throws ParseException {
 		reader = new InputStreamReader(stream);
+		parseUpdateHeader();
 	}
 
-	public ChangelogParser(final String absolutePath) {
+	public ChangelogParser(final String absolutePath) throws ParseException {
 		reader = new InputStreamReader(getClass().getResourceAsStream(absolutePath));
+		parseUpdateHeader();
 	}
 
 	public boolean hasHeader() {
@@ -34,8 +36,10 @@ public class ChangelogParser {
 	 *
 	 * @return The next change in the change log as a {@link Change} object, or
 	 *         <code>null</code> if there are no more changes.
+	 * @throws ParseException
+	 *             In case an error occurs (or is found) while parsing.
 	 */
-	public Change getNextChange() {
+	public Change getNextChange() throws ParseException {
 		try {
 
 			String change = "";
@@ -72,12 +76,10 @@ public class ChangelogParser {
 	}
 
 	public String getUpdateName() {
-		if (updateName == null)
-			parseUpdateHeader();
 		return updateName;
 	}
 
-	private void parseUpdateHeader() {
+	private void parseUpdateHeader() throws ParseException {
 		if (updateName != null)
 			return;
 		else
@@ -154,12 +156,10 @@ public class ChangelogParser {
 	}
 
 	public Version getVersion() {
-		if (!hasHeader())
-			parseUpdateHeader();
 		return version;
 	}
 
-	public void printChangelog(final Printable printable) {
+	public void printChangelog(final Printable printable) throws ParseException {
 		printable.print("Version: ", Color.MEDIUMAQUAMARINE);
 		printable.println(getUpdateName(), Color.WHITE);
 		printable.println();

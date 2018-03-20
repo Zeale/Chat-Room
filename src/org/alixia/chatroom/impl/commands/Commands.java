@@ -34,6 +34,7 @@ import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.Printable;
 import org.alixia.chatroom.api.Version;
 import org.alixia.chatroom.api.changelogparser.ChangelogParser;
+import org.alixia.chatroom.api.changelogparser.ParseException;
 import org.alixia.chatroom.api.commands.Command;
 import org.alixia.chatroom.api.commands.CommandConsumer;
 import org.alixia.chatroom.api.commands.CommandManager;
@@ -849,7 +850,12 @@ public final class Commands {
 		protected void act(final String name, final String... args) {
 
 			if (args.length == 0)
-				new ChangelogParser("/changelog.txt").printChangelog(printer);
+				try {
+					new ChangelogParser("/changelog.txt").printChangelog(printer);
+				} catch (ParseException e1) {
+					e1.printStackTrace();
+					println("An error occurred while trying to parse the changelog.", ERROR_COLOR);
+				}
 			else {
 				if (args.length > 1)
 					println("Excessive args. Using only what is needed.", WARNING_COLOR);
@@ -882,6 +888,9 @@ public final class Commands {
 					} catch (final IOException e) {
 						println("Failed to get the version data from the remote server.", ERROR_COLOR);
 						e.printStackTrace();
+					} catch (ParseException e) {
+						println("An error occurred while trying to parse the changelog.", ERROR_COLOR);
+						e.printStackTrace();
 					}
 
 				}
@@ -910,7 +919,15 @@ public final class Commands {
 				print("/update", Color.ORANGERED);
 				println(" to see if (and, optionally, download) a pending, newer version.", INFO_COLOR);
 			} else {
-				Version version = new ChangelogParser("/changelog.txt").getVersion();
+				Version version;
+				try {
+					version = new ChangelogParser("/changelog.txt").getVersion();
+				} catch (ParseException e) {
+					e.printStackTrace();
+					println("An error occurred while trying to print the changelog. A detailed error message and the stacktrace have been printed to the program console.",
+							ERROR_COLOR);
+					return;
+				}
 				println("Version " + version.version + ":", Color.SADDLEBROWN);
 				println();
 				Color idColor = Color.BROWN.brighter();

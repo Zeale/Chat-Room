@@ -1,6 +1,6 @@
 package org.alixia.chatroom.api.changelogparser;
 
-public class ParseException extends RuntimeException {
+public class ParseException extends Exception {
 
 	/**
 	 * SUID
