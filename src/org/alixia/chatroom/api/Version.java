@@ -109,28 +109,69 @@ public final class Version implements Comparable<Version> {
 	}
 
 	public static boolean hasBuildType(String point) {
-		if (point.contains("b"))
-			if (point.contains("-"))
-				return point.indexOf('b') < point.indexOf('-');
-			else
-				return true;
-		return false;
+		return point.contains("-");
 	}
 
-	private boolean isNumeric(String point) {
-		for (char c : point.toCharArray())
-			if (!Character.isDigit(c))
-				return false;
-		return true;
-	}
-
+	/**
+	 * This enum contains objects that denote the type of a build of a program. The
+	 * contents of this enum are ordered accurately i.e. they can be correctly used
+	 * by {@link #compareTo(BuildType)} calls. The earlier in the time of a
+	 * program's lifecycle, that an object in this enum denotes, the "less" it is,
+	 * in comparison to other objects in this enum. For example:
+	 * 
+	 * <pre>
+	 * <code> {@link #NIGHTLY}.{@link #compareTo(BuildType) compareTo(ALPHA)} </code>
+	 * </pre>
+	 * 
+	 * will return {@code -1}, since nightly builds come before alpha builds in the
+	 * life of a program's development.
+	 * 
+	 * @author Zeale
+	 *
+	 */
 	public enum BuildType {
-		ALPHA, BETA, REGULAR;
+		NIGHTLY, ALPHA, BETA,
+		/**
+		 * This type should not be specified inside a version string; it is implied
+		 * through the lack of a specified version type.
+		 */
+		REGULAR;
 	}
 
+	/**
+	 * <p>
+	 * Returns a negative number, (<code>< 0</code>), if <b>this</b> object
+	 * represents a release <b>before</b> that specified by the parameter,
+	 * <code>o</code>.
+	 * <p>
+	 * Returns a positive number, (<code>> 0</code>), if <b>this</b> object
+	 * represents a release <b>after</b> that specified by the parameter.
+	 * <p>
+	 * Returns <code>0</code> if this object represents the same release as the
+	 * parameter.<br>
+	 * <br>
+	 * <p>
+	 * Do note that <b>this method <i>WON'T</i> always return either a 0, 1, or
+	 * -1</b>.
+	 */
 	@Override
 	public int compareTo(Version o) {
-		return 0;
+		// First we compare the build types.
+		if (o.buildType != buildType)
+			return buildType.compareTo(o.buildType);
+		int max = Math.max(o.points.length, points.length);
+		for (int i = 0; i < max; i++) {
+			int comparison = ((Integer) points[i]).compareTo(o.points[i]);
+			if (comparison == 0)
+				continue;
+			else
+				return comparison;
+		}
+
+		// Every pair of points contains equal points, so we continue on to the build
+		// number.
+		return buildNumber - o.buildNumber;// ((Integer) buildNumber).compareTo(o.buildNumber);
+
 	}
 
 	@Override
