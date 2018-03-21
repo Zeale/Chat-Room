@@ -13,8 +13,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -965,70 +963,51 @@ public final class Commands {
 				}
 			} else {
 				// versions
-				int latest = 0, current = 0;
-				boolean currSuccess = false, lateSuccess = false;
-
+				Version latest = null, current = null;
 				println();
 				println();
 				println("Attempting to connect to the download site.", INFO_COLOR);
 
 				try {
-					final Reader versionInput = new InputStreamReader(
-							new URL("http://dusttoash.org/chat-room/version").openStream());
 
-					// This parses things backwards...
-					int n;
-					int inc = 0;
-
-					String rawInput = "";
-					while ((n = versionInput.read()) != -1)
-						if (Character.isDigit(n))
-							rawInput += (char) n;
-					final char[] charArray = rawInput.toCharArray();
-					for (int i = charArray.length - 1; i > -1; i--)
-						latest += Math.pow(10, inc++) * Integer.parseInt("" + charArray[i]);
-
-					lateSuccess = true;
+					latest = new ChangelogParser(
+							new URL("http://dusttoash.org/chat-room/latest/changelog.txt").openStream()).getVersion();
 
 					print("The latest available version is ", SUCCESS_COLOR);
-					print("" + latest, Color.WHITE);
+					print("" + latest.getVersionPoints(), Color.WHITE);
 					println(".", SUCCESS_COLOR);
 					println();
 
 				} catch (final IOException e) {
 					println("An error occurred while trying to connect to the download server. The latest version could not be determined.",
 							ERROR_COLOR);
+				} catch (ParseException e) {
+					println("An error occurred while trying to parse the remote changelog for a version.", ERROR_COLOR);
+					e.printStackTrace();
 				}
 
 				println("Attempting to determine the version that you have.", INFO_COLOR);
 				try {
-					final Reader versionInput = new InputStreamReader(getClass().getResourceAsStream("/version"));
-					int n;
-					int inc = 0;
-					String rawInput = "";
-					while ((n = versionInput.read()) != -1)
-						if (Character.isDigit(n))
-							rawInput += (char) n;
-					final char[] charArray = rawInput.toCharArray();
-					for (int i = charArray.length - 1; i > -1; i--)
-						current += Math.pow(10, inc++) * Integer.parseInt("" + charArray[i]);
 
-					currSuccess = true;
+					try {
+						current = new ChangelogParser("/changelog.txt").getVersion();
+					} catch (ParseException e) {
+						println("An error occurred while trying to parse the local changelog for a version.",
+								ERROR_COLOR);
+						e.printStackTrace();
+					}
 
 					print("You have version ", SUCCESS_COLOR);
-					print("" + current, Color.WHITE);
+					print("" + current.getVersionPoints(), Color.WHITE);
 					println(".", SUCCESS_COLOR);
 
 				} catch (final NullPointerException e) {
 					println("The version of your copy of this application could not be determined.", ERROR_COLOR);
-				} catch (final IOException e) {
-					println("There was an error while reading some data inside the app. Your local version could not be determined.",
-							ERROR_COLOR);
 				}
 
-				if (currSuccess && lateSuccess)
+				if (current != null && latest != null)
 					// Need update
-					if (latest > current) {
+					if (latest.compareTo(current) > 0) {
 						print("There is a newer version of ", Color.ORANGE);
 						print("Chat Room ", Color.ORANGERED);
 						println("available.", Color.ORANGE);
@@ -1051,7 +1030,7 @@ public final class Commands {
 						println(" to download the update.", Color.ORANGE);
 					} else
 					// Fully updated
-					if (latest == current)
+					if (latest.compareTo(current) == 0)
 						println("You have the latest version. :D", SUCCESS_COLOR);
 					else
 						println("Your version is above the latest publicly released version. Congrats...?", INFO_COLOR);
@@ -1505,7 +1484,7 @@ public final class Commands {
 		TRY_DOWNLOAD: {
 			// Windows
 			if (OS.getOS() == OS.WINDOWS)
-				try (InputStream is = new URL("http://dusttoash.org/chat-room/ChatRoom.jar").openStream()) {
+				try (InputStream is = new URL("http://dusttoash.org/chat-room/latest/ChatRoom.jar").openStream()) {
 					Files.copy(is, new File(System.getProperty("user.home") + "\\Desktop\\ChatRoom.jar").toPath(),
 							StandardCopyOption.REPLACE_EXISTING);
 					// Success

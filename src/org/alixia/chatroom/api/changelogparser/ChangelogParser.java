@@ -82,14 +82,6 @@ public class ChangelogParser {
 	private void parseUpdateHeader() throws ParseException {
 		if (updateName != null)
 			return;
-		else
-			try {
-				reader.reset();
-			} catch (final IOException e1) {
-				System.err.println(
-						"Failed to reset a ChangeLogParser stream. This shouldn't be an issue if this is the first time this parser is being used.");
-			}
-
 		int c;
 		String header = "", buffer = "";
 		try {
@@ -146,7 +138,6 @@ public class ChangelogParser {
 			if (header.isEmpty())
 				throw new ParseException("Empty header");
 			updateName = header;
-			System.out.println(version);
 			this.version = new Version(version);
 
 		} catch (final IOException e) {
