@@ -1,4 +1,4 @@
-package org.alixia.chatroom.impl.guis.settings;
+package org.alixia.chatroom.impl.guis.chatroom;
 
 import static org.alixia.chatroom.ChatRoom.WARNING_COLOR;
 

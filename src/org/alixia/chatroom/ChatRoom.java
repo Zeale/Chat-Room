@@ -34,7 +34,7 @@ import org.alixia.chatroom.api.logging.Logger;
 import org.alixia.chatroom.api.texts.BasicInfoText;
 import org.alixia.chatroom.api.texts.BoldText;
 import org.alixia.chatroom.api.texts.Println;
-import org.alixia.chatroom.impl.guis.settings.ChatRoomGUI;
+import org.alixia.chatroom.impl.guis.chatroom.ChatRoomGUI;
 import org.alixia.chatroom.impl.guis.settings.SettingsGUI;
 
 import javafx.application.Platform;
