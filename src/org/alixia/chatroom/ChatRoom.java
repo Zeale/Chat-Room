@@ -27,6 +27,7 @@ import org.alixia.chatroom.api.connections.messages.client.requests.NameChangeRe
 import org.alixia.chatroom.api.connections.messages.server.ServerMessage;
 import org.alixia.chatroom.api.connections.voicecall.CallClient;
 import org.alixia.chatroom.api.connections.voicecall.CallServer;
+import org.alixia.chatroom.api.history.HistoryManager;
 import org.alixia.chatroom.api.internet.Authentication;
 import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.api.logging.Logger;
@@ -174,6 +175,8 @@ public class ChatRoom {
 	private void onUserSubmit() {
 		final String text = getGUI().input.getText();
 
+		manager.send(text);
+
 		if (!commandManager.runCommand(text))
 			if (text.isEmpty())
 				return;
@@ -184,6 +187,8 @@ public class ChatRoom {
 
 		getGUI().input.setText("");
 	}
+
+	private final HistoryManager manager = new HistoryManager();
 
 	public void openSettingsWindow() {
 		settingsInstance.get().show();
@@ -295,10 +300,13 @@ public class ChatRoom {
 		});
 
 		getGUI().input.setOnKeyPressed(event -> {
-			if (event.getCode().equals(KeyCode.ENTER)) {
+			if (event.getCode().equals(KeyCode.ENTER) && !(event.isShiftDown() || event.isControlDown())) {
 				onUserSubmit();
 				event.consume();
-			}
+			} else if (event.getCode() == KeyCode.UP && event.isControlDown())
+				getGUI().input.setText(manager.getOlder());
+			else if (event.getCode() == KeyCode.DOWN && event.isControlDown())
+				getGUI().input.setText(manager.getNewer());
 		});
 		getGUI().sendButton.setOnAction(event -> {
 			onUserSubmit();
