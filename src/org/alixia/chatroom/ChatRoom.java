@@ -34,6 +34,10 @@ import org.alixia.chatroom.api.logging.Logger;
 import org.alixia.chatroom.api.texts.BasicInfoText;
 import org.alixia.chatroom.api.texts.BoldText;
 import org.alixia.chatroom.api.texts.Println;
+import org.alixia.chatroom.impl.DevelopmentEnvironmentException;
+import org.alixia.chatroom.impl.data.DirectoryCreationFailedException;
+import org.alixia.chatroom.impl.data.HomeDir;
+import org.alixia.chatroom.impl.data.LocalInstallDirectoryBuggedException;
 import org.alixia.chatroom.impl.guis.chatroom.ChatRoomGUI;
 import org.alixia.chatroom.impl.guis.settings.SettingsGUI;
 
@@ -66,6 +70,10 @@ public class ChatRoom {
 	public static final ChatRoom INSTANCE = new ChatRoom();
 
 	public static final Logger LOGGER = Logger.CHAT_ROOM_LOGGER;
+
+	public static File getHomeDirectory() {
+		return HomeDir.getHomeDirectory();
+	}
 
 	private Account account;
 	private CallServer callServer;
@@ -312,6 +320,41 @@ public class ChatRoom {
 			onUserSubmit();
 			event.consume();
 		});
+
+		println("Checking to see if you've set an installation directory before...", INFO_COLOR);
+		try {
+			if (HomeDir.hasLocalHomeDirectory()) {
+				println("The directory has been set. Attempting to read it.", SUCCESS_COLOR);
+
+				try {
+					HomeDir.loadLocalHomeDirectory();
+				} catch (LocalInstallDirectoryBuggedException e1) {
+					println("The program has dectected that you've set an installation directory, but the location of the directory is bugged (i.e. it couldn't be read from a file).",
+							ERROR_COLOR);
+					print("The program will function as though you never set it to install for now. You can set a new installation directory (or set the same one as before) in ",
+							ERROR_COLOR);
+					print("/settings", INFO_COLOR);
+					println(".", ERROR_COLOR);
+					e1.printStackTrace();
+				} catch (DirectoryCreationFailedException e1) {
+					println("Found an installation location but failed to create the necessary directories.",
+							ERROR_COLOR);
+					println("Here is the directory that couldn't be create:", ERROR_COLOR);
+					println(e1.directory.getAbsolutePath(), Color.ORANGERED);
+					e1.printStackTrace();
+				}
+
+			} else {
+				print("You haven't set an installation directory yet. See ", INFO_COLOR);
+				print("/settings ", Color.GOLDENROD);
+				println("to set one (if you want).", INFO_COLOR);
+			}
+		} catch (DevelopmentEnvironmentException e) {
+			print("You haven't set an installation directory yet. See ", INFO_COLOR);
+			print("/settings ", Color.GOLDENROD);
+			println("to set one (if you want).", INFO_COLOR);
+			println("And yes, you can still set one in a development environment. :)", Color.GOLDENROD);
+		}
 
 		print("Startup took ", SUCCESS_COLOR);
 		new BoldText("" + (System.currentTimeMillis() - Launch.STARTUP_TIME) + " ", Color.FIREBRICK).print(console);

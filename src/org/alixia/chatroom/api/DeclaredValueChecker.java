@@ -1,4 +1,4 @@
-package org.alixia.chatroom.api.pub;
+package org.alixia.chatroom.api;
 
 import java.io.DataInputStream;
 import java.io.IOException;

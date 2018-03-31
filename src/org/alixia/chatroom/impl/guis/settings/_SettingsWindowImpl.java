@@ -8,6 +8,7 @@ import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
@@ -69,16 +70,15 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		focusedProperty().addListener(
 				(ChangeListener<Boolean>) (observable, oldValue, newValue) -> root.setOpacity(newValue ? 1 : 0.2));
 
-		// Login Nodes
-		final Text accountCategory = new Text("Account");
-		accountCategory.setFont(Font.font(Font.getDefault().getSize() + 14));
+		/*
+		 * Account Box
+		 */
 
 		final Text usernameInfo = new Text("Username:"), passwordInfo = new Text("Password:");
 		final TextField usernameInput = new TextField(), passwordInput = new PasswordField();
 		usernameInput.setPromptText("Username");
 		passwordInput.setPromptText("Passwrd123");
 
-		// Login Wrappers
 		final HBox usernameBox = new HBox(15, usernameInfo, usernameInput);
 		final HBox passwordBox = new HBox(15, passwordInfo, passwordInput);
 
@@ -87,17 +87,15 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 		final Button login = new Button("Login");
 
-		final VBox loginWrapper = new VBox(10, accountCategory, usernameBox, passwordBox, login);
-		loginWrapper.setAlignment(Pos.CENTER);
-		loginWrapper.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR,
-				BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
-		loginWrapper.setPadding(new Insets(10));
-		loginWrapper.setFillWidth(false);
-
-		settingsBox.getChildren().addAll(loginWrapper);
+		addWrapper("Account", 10, usernameBox, passwordBox, login);
 
 		// Login impl
 		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
+
+		/*
+		 * Installation Box
+		 */
+		// Get whether or not the program is installed
 
 		// Handle Ctrl+Alt+Shift+D; this will open the advanced settings window.
 		contentPane.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
@@ -126,6 +124,29 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 	public _SettingsWindowImpl() {
 	}
 
-	public abstract void handleLogin(String username, String password);
+	protected VBox addWrapper(String title, int spacing, Node... children) {
+		// Make box
+		VBox box = new VBox(spacing, children);
+		settingsBox.getChildren().add(box);
+
+		// Add title
+		final Text titleNode = new Text(title);
+		titleNode.setFont(Font.font(Font.getDefault().getSize() + 14));
+		box.getChildren().add(0, titleNode);
+
+		// Style box
+		box.setAlignment(Pos.CENTER);
+		box.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR, BorderStrokeStyle.SOLID, null,
+				new BorderWidths(2))));
+		box.setPadding(new Insets(10));
+		box.setFillWidth(false);
+
+		// Return box
+		return box;
+	}
+
+	protected abstract void handleLogin(String username, String password);
+
+	// protected abstract void handleInstall();
 
 }
