@@ -165,15 +165,22 @@ public final class HomeDir {
 			// We are not in a dev env.
 			final Map<JarEntry, List<Integer>> entries = data.getEntries();
 
+			JarEntry installLocationEntry = new JarEntry(INSTALL_LOCATION_FILE_PATH);
+
 			// Write the current vals
 			for (final Entry<JarEntry, List<Integer>> e : entries.entrySet()) {
+				if (e.getKey().getName().equals(INSTALL_LOCATION_FILE_PATH)) {
+					installLocationEntry = e.getKey();
+					// Don't copy this entry over; we're gonna replace it.
+					continue;
+				}
 				e.getKey().setTime(System.currentTimeMillis());
 				rawStream.putNextEntry(e.getKey());
 				for (final int i : e.getValue())
 					rawStream.write(i);
 			}
 
-			rawStream.putNextEntry(new JarEntry(INSTALL_LOCATION_FILE_PATH));
+			rawStream.putNextEntry(installLocationEntry);
 			writer.println(saveLocation.getAbsolutePath());
 			// The try statement will close the outputs.
 
