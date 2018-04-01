@@ -159,7 +159,7 @@ public final class HomeDir {
 			}
 			return;
 		}
-		try (JarOutputStream rawStream = new JarOutputStream(new FileOutputStream(runtimeLocation));
+		try (JarOutputStream rawStream = new JarOutputStream(new FileOutputStream(runtimeLocation), data.getManifest());
 				PrintWriter writer = new PrintWriter(rawStream)) {
 
 			// We are not in a dev env.
