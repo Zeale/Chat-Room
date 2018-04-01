@@ -27,6 +27,7 @@ import org.alixia.chatroom.api.connections.messages.client.requests.NameChangeRe
 import org.alixia.chatroom.api.connections.messages.server.ServerMessage;
 import org.alixia.chatroom.api.connections.voicecall.CallClient;
 import org.alixia.chatroom.api.connections.voicecall.CallServer;
+import org.alixia.chatroom.api.data.JarData;
 import org.alixia.chatroom.api.history.HistoryManager;
 import org.alixia.chatroom.api.internet.Authentication;
 import org.alixia.chatroom.api.items.LateLoadItem;
@@ -371,6 +372,10 @@ public class ChatRoom {
 		print("/help ", Color.WHITE);
 		println("for more help.", Color.PURPLE);
 
+	}
+
+	public static boolean isDevelopmentEnvironment() {
+		return !new File(JarData.class.getProtectionDomain().getCodeSource().getLocation().getFile()).isFile();
 	}
 
 	public Server getServer() {

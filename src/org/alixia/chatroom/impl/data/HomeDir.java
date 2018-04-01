@@ -1,12 +1,22 @@
 package org.alixia.chatroom.impl.data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
+import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.data.JarData;
 import org.alixia.chatroom.impl.DevelopmentEnvironmentException;
 
 public final class HomeDir {
@@ -14,45 +24,66 @@ public final class HomeDir {
 	private static File homeDirectory;
 
 	public static File getHomeDirectory() throws NoHomeDirectoryException {
-		// TODO Auto-generated method stub
-		return null;
+		if (homeDirectory == null)
+			throw new NoHomeDirectoryException();
+		return homeDirectory;
 	}
 
 	public static boolean hasLocalHomeDirectory() throws DevelopmentEnvironmentException {
-		try {
-			if (!new File(HomeDir.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).isFile())
-				throw new DevelopmentEnvironmentException();
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-		return HomeDir.class.getResourceAsStream("/local/data/install_dir.crf") != null;
+		// assertNonDevEnv();
+		return ChatRoom.isDevelopmentEnvironment()
+				? new File(JarData.getRuntimeLocation(), INSTALL_LOCATION_FILE_PATH).isFile()
+				: HomeDir.class.getResourceAsStream(INSTALL_LOCATION_FILE_PATH) != null;
 
 	}
 
+	public static void assertNonDevEnv() throws DevelopmentEnvironmentException {
+		if (ChatRoom.isDevelopmentEnvironment())
+			throw new DevelopmentEnvironmentException();
+	}
+
+	/**
+	 * This method will attempt to set up the install directory that it reads from
+	 * {@link #getInstallLocInput()}. It will also set {@value #homeDirectory}.
+	 * 
+	 * @throws LocalInstallDirectoryBuggedException
+	 *             If reading the install directory failed.
+	 * @throws DirectoryCreationFailedException
+	 *             If creating the install directory failed.
+	 */
 	public static void loadLocalHomeDirectory()
 			throws LocalInstallDirectoryBuggedException, DirectoryCreationFailedException {
-		InputStream localDirFileInput = HomeDir.class.getResourceAsStream("/local/data/install_dir.crf");
-		if (localDirFileInput == null)
+
+		InputStream localDirFileInput;
+		try {
+			localDirFileInput = getInstallLocInput();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
 			return;
-		else {
-			Scanner scanner = new Scanner(localDirFileInput);
-			String directory = scanner.nextLine();
-			scanner.close();
-			try {
-				File installDir = new File(directory);
-				if (!installDir.getName().equals("Chat Room"))
-					installDir = new File(installDir, "Chat Room");
-				installDir.mkdirs();
+		}
+		Scanner scanner = new Scanner(localDirFileInput);
+		String directory = scanner.nextLine();
+		scanner.close();
+		try {
+			File installDir = new File(directory);
+			if (!installDir.getName().equals("Chat Room"))
+				installDir = new File(installDir, "Chat Room");
+			installDir.mkdirs();
 
-				if (!installDir.exists())
-					throw new DirectoryCreationFailedException(installDir);
+			if (!installDir.exists())
+				throw new DirectoryCreationFailedException(installDir);
 
-			} catch (Exception e) {
-				throw new LocalInstallDirectoryBuggedException(e, directory);
-			}
+			homeDirectory = installDir;
+
+		} catch (Exception e) {
+			throw new LocalInstallDirectoryBuggedException(e, directory);
 		}
 	}
 
+	/**
+	 * Adds some stuff so that this program will recognize that it has already
+	 * installed itself to the directory.
+	 */
 	public static void setupInstallDir() {
 		if (homeDirectory == null)
 			throw new RuntimeException();
@@ -85,12 +116,73 @@ public final class HomeDir {
 	 * @throws NullPointerException
 	 *             In case <code>saveLocation</code> is null. This is not allowed.
 	 *             :)
+	 * @throws IOException
+	 *             In case an {@link IOException} occurs while attempting to read
+	 *             all the data from the program's current jar file.
 	 */
-	public static void setSaveLocation(File saveLocation) throws NullPointerException {
+	public static void setSaveLocation(File saveLocation) throws NullPointerException, RuntimeException, IOException {
 		Objects.requireNonNull(saveLocation);
+
+		try {
+			if (!saveLocation.isDirectory())
+				saveLocation.delete();
+			saveLocation.mkdirs();
+			if (!saveLocation.exists())
+				throw new RuntimeException("Failed to make the installation directory.");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		// So, the above code *should* throw an exception if the save location is not
+		// viable. Now let's edit the currently running jar file to add in the save
+		// location. This way, the next time the program is started, the file will be
+		// checked (as a program resource) and an installation directory can be read
+		// from. This way, the program doesn't have to find a viable place to store the
+		// location of the user's selected installation directory; it can just store the
+		// location inside itself.
+		//
+		// I hope this works on other platforms...
+
+		File runtimeLocation = JarData.getRuntimeLocation();
+
+		try (JarOutputStream rawStream = new JarOutputStream(new FileOutputStream(runtimeLocation));
+				PrintWriter writer = new PrintWriter(rawStream)) {
+			JarData data = JarData.current(true);
+
+			// We are not in a dev env.
+			Map<JarEntry, List<Integer>> entries = data.getEntries();
+
+			// Write the current vals
+			for (Entry<JarEntry, List<Integer>> e : entries.entrySet()) {
+				e.getKey().setTime(System.currentTimeMillis());
+				rawStream.putNextEntry(e.getKey());
+				for (int i : e.getValue())
+					rawStream.write(i);
+			}
+
+			rawStream.putNextEntry(new JarEntry(INSTALL_LOCATION_FILE_PATH));
+			writer.println(saveLocation.getAbsolutePath());
+			// The try statement will close the outputs.
+
+		} catch (DevelopmentEnvironmentException e) {
+			File file = JarData.getRuntimeLocation();
+			File installLoc = new File(file, INSTALL_LOCATION_FILE_PATH);
+			try (PrintWriter writer = new PrintWriter(new FileOutputStream(installLoc))) {
+				writer.println(saveLocation.getAbsolutePath());
+			}
+		}
+
 		// TODO Rewrite this jar to include a file which contains the installation
 		// directory.
 		homeDirectory = saveLocation;
 	}
+
+	public static InputStream getInstallLocInput() throws FileNotFoundException {
+		return ChatRoom.isDevelopmentEnvironment()
+				? new FileInputStream(new File(JarData.getRuntimeLocation(), INSTALL_LOCATION_FILE_PATH))
+				: HomeDir.class.getResourceAsStream(INSTALL_LOCATION_FILE_PATH);
+	}
+
+	private static final String INSTALL_LOCATION_FILE_PATH = "local/data/install.crd";
 
 }

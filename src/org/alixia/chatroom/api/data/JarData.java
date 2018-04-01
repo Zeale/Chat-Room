@@ -25,16 +25,37 @@ public class JarData {
 	 * method throws a {@link DevelopmentEnvironmentException}.
 	 * 
 	 * @throws DevelopmentEnvironmentException
-	 *             Incase the program is in a development environment or the
+	 *             In case the program is in a development environment or the
 	 *             program's jar file cannot be found for any other reason.
 	 */
 	public JarData() throws DevelopmentEnvironmentException {
 		this(getCurrentJarFile());
 	}
 
+	/**
+	 * Returns the same thing as {@link #getRuntimeLocation()} but throws a
+	 * {@link DevelopmentEnvironmentException} if the file can not be found or it's
+	 * a directory or something.
+	 * 
+	 * @return {@link #getRuntimeLocation()}.
+	 * @throws DevelopmentEnvironmentException
+	 *             In case {@link ChatRoom#isDevelopmentEnvironment()} returns
+	 *             <code>true</code>.
+	 */
 	public static File getCurrentJarFile() throws DevelopmentEnvironmentException {
 		if (ChatRoom.isDevelopmentEnvironment())
 			throw new DevelopmentEnvironmentException();
+		return getRuntimeLocation();
+	}
+
+	/**
+	 * Returns the program's current runtime location. This is used when you create
+	 * a new {@link JarData} with the no-argument constructor.
+	 * 
+	 * @return A new {@link File} that points to the location of this program's
+	 *         location.
+	 */
+	public static File getRuntimeLocation() {
 		return new File(JarData.class.getProtectionDomain().getCodeSource().getLocation().getFile());
 	}
 
@@ -104,7 +125,7 @@ public class JarData {
 		if (manifest == null)
 			readFile();
 
-		return manifest;
+		return new Manifest(manifest);
 	}
 
 	private void readFile() throws IOException {
@@ -133,7 +154,7 @@ public class JarData {
 	public Map<JarEntry, List<Integer>> getEntries() throws IOException {
 		if (entries == null)
 			readFile();
-		return entries;
+		return new HashMap<>(entries);
 	}
 
 	/**
@@ -146,6 +167,10 @@ public class JarData {
 	 */
 	public static JarData current() throws DevelopmentEnvironmentException {
 		return new JarData();
+	}
+
+	public static JarData current(boolean read) throws DevelopmentEnvironmentException {
+		return new JarData(JarData.getCurrentJarFile(), read);
 	}
 
 }
