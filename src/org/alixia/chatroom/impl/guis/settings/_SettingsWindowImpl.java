@@ -126,7 +126,8 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 			final DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setTitle("Install Location");
-			chooser.setInitialDirectory(HomeDir.isHomeDirSet() ? HomeDir.getHomeDir() : JarData.getRuntimeLocation());
+			chooser.setInitialDirectory(
+					HomeDir.isHomeDirSet() ? HomeDir.getHomeDir() : JarData.getRuntimeLocation().getParentFile());
 
 			installDirSelectorButton.setOnAction(event -> {
 				final File result = chooser.showDialog(_SettingsWindowImpl.this);
