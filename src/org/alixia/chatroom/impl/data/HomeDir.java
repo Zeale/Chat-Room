@@ -39,14 +39,14 @@ public final class HomeDir {
 	public static InputStream getInstallLocInput() throws FileNotFoundException {
 		return ChatRoom.isDevelopmentEnvironment()
 				? new FileInputStream(new File(JarData.getRuntimeLocation(), INSTALL_LOCATION_FILE_PATH))
-				: HomeDir.class.getResourceAsStream(INSTALL_LOCATION_FILE_PATH);
+				: HomeDir.class.getResourceAsStream("/" + INSTALL_LOCATION_FILE_PATH);
 	}
 
 	public static boolean hasLocalHomeDirectory() {
 		// assertNonDevEnv();
 		return ChatRoom.isDevelopmentEnvironment()
 				? new File(JarData.getRuntimeLocation(), INSTALL_LOCATION_FILE_PATH).isFile()
-				: HomeDir.class.getResourceAsStream(INSTALL_LOCATION_FILE_PATH) != null;
+				: HomeDir.class.getResourceAsStream("/" + INSTALL_LOCATION_FILE_PATH) != null;
 
 	}
 
