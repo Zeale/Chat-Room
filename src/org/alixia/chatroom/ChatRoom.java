@@ -35,7 +35,6 @@ import org.alixia.chatroom.api.logging.Logger;
 import org.alixia.chatroom.api.texts.BasicInfoText;
 import org.alixia.chatroom.api.texts.BoldText;
 import org.alixia.chatroom.api.texts.Println;
-import org.alixia.chatroom.impl.DevelopmentEnvironmentException;
 import org.alixia.chatroom.impl.data.DirectoryCreationFailedException;
 import org.alixia.chatroom.impl.data.HomeDir;
 import org.alixia.chatroom.impl.data.LocalInstallDirectoryBuggedException;

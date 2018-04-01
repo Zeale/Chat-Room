@@ -110,7 +110,8 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		 */
 
 		{
-			Button installDirSelectorButton = new Button("File");
+			Button installDirSelectorButton = new Button("Select Folder");
+			installDirSelectorButton.setTextFill(Color.BLUE);
 			TextField installDirInput = new TextField();
 
 			installDirInput.setOnKeyPressed(event -> installDirInput.setBorder(null));
