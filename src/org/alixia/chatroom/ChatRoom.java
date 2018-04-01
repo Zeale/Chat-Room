@@ -290,12 +290,15 @@ public class ChatRoom {
 		try {
 			tryInit();
 		} catch (final Exception e) {
-			final Text error = new Text("An error occurred.");
+			final Text error = new Text("An error occurred.\n"), info = new Text(
+					"Please try running the program with the stack trace enabled. It has been printed to the console.");
 			error.setFont(Font.font(30));
 			error.setFill(Color.CRIMSON);
+			info.setFill(Color.RED);
 			getGUI().flow.setTextAlignment(TextAlignment.CENTER);
-			getGUI().flow.getChildren().add(error);
-
+			getGUI().flow.getChildren().addAll(error, info);
+			e.printStackTrace();
+			throw new RuntimeException("Failed to initialize", e);
 		}
 
 	}
@@ -358,6 +361,8 @@ public class ChatRoom {
 
 			try {
 				HomeDir.loadLocalHomeDirectory();
+				print("Installation directory: ", INFO_COLOR);
+				println(HomeDir.getHomeDir().getAbsolutePath(), Color.DEEPPINK);
 			} catch (final LocalInstallDirectoryBuggedException e1) {
 				println("The program has dectected that you've set an installation directory, but the location of the directory is bugged (i.e. it couldn't be read from a file).",
 						ERROR_COLOR);
