@@ -32,16 +32,28 @@ public final class Authentication {
 
 	private static BasicAuthServer server;
 
+	public static void closeAuthServer() {
+		if (!isAuthServerRunning())
+			return;
+		server.close();
+		server = null;
+	}
+
 	public static BasicAuthServer getAuthServer() {
 		return server;
+	}
+
+	public static AuthenticationMethod getDefaultAuthenticationMethod() {
+		return authMethod;
 	}
 
 	public static boolean isAuthServerRunning() {
 		return server != null;
 	}
 
-	public static AuthenticationMethod getDefaultAuthenticationMethod() {
-		return authMethod;
+	public static void kickstartAuthServer() {
+		if (server != null && !server.isRunning())
+			server.start();
 	}
 
 	/**
@@ -60,10 +72,10 @@ public final class Authentication {
 			return;
 		}
 		try {
-			UUID result = Authentication.getDefaultAuthenticationMethod().login(username, password);
+			final UUID result = Authentication.getDefaultAuthenticationMethod().login(username, password);
 			LOGGER.log("Successfully logged in!");
 			ChatRoom.INSTANCE.login(new Account(username, result));
-		} catch (ConnectException e) {
+		} catch (final ConnectException e) {
 			LOGGER.log(
 					"Failed to connect to the authentication server. (The server might be down. If it isn't, you might not be connected to the internet. If you are, then for some weird reason, the server couldn't be connected to.)");
 		} catch (final IOException e) {
@@ -71,12 +83,12 @@ public final class Authentication {
 			LOGGER.log(
 					"An unknown error occurred... The stack trace has been printed to the console. If you have access to the stacktrace, you should send it to the developer.");
 			return;
-		} catch (TimeoutException e) {
+		} catch (final TimeoutException e) {
 			LOGGER.log("The server was successfully connected to, but the connection timed out. The timeout is set to "
 					+ (double) Authentication.getDefaultAuthenticationMethod().getTimeout() / 1000 + " seconds.");
-		} catch (UsernameNotFoundException e) {
+		} catch (final UsernameNotFoundException e) {
 			LOGGER.log("That username is not registered.");
-		} catch (IncorrectPasswordException e) {
+		} catch (final IncorrectPasswordException e) {
 			LOGGER.log("Incorrect password.");
 		}
 
@@ -91,18 +103,6 @@ public final class Authentication {
 	public static void startAuthServer(final int port) throws IOException {
 		if (server == null)
 			server = new BasicAuthServer(port);
-	}
-
-	public static void closeAuthServer() {
-		if (!isAuthServerRunning())
-			return;
-		server.close();
-		server = null;
-	}
-
-	public static void kickstartAuthServer() {
-		if (server != null && !server.isRunning())
-			server.start();
 	}
 
 	private Authentication() {

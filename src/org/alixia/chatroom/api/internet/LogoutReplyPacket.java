@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 public class LogoutReplyPacket implements Serializable {
 
+	public enum ErrorType {
+		USERNAME_NOT_FOUND, INVALID_SESSION_ID;
+	}
+
 	/**
 	 * SUID
 	 */
@@ -11,16 +15,12 @@ public class LogoutReplyPacket implements Serializable {
 
 	public final ErrorType error;
 
-	public LogoutReplyPacket(ErrorType error) {
+	public LogoutReplyPacket(final ErrorType error) {
 		this.error = error;
 	}
 
 	public boolean isSuccessful() {
 		return error == null;
-	}
-
-	public enum ErrorType {
-		USERNAME_NOT_FOUND, INVALID_SESSION_ID;
 	}
 
 }

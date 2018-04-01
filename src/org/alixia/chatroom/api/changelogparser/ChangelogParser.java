@@ -26,10 +26,6 @@ public class ChangelogParser {
 		parseUpdateHeader();
 	}
 
-	public boolean hasHeader() {
-		return updateName != null;
-	}
-
 	/**
 	 * Gets the next change. This method returns <code>null</code> if there are no
 	 * more changes.
@@ -77,6 +73,14 @@ public class ChangelogParser {
 
 	public String getUpdateName() {
 		return updateName;
+	}
+
+	public Version getVersion() {
+		return version;
+	}
+
+	public boolean hasHeader() {
+		return updateName != null;
 	}
 
 	private void parseUpdateHeader() throws ParseException {
@@ -144,10 +148,6 @@ public class ChangelogParser {
 			throw new ParseException(e);
 
 		}
-	}
-
-	public Version getVersion() {
-		return version;
 	}
 
 	public void printChangelog(final Printable printable) throws ParseException {

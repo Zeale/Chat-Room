@@ -110,26 +110,26 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		 */
 
 		{
-			Button installDirSelectorButton = new Button("Select Folder");
+			final Button installDirSelectorButton = new Button("Select Folder");
 			installDirSelectorButton.setTextFill(Color.BLUE);
-			TextField installDirInput = new TextField();
+			final TextField installDirInput = new TextField();
 
 			installDirInput.setOnKeyPressed(event -> installDirInput.setBorder(null));
 
-			HBox installDirWrapper = new HBox(15, installDirInput, installDirSelectorButton);
+			final HBox installDirWrapper = new HBox(15, installDirInput, installDirSelectorButton);
 
-			Button installButton = new Button("Install");
+			final Button installButton = new Button("Install");
 
 			addWrapper("Installation", 10, installDirWrapper, installButton);
 
 			// File selector impl
 
-			DirectoryChooser chooser = new DirectoryChooser();
+			final DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setTitle("Install Location");
 			chooser.setInitialDirectory(HomeDir.isHomeDirSet() ? HomeDir.getHomeDir() : JarData.getRuntimeLocation());
 
 			installDirSelectorButton.setOnAction(event -> {
-				File result = chooser.showDialog(_SettingsWindowImpl.this);
+				final File result = chooser.showDialog(_SettingsWindowImpl.this);
 				if (result == null)
 					return;
 				installDirInput.setText(result.getAbsolutePath());
@@ -140,30 +140,30 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 				private final BorderWidths errorBorderWidth = new BorderWidths(2.5);
 
 				@Override
-				public void handle(ActionEvent event) {
+				public void handle(final ActionEvent event) {
 
-					String location = installDirInput.getText();
+					final String location = installDirInput.getText();
 					if (location.isEmpty()) {
 						installDirInput.setBorder(new Border(
 								new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, null, errorBorderWidth)));
 						return;
 					}
 
-					File saveLocation = new File(location);
+					final File saveLocation = new File(location);
 
 					try {
 						HomeDir.setSaveLocation(saveLocation);
-					} catch (FileNotFoundException e) {
+					} catch (final FileNotFoundException e) {
 						installDirInput.setBorder(new Border(
 								new BorderStroke(Color.GOLD, BorderStrokeStyle.SOLID, null, errorBorderWidth)));
 						return;
-					} catch (NullPointerException e) {
+					} catch (final NullPointerException e) {
 						// This should never be thrown.
 						e.printStackTrace();
-					} catch (RuntimeException e) {
+					} catch (final RuntimeException e) {
 						FXTools.spawnLabelAtMousePos("Folders could not be created at the location specified...",
 								ChatRoom.ERROR_COLOR, _SettingsWindowImpl.this);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						FXTools.spawnLabelAtMousePos("An error occurred while reading or writing the program.",
 								ChatRoom.ERROR_COLOR, _SettingsWindowImpl.this);
 						e.printStackTrace();
@@ -203,9 +203,9 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 	public _SettingsWindowImpl() {
 	}
 
-	protected VBox addWrapper(String title, int spacing, Node... children) {
+	protected VBox addWrapper(final String title, final int spacing, final Node... children) {
 		// Make box
-		VBox box = new VBox(spacing, children);
+		final VBox box = new VBox(spacing, children);
 		settingsBox.getChildren().add(box);
 
 		// Add title

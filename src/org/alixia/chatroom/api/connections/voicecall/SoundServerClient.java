@@ -6,28 +6,25 @@ import java.net.SocketException;
 
 class SoundServerClient {
 
-	private final Socket socket;
+	private Socket socket;
+	private CallServer owner;
 
-	private final CallServer owner;
 	private boolean run = true;
 
-	private final Thread receiver = new Thread(new Runnable() {
-		@Override
-		public void run() {
-			while (run)
+	private final Thread receiver = new Thread(() -> {
+		while (run)
+			try {
+				final byte[] data = new byte[socket.getInputStream().available()];
+				socket.getInputStream().read(data);
+				owner.sendSound(data, SoundServerClient.this);
+			} catch (final IOException e) {
+				e.printStackTrace();
 				try {
-					final byte[] data = new byte[socket.getInputStream().available()];
-					socket.getInputStream().read(data);
-					owner.sendSound(data, SoundServerClient.this);
-				} catch (final IOException e) {
-					e.printStackTrace();
-					try {
-						Thread.sleep(10);
-					} catch (final InterruptedException e1) {
-						e1.printStackTrace();
-					}
+					Thread.sleep(10);
+				} catch (final InterruptedException e1) {
+					e1.printStackTrace();
 				}
-		}
+			}
 	});
 
 	{

@@ -10,20 +10,20 @@ public class IncorrectPasswordException extends AuthenticationException {
 	public IncorrectPasswordException() {
 	}
 
-	public IncorrectPasswordException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public IncorrectPasswordException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public IncorrectPasswordException(String message) {
+	public IncorrectPasswordException(final String message) {
 		super(message);
 	}
 
-	public IncorrectPasswordException(Throwable cause) {
+	public IncorrectPasswordException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	public IncorrectPasswordException(final String message, final Throwable cause, final boolean enableSuppression,
+			final boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public IncorrectPasswordException(final Throwable cause) {
 		super(cause);
 	}
 

@@ -23,14 +23,23 @@ public final class HomeDir {
 
 	private static File homeDirectory;
 
-	public static boolean isHomeDirSet() {
-		return homeDirectory != null;
+	private static final String INSTALL_LOCATION_FILE_PATH = "local/data/install.crd";
+
+	public static void assertNonDevEnv() throws DevelopmentEnvironmentException {
+		if (ChatRoom.isDevelopmentEnvironment())
+			throw new DevelopmentEnvironmentException();
 	}
 
 	public static File getHomeDir() throws NoHomeDirectoryException {
 		if (homeDirectory == null)
 			throw new NoHomeDirectoryException();
 		return homeDirectory;
+	}
+
+	public static InputStream getInstallLocInput() throws FileNotFoundException {
+		return ChatRoom.isDevelopmentEnvironment()
+				? new FileInputStream(new File(JarData.getRuntimeLocation(), INSTALL_LOCATION_FILE_PATH))
+				: HomeDir.class.getResourceAsStream(INSTALL_LOCATION_FILE_PATH);
 	}
 
 	public static boolean hasLocalHomeDirectory() {
@@ -41,15 +50,14 @@ public final class HomeDir {
 
 	}
 
-	public static void assertNonDevEnv() throws DevelopmentEnvironmentException {
-		if (ChatRoom.isDevelopmentEnvironment())
-			throw new DevelopmentEnvironmentException();
+	public static boolean isHomeDirSet() {
+		return homeDirectory != null;
 	}
 
 	/**
 	 * This method will attempt to set up the install directory that it reads from
 	 * {@link #getInstallLocInput()}. It will also set {@value #homeDirectory}.
-	 * 
+	 *
 	 * @throws LocalInstallDirectoryBuggedException
 	 *             If reading the install directory failed.
 	 * @throws DirectoryCreationFailedException
@@ -61,12 +69,12 @@ public final class HomeDir {
 		InputStream localDirFileInput;
 		try {
 			localDirFileInput = getInstallLocInput();
-		} catch (FileNotFoundException e1) {
+		} catch (final FileNotFoundException e1) {
 			e1.printStackTrace();
 			return;
 		}
-		Scanner scanner = new Scanner(localDirFileInput);
-		String directory = scanner.nextLine();
+		final Scanner scanner = new Scanner(localDirFileInput);
+		final String directory = scanner.nextLine();
 		scanner.close();
 		try {
 			File installDir = new File(directory);
@@ -79,21 +87,9 @@ public final class HomeDir {
 
 			homeDirectory = installDir;
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new LocalInstallDirectoryBuggedException(e, directory);
 		}
-	}
-
-	/**
-	 * Adds some stuff so that this program will recognize that it has already
-	 * installed itself to the directory.
-	 */
-	public static void setupInstallDir() {
-		if (homeDirectory == null)
-			throw new RuntimeException();
-		if (homeDirectory.exists() && !homeDirectory.isDirectory())
-			homeDirectory.delete();
-		homeDirectory.mkdirs();
 	}
 
 	/**
@@ -114,7 +110,7 @@ public final class HomeDir {
 	 * loading! The program should be restarted after this method is called, or
 	 * {@link NoClassDefFoundError}s should be caught when calling methods off of a
 	 * class that isn't yet initialized.
-	 * 
+	 *
 	 * @param saveLocation
 	 *            The new installation location.
 	 * @throws NullPointerException
@@ -124,7 +120,7 @@ public final class HomeDir {
 	 *             In case an {@link IOException} occurs while attempting to read
 	 *             all the data from the program's current jar file.
 	 */
-	public static void setSaveLocation(File saveLocation)
+	public static void setSaveLocation(final File saveLocation)
 			throws NullPointerException, RuntimeException, IOException, FileNotFoundException {
 		Objects.requireNonNull(saveLocation);
 
@@ -134,8 +130,8 @@ public final class HomeDir {
 			saveLocation.mkdirs();
 			if (!saveLocation.exists())
 				throw new RuntimeException("Failed to make the installation directory.");
-		} catch (Exception e) {
-			throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
+		} catch (final Exception e) {
+			throw e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e);
 		}
 
 		// So, the above code *should* throw an exception if the save location is not
@@ -148,14 +144,14 @@ public final class HomeDir {
 		//
 		// I hope this works on other platforms...
 
-		File runtimeLocation = JarData.getRuntimeLocation();
+		final File runtimeLocation = JarData.getRuntimeLocation();
 
 		JarData data;
 		try {
 			data = JarData.current(true);
-		} catch (DevelopmentEnvironmentException e) {
-			File file = JarData.getRuntimeLocation();
-			File installLoc = new File(file, INSTALL_LOCATION_FILE_PATH);
+		} catch (final DevelopmentEnvironmentException e) {
+			final File file = JarData.getRuntimeLocation();
+			final File installLoc = new File(file, INSTALL_LOCATION_FILE_PATH);
 			installLoc.mkdirs();
 			installLoc.createNewFile();
 			try (PrintWriter writer = new PrintWriter(new FileOutputStream(installLoc))) {
@@ -167,13 +163,13 @@ public final class HomeDir {
 				PrintWriter writer = new PrintWriter(rawStream)) {
 
 			// We are not in a dev env.
-			Map<JarEntry, List<Integer>> entries = data.getEntries();
+			final Map<JarEntry, List<Integer>> entries = data.getEntries();
 
 			// Write the current vals
-			for (Entry<JarEntry, List<Integer>> e : entries.entrySet()) {
+			for (final Entry<JarEntry, List<Integer>> e : entries.entrySet()) {
 				e.getKey().setTime(System.currentTimeMillis());
 				rawStream.putNextEntry(e.getKey());
-				for (int i : e.getValue())
+				for (final int i : e.getValue())
 					rawStream.write(i);
 			}
 
@@ -186,12 +182,16 @@ public final class HomeDir {
 		homeDirectory = saveLocation;
 	}
 
-	public static InputStream getInstallLocInput() throws FileNotFoundException {
-		return ChatRoom.isDevelopmentEnvironment()
-				? new FileInputStream(new File(JarData.getRuntimeLocation(), INSTALL_LOCATION_FILE_PATH))
-				: HomeDir.class.getResourceAsStream(INSTALL_LOCATION_FILE_PATH);
+	/**
+	 * Adds some stuff so that this program will recognize that it has already
+	 * installed itself to the directory.
+	 */
+	public static void setupInstallDir() {
+		if (homeDirectory == null)
+			throw new RuntimeException();
+		if (homeDirectory.exists() && !homeDirectory.isDirectory())
+			homeDirectory.delete();
+		homeDirectory.mkdirs();
 	}
-
-	private static final String INSTALL_LOCATION_FILE_PATH = "local/data/install.crd";
 
 }

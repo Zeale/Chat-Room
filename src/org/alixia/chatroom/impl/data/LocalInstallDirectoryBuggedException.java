@@ -7,31 +7,32 @@ public class LocalInstallDirectoryBuggedException extends RuntimeException {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public LocalInstallDirectoryBuggedException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace, String buggedDirectory) {
-		super(message, cause, enableSuppression, writableStackTrace);
+	public final String buggedDirectory;
+
+	public LocalInstallDirectoryBuggedException(final String buggedDirectory) {
 		this.buggedDirectory = buggedDirectory;
 	}
 
-	public LocalInstallDirectoryBuggedException(String message, Throwable cause, String buggedDirectory) {
-		super(message, cause);
-		this.buggedDirectory = buggedDirectory;
-	}
-
-	public LocalInstallDirectoryBuggedException(Throwable cause, String buggedDirectory) {
-		super(cause);
-		this.buggedDirectory = buggedDirectory;
-	}
-
-	public LocalInstallDirectoryBuggedException(String buggedDirectory) {
-		this.buggedDirectory = buggedDirectory;
-	}
-
-	public LocalInstallDirectoryBuggedException(String message, String buggedDirectory) {
+	public LocalInstallDirectoryBuggedException(final String message, final String buggedDirectory) {
 		super(message);
 		this.buggedDirectory = buggedDirectory;
 	}
 
-	public final String buggedDirectory;
+	public LocalInstallDirectoryBuggedException(final String message, final Throwable cause,
+			final boolean enableSuppression, final boolean writableStackTrace, final String buggedDirectory) {
+		super(message, cause, enableSuppression, writableStackTrace);
+		this.buggedDirectory = buggedDirectory;
+	}
+
+	public LocalInstallDirectoryBuggedException(final String message, final Throwable cause,
+			final String buggedDirectory) {
+		super(message, cause);
+		this.buggedDirectory = buggedDirectory;
+	}
+
+	public LocalInstallDirectoryBuggedException(final Throwable cause, final String buggedDirectory) {
+		super(cause);
+		this.buggedDirectory = buggedDirectory;
+	}
 
 }

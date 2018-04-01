@@ -56,6 +56,10 @@ public class BasicAuthServer {
 			this.password = password;
 		}
 
+		public void clearID() {
+			makeID();
+		}
+
 		public boolean IDsMatch(final UUID id) {
 			return sessionID.equals(id);
 		}
@@ -66,10 +70,6 @@ public class BasicAuthServer {
 
 		public boolean passwordsMatch(final String password) {
 			return password.equals(this.password);
-		}
-
-		public void clearID() {
-			makeID();
 		}
 
 	}
@@ -115,10 +115,6 @@ public class BasicAuthServer {
 
 	private Map<String, User> users = new HashMap<>();
 
-	public Collection<User> getUsers() {
-		return users.values();
-	}
-
 	private final ServerSocket socket;
 
 	private boolean run = true;
@@ -133,7 +129,7 @@ public class BasicAuthServer {
 					final Socket connection = socket.accept();
 					new Thread(() -> handle(connection)).start();
 					errCount = 0;
-				} catch (SocketException e) {
+				} catch (final SocketException e) {
 					run = false;
 					break;
 				} catch (final Throwable e) {
@@ -156,6 +152,8 @@ public class BasicAuthServer {
 		handler.setDaemon(true);
 	}
 
+	private boolean accountCreationEnabled = true;
+
 	public BasicAuthServer(final int port) throws IOException {
 		socket = new ServerSocket(port);
 		handler.start();
@@ -164,20 +162,27 @@ public class BasicAuthServer {
 	public UUID addUser(final String username, final String password) {
 		if (users.containsKey(username))
 			return null;
-		User user = new User(username, password);
+		final User user = new User(username, password);
 		users.put(username, user);
 
 		return user.makeID();
 	}
 
-	private boolean accountCreationEnabled = true;
-
-	public boolean isAccountCreationEnabled() {
-		return accountCreationEnabled;
+	public boolean canRun() {
+		return !socket.isClosed();
 	}
 
-	public void setAccountCreationEnabled(boolean accountCreationEnabled) {
-		this.accountCreationEnabled = accountCreationEnabled;
+	public void close() {
+		run = false;
+	}
+
+	public void dispose() throws IOException {
+		close();
+		socket.close();
+	}
+
+	public Collection<User> getUsers() {
+		return users.values();
 	}
 
 	private void handle(final Socket connection) {
@@ -234,12 +239,11 @@ public class BasicAuthServer {
 					else
 						err = ErrType.REQUEST_DENIED;
 					sender.writeObject(new CreateAccountReplyPacket(sessid, err));
-				} else if (packet instanceof LogoutRequestPacket) {
+				} else if (packet instanceof LogoutRequestPacket)
 					sender.writeObject(new LogoutReplyPacket(users.containsKey(((LogoutRequestPacket) packet).username)
-							? (users.get(((LogoutRequestPacket) packet).username).IDsMatch(
-									((LogoutRequestPacket) packet).sessionID) ? null : ErrorType.INVALID_SESSION_ID)
+							? users.get(((LogoutRequestPacket) packet).username).IDsMatch(
+									((LogoutRequestPacket) packet).sessionID) ? null : ErrorType.INVALID_SESSION_ID
 							: ErrorType.USERNAME_NOT_FOUND));
-				}
 
 				sender.flush();
 			} finally {
@@ -257,19 +261,27 @@ public class BasicAuthServer {
 
 	}
 
-	public boolean isUserRegistered(String username) {
-		return users.containsKey(username);
+	public boolean isAccountCreationEnabled() {
+		return accountCreationEnabled;
 	}
 
-	public boolean isUsernameOpen(String username) {
+	public boolean isRunning() {
+		return handler.isAlive();
+	}
+
+	public boolean isUsernameOpen(final String username) {
 		return !isUserRegistered(username);
 	}
 
-	public boolean isUsernameValid(String username) {
-		for (char c : username.toCharArray())
+	public boolean isUsernameValid(final String username) {
+		for (final char c : username.toCharArray())
 			if (Character.isWhitespace(c))
 				return false;
 		return username.length() > 2;
+	}
+
+	public boolean isUserRegistered(final String username) {
+		return users.containsKey(username);
 	}
 
 	public void load(final File path) throws FileNotFoundException, UserDataParseException {
@@ -278,6 +290,15 @@ public class BasicAuthServer {
 
 	public void load(final String path) throws FileNotFoundException, UserDataParseException {
 		load(new File(path));
+	}
+
+	public void setAccountCreationEnabled(final boolean accountCreationEnabled) {
+		this.accountCreationEnabled = accountCreationEnabled;
+	}
+
+	public void start() {
+		if (canRun() && !isRunning())
+			handler.start();
 	}
 
 	public void store(final File path) throws FileNotFoundException, IOException {
@@ -305,28 +326,6 @@ public class BasicAuthServer {
 
 	public void store(final String path) throws FileNotFoundException, IOException {
 		store(new File(path));
-	}
-
-	public void close() {
-		run = false;
-	}
-
-	public void dispose() throws IOException {
-		close();
-		socket.close();
-	}
-
-	public boolean canRun() {
-		return !socket.isClosed();
-	}
-
-	public boolean isRunning() {
-		return handler.isAlive();
-	}
-
-	public void start() {
-		if (canRun() && !isRunning())
-			handler.start();
 	}
 
 }

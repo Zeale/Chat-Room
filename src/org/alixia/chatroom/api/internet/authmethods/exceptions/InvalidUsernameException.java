@@ -10,20 +10,20 @@ public class InvalidUsernameException extends AuthenticationException {
 	public InvalidUsernameException() {
 	}
 
-	public InvalidUsernameException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public InvalidUsernameException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public InvalidUsernameException(String message) {
+	public InvalidUsernameException(final String message) {
 		super(message);
 	}
 
-	public InvalidUsernameException(Throwable cause) {
+	public InvalidUsernameException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	public InvalidUsernameException(final String message, final Throwable cause, final boolean enableSuppression,
+			final boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public InvalidUsernameException(final Throwable cause) {
 		super(cause);
 	}
 

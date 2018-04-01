@@ -26,14 +26,6 @@ public abstract class AuthenticationMethod {
 
 	private int timeout = Authentication.DEFAULT_TIMEOUT_MILLIS;
 
-	public int getTimeout() {
-		return timeout;
-	}
-
-	protected void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
-
 	/**
 	 * Verifies a user's login. This should be called by a ChatRoom host when a user
 	 * tries to connect. A sessionID is given to the ChatRoom host which will verify
@@ -50,6 +42,14 @@ public abstract class AuthenticationMethod {
 	 */
 	public abstract boolean authenticate(String username, UUID sessionID)
 			throws IOException, TimeoutException, UsernameNotFoundException, UnknownAuthenticationException;
+
+	public abstract UUID createNewAccount(String username, String password)
+			throws IOException, TimeoutException, UsernameTakenException, InvalidUsernameException,
+			UnknownAuthenticationException, AccountCreationDeniedException;
+
+	public int getTimeout() {
+		return timeout;
+	}
 
 	/**
 	 * Tries to log a user into their account. This should be called by a client
@@ -68,11 +68,11 @@ public abstract class AuthenticationMethod {
 	public abstract UUID login(String username, String password) throws IOException, IncorrectPasswordException,
 			UsernameNotFoundException, TimeoutException, UnknownAuthenticationException;
 
-	public abstract UUID createNewAccount(String username, String password)
-			throws IOException, TimeoutException, UsernameTakenException, InvalidUsernameException,
-			UnknownAuthenticationException, AccountCreationDeniedException;
-
 	public abstract void logout(String username, UUID sessionID) throws IOException, UsernameNotFoundException,
 			TimeoutException, UnknownAuthenticationException, InvalidSessionIDException;
+
+	protected void setTimeout(final int timeout) {
+		this.timeout = timeout;
+	}
 
 }

@@ -10,31 +10,21 @@ public class HistoryManager {
 		clear();
 	}
 
+	private int pos = 0;
+
 	public void clear() {
 		history.clear();
 		history.add("");
-	}
-
-	private int pos = 0;
-
-	public void send(String text) {
-		if (!text.equals(getLatest()))
-			history.add(text);
-		reset();
-	}
-
-	public void reset() {
-		pos = history.size();
-	}
-
-	public String getLatest() {
-		return history.get(history.size() - 1);
 	}
 
 	public String getCurrent() {
 		if (pos == history.size())
 			return null;
 		return history.get(pos);
+	}
+
+	public String getLatest() {
+		return history.get(history.size() - 1);
 	}
 
 	public String getNewer() {
@@ -48,6 +38,16 @@ public class HistoryManager {
 			pos--;
 		return getCurrent();
 
+	}
+
+	public void reset() {
+		pos = history.size();
+	}
+
+	public void send(final String text) {
+		if (!text.equals(getLatest()))
+			history.add(text);
+		reset();
 	}
 
 }

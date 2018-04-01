@@ -9,16 +9,16 @@ import java.net.SocketTimeoutException;
 import java.util.UUID;
 
 import org.alixia.chatroom.api.internet.CreateAccountReplyPacket;
+import org.alixia.chatroom.api.internet.CreateAccountReplyPacket.ErrType;
 import org.alixia.chatroom.api.internet.CreateAccountRequestPacket;
 import org.alixia.chatroom.api.internet.LoginRequestPacket;
 import org.alixia.chatroom.api.internet.LogoutReplyPacket;
+import org.alixia.chatroom.api.internet.LogoutReplyPacket.ErrorType;
 import org.alixia.chatroom.api.internet.LogoutRequestPacket;
 import org.alixia.chatroom.api.internet.SessionIDPacket;
+import org.alixia.chatroom.api.internet.SessionIDPacket.Success;
 import org.alixia.chatroom.api.internet.VerificationPacket;
 import org.alixia.chatroom.api.internet.VerificationRequestPacket;
-import org.alixia.chatroom.api.internet.CreateAccountReplyPacket.ErrType;
-import org.alixia.chatroom.api.internet.LogoutReplyPacket.ErrorType;
-import org.alixia.chatroom.api.internet.SessionIDPacket.Success;
 import org.alixia.chatroom.api.internet.authmethods.AuthenticationMethod;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.AccountCreationDeniedException;
 import org.alixia.chatroom.api.internet.authmethods.exceptions.IncorrectPasswordException;
@@ -63,6 +63,42 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 	}
 
 	@Override
+	public UUID createNewAccount(final String username, final String password) throws IOException, TimeoutException,
+			UsernameTakenException, ConnectException, InvalidUsernameException, AccountCreationDeniedException {
+		// Create our connection objects
+		final Socket socket = new Socket(host, port);
+		socket.setSoTimeout(getTimeout());
+		final ObjectOutputStream sender = new ObjectOutputStream(socket.getOutputStream());
+		final ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
+
+		sender.writeObject(new CreateAccountRequestPacket(username, password));
+		sender.flush();
+
+		final CreateAccountReplyPacket reply;
+
+		try {
+			reply = (CreateAccountReplyPacket) reader.readObject();
+		} catch (final SocketTimeoutException e) {
+			throw new TimeoutException();
+		} catch (final Exception e) {
+			throw new IOException(e);
+		} finally {
+			socket.close();
+		}
+
+		if (reply.error == null)
+			return reply.sessionID;
+		else if (reply.error == ErrType.INVALID_USERNAME)
+			throw new InvalidUsernameException();
+		else if (reply.error == ErrType.REQUEST_DENIED)
+			throw new AccountCreationDeniedException();
+		else if (reply.error == ErrType.USERNAME_EXISTS)
+			throw new UsernameTakenException();
+		else
+			throw new UnknownAuthenticationException();
+	}
+
+	@Override
 	public UUID login(final String username, final String password) throws IOException, TimeoutException,
 			UsernameNotFoundException, IncorrectPasswordException, ConnectException {
 
@@ -98,44 +134,8 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 	}
 
 	@Override
-	public UUID createNewAccount(String username, String password) throws IOException, TimeoutException,
-			UsernameTakenException, ConnectException, InvalidUsernameException, AccountCreationDeniedException {
-		// Create our connection objects
-		final Socket socket = new Socket(host, port);
-		socket.setSoTimeout(getTimeout());
-		final ObjectOutputStream sender = new ObjectOutputStream(socket.getOutputStream());
-		final ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
-
-		sender.writeObject(new CreateAccountRequestPacket(username, password));
-		sender.flush();
-
-		final CreateAccountReplyPacket reply;
-
-		try {
-			reply = (CreateAccountReplyPacket) reader.readObject();
-		} catch (SocketTimeoutException e) {
-			throw new TimeoutException();
-		} catch (Exception e) {
-			throw new IOException(e);
-		} finally {
-			socket.close();
-		}
-
-		if (reply.error == null)
-			return reply.sessionID;
-		else if (reply.error == ErrType.INVALID_USERNAME)
-			throw new InvalidUsernameException();
-		else if (reply.error == ErrType.REQUEST_DENIED)
-			throw new AccountCreationDeniedException();
-		else if (reply.error == ErrType.USERNAME_EXISTS)
-			throw new UsernameTakenException();
-		else
-			throw new UnknownAuthenticationException();
-	}
-
-	@Override
-	public void logout(String username, UUID sessionID) throws IOException, UsernameNotFoundException, TimeoutException,
-			UnknownAuthenticationException, InvalidSessionIDException {
+	public void logout(final String username, final UUID sessionID) throws IOException, UsernameNotFoundException,
+			TimeoutException, UnknownAuthenticationException, InvalidSessionIDException {
 		// Create our connection objects
 		final Socket socket = new Socket(host, port);
 		socket.setSoTimeout(getTimeout());
@@ -147,9 +147,9 @@ public class AppAuthMethodImpl extends AuthenticationMethod {
 		final LogoutReplyPacket reply;
 		try {
 			reply = (LogoutReplyPacket) reader.readObject();
-		} catch (SocketTimeoutException e) {
+		} catch (final SocketTimeoutException e) {
 			throw new TimeoutException();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new IOException(e);
 		} finally {
 			socket.close();

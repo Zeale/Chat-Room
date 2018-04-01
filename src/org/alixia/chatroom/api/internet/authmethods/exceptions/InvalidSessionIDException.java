@@ -10,20 +10,20 @@ public class InvalidSessionIDException extends AuthenticationException {
 	public InvalidSessionIDException() {
 	}
 
-	public InvalidSessionIDException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public InvalidSessionIDException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public InvalidSessionIDException(String message) {
+	public InvalidSessionIDException(final String message) {
 		super(message);
 	}
 
-	public InvalidSessionIDException(Throwable cause) {
+	public InvalidSessionIDException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	public InvalidSessionIDException(final String message, final Throwable cause, final boolean enableSuppression,
+			final boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public InvalidSessionIDException(final Throwable cause) {
 		super(cause);
 	}
 

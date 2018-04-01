@@ -10,19 +10,20 @@ public class TimeoutException extends AuthenticationException {
 	public TimeoutException() {
 	}
 
-	public TimeoutException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public TimeoutException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public TimeoutException(String message) {
+	public TimeoutException(final String message) {
 		super(message);
 	}
 
-	public TimeoutException(Throwable cause) {
+	public TimeoutException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	public TimeoutException(final String message, final Throwable cause, final boolean enableSuppression,
+			final boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public TimeoutException(final Throwable cause) {
 		super(cause);
 	}
 

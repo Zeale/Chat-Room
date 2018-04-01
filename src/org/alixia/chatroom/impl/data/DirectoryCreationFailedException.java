@@ -11,31 +11,29 @@ public class DirectoryCreationFailedException extends Exception {
 
 	public final File directory;
 
-	public DirectoryCreationFailedException(File directory) {
+	public DirectoryCreationFailedException(final File directory) {
 		this.directory = directory;
 	}
 
-	public DirectoryCreationFailedException(String message, File directory) {
+	public DirectoryCreationFailedException(final String message, final File directory) {
 		super(message);
 		this.directory = directory;
 	}
 
-	public DirectoryCreationFailedException(Throwable cause, File directory) {
-		super(cause);
+	public DirectoryCreationFailedException(final String message, final Throwable cause,
+			final boolean enableSuppression, final boolean writableStackTrace, final File directory) {
+		super(message, cause, enableSuppression, writableStackTrace);
 		this.directory = directory;
 	}
 
-	public DirectoryCreationFailedException(String message, Throwable cause, File directory) {
+	public DirectoryCreationFailedException(final String message, final Throwable cause, final File directory) {
 		super(message, cause);
 		this.directory = directory;
 	}
 
-	public DirectoryCreationFailedException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace, File directory) {
-		super(message, cause, enableSuppression, writableStackTrace);
+	public DirectoryCreationFailedException(final Throwable cause, final File directory) {
+		super(cause);
 		this.directory = directory;
 	}
-	
-	
 
 }

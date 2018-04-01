@@ -10,20 +10,20 @@ public class UsernameNotFoundException extends AuthenticationException {
 	public UsernameNotFoundException() {
 	}
 
-	public UsernameNotFoundException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public UsernameNotFoundException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public UsernameNotFoundException(String message) {
+	public UsernameNotFoundException(final String message) {
 		super(message);
 	}
 
-	public UsernameNotFoundException(Throwable cause) {
+	public UsernameNotFoundException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	public UsernameNotFoundException(final String message, final Throwable cause, final boolean enableSuppression,
+			final boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public UsernameNotFoundException(final Throwable cause) {
 		super(cause);
 	}
 

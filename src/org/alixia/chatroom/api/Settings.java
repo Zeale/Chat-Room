@@ -11,16 +11,26 @@ import java.util.List;
 
 public final class Settings {
 
+	private static String getSaveLocation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private static boolean isSaveAvailable() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public static final List<Field> saveAll() throws Exception {
 
 		if (isSaveAvailable())
 			throw new Exception("Saving settings is not available.");
 
-		List<Field> failedFields = new LinkedList<>();
+		final List<Field> failedFields = new LinkedList<>();
 		try (PrintWriter writer = new PrintWriter(new FileOutputStream(getSaveLocation()))) {
 
-			Field[] data = Settings.class.getDeclaredFields();
-			for (Field f : data)
+			final Field[] data = Settings.class.getDeclaredFields();
+			for (final Field f : data)
 				try {
 					if (f.getClass().isPrimitive() && Modifier.isStatic(f.getModifiers())
 							&& !DeclaredValueChecker.isOriginalValue(f.getName(), Settings.class))
@@ -35,22 +45,12 @@ public final class Settings {
 				}
 			return failedFields;
 
-		} catch (FileNotFoundException e1) {
+		} catch (final FileNotFoundException e1) {
 			// This shouldn't get called either.
 			e1.printStackTrace();
 			return null;
 		}
 
-	}
-
-	private static String getSaveLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private static boolean isSaveAvailable() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	private Settings() {

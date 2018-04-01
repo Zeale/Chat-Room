@@ -107,7 +107,7 @@ public final class Commands {
 				}
 
 				String cmd = "/";
-				for (String s : args)
+				for (final String s : args)
 					cmd += s + " ";
 				if (!commandManager.runCommand(cmd + "help"))
 					println("Help for that command could not be found...", ERROR_COLOR);
@@ -270,7 +270,7 @@ public final class Commands {
 						return;
 					}
 
-					File file = new File(args[1]);
+					final File file = new File(args[1]);
 					println("Attempting to locate file...", INFO_COLOR);
 					if (!file.exists()) {
 						println("The specified file does not exist...", ERROR_COLOR);
@@ -280,13 +280,13 @@ public final class Commands {
 					try {
 						Authentication.getAuthServer().load(file);
 						println("The server successfully loaded the file.", SUCCESS_COLOR);
-					} catch (FileNotFoundException e) {
+					} catch (final FileNotFoundException e) {
 						println("The authentication server says that it couldn't find the file...", ERROR_COLOR);
 						e.printStackTrace();
-					} catch (UserDataParseException e) {
+					} catch (final UserDataParseException e) {
 						println("The authentication server failed to parse the text in the file. An error message is as follows...",
 								ERROR_COLOR);
-						Logger logger = new Logger("Loader", Authentication.AUTH_SERVER_LOGGER);
+						final Logger logger = new Logger("Loader", Authentication.AUTH_SERVER_LOGGER);
 						logger.log(e.getMessage());
 						logger.logBold("Error occurred on line: " + e.line);
 
@@ -295,14 +295,14 @@ public final class Commands {
 
 				} else if (equalsAnyIgnoreCase(subcommand, "print-users", "print-names", "printusers", "printnames",
 						"pusers", "pnames", "pu", "pn")) {
-					Collection<User> users = Authentication.getAuthServer().getUsers();
+					final Collection<User> users = Authentication.getAuthServer().getUsers();
 					if (users.isEmpty()) {
 						println("There are no user accounts in the authentication server; there is nothing to print.",
 								INFO_COLOR);
 						return;
 					}
-					int numb = 1;
-					for (User u : users) {
+					final int numb = 1;
+					for (final User u : users) {
 						print(numb + ". ", INFO_COLOR);
 						println(u.username, SUCCESS_COLOR);
 					}
@@ -333,22 +333,22 @@ public final class Commands {
 					ChatRoom.INSTANCE.login(new Account(username,
 							Authentication.getDefaultAuthenticationMethod().createNewAccount(username, password)));
 					println("Successfully created a new account and logged you in to it!", SUCCESS_COLOR);
-				} catch (TimeoutException e) {
+				} catch (final TimeoutException e) {
 					println("Connected to the server, but a timeout occurred. Your account was not created.",
 							ERROR_COLOR);
-				} catch (UsernameTakenException e) {
+				} catch (final UsernameTakenException e) {
 					println("That username is already taken! Please try again with another one.", ERROR_COLOR);
-				} catch (InvalidUsernameException e) {
+				} catch (final InvalidUsernameException e) {
 					println("That username is not allowed.", ERROR_COLOR);
-				} catch (UnknownAuthenticationException e) {
+				} catch (final UnknownAuthenticationException e) {
 					println("An unknown error occurred.", ERROR_COLOR);
 					e.printStackTrace();
-				} catch (AccountCreationDeniedException e) {
+				} catch (final AccountCreationDeniedException e) {
 					println("This server currently does not allow account creation.", ERROR_COLOR);
 					e.printStackTrace();
-				} catch (ConnectException e) {
+				} catch (final ConnectException e) {
 					println("The server could not be connected to. It might be down.", ERROR_COLOR);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					println("An error occurred while trying to contact the server.", ERROR_COLOR);
 					e.printStackTrace();
 				}
@@ -359,7 +359,7 @@ public final class Commands {
 		private final CommandConsumer consumer = new CommandConsumer() {
 
 			@Override
-			public void consume(String command, String... args) {
+			public void consume(final String command, final String... args) {
 				if (command.isEmpty()) {
 					println("You must enter a " + username == null ? "password" : "username" + "to continue",
 							ERROR_COLOR);
@@ -387,12 +387,7 @@ public final class Commands {
 		};
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "create-account", "new-account", "create-new-account", "cna");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 
 			if (args.length > 0 && equalsHelp(args[0])) {
 				printHelp("/" + name + " [username [password]]",
@@ -425,17 +420,17 @@ public final class Commands {
 				println("Enter a username to continue.", INFO_COLOR);
 			}
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "create-account", "new-account", "create-new-account", "cna");
+		}
 	};
 
 	public static final Command LOGOUT = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "logout", "log-out");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0) {
 				if (equalsHelp(args[0])) {
 					printHelp("/" + name,
@@ -456,18 +451,18 @@ public final class Commands {
 				Authentication.getDefaultAuthenticationMethod().logout(ChatRoom.INSTANCE.getAccount().username,
 						ChatRoom.INSTANCE.getAccount().sessionID);
 				println("Successfully logged you out of the authentication server.", SUCCESS_COLOR);
-			} catch (TimeoutException e) {
+			} catch (final TimeoutException e) {
 				println("Connecting to the server and attempting to log you out timed out.", ERROR_COLOR);
-			} catch (UsernameNotFoundException e) {
+			} catch (final UsernameNotFoundException e) {
 				println("The server could not find the username that you were logged in with!", ERROR_COLOR);
 				e.printStackTrace();
-			} catch (UnknownAuthenticationException e) {
+			} catch (final UnknownAuthenticationException e) {
 				println("An unknown error occurred while trying to log you out.", ERROR_COLOR);
 				e.printStackTrace();
-			} catch (InvalidSessionIDException e) {
+			} catch (final InvalidSessionIDException e) {
 				println("Your sessionID had expired; you weren't originally logged in.", ERROR_COLOR);
 				e.printStackTrace();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				println("An exception occurred while trying to connect to the server.", ERROR_COLOR);
 				e.printStackTrace();
 			} finally {
@@ -475,6 +470,11 @@ public final class Commands {
 				println("Successfully logged you out locally.", SUCCESS_COLOR);
 			}
 
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "logout", "log-out");
 		}
 	};
 	public static final Command LOGIN = new ChatRoomCommand() {
@@ -764,34 +764,29 @@ public final class Commands {
 
 			final float sampleRateResult = sampleRate;
 
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					print("Calling ", INFO_COLOR);
-					print(location, Color.CYAN);
-					print(" at the sample rate ", INFO_COLOR);
-					print("" + sampleRateResult, Color.CYAN);
-					println(".", INFO_COLOR);
-					try {
-						ChatRoom.INSTANCE.setCallClient(new CallClient(location, DEFAULT_CALL_PORT,
-								new AudioFormat(sampleRateResult, 16, 1, true, true)));
-					} catch (ConnectException e) {
-						println("The call server could not be connected to. It seems that there is not a server running on the specified address.",
-								ERROR_COLOR);
-					} catch (final LineUnavailableException e) {
-						println("Failed to make the call client. Your microphone could not be accessed...",
-								ERROR_COLOR);
-						e.printStackTrace();
-					} catch (final UnknownHostException e) {
-						println("Failed to connect to the server. The server could not be found (i.e. its address could not be determined).",
-								ERROR_COLOR);
-					} catch (final IOException e) {
-						println("Failed to connect to the server due to some data streaming error.", ERROR_COLOR);
-						e.printStackTrace();
-					}
-
+			new Thread((Runnable) () -> {
+				print("Calling ", INFO_COLOR);
+				print(location, Color.CYAN);
+				print(" at the sample rate ", INFO_COLOR);
+				print("" + sampleRateResult, Color.CYAN);
+				println(".", INFO_COLOR);
+				try {
+					ChatRoom.INSTANCE.setCallClient(new CallClient(location, DEFAULT_CALL_PORT,
+							new AudioFormat(sampleRateResult, 16, 1, true, true)));
+				} catch (final ConnectException e1) {
+					println("The call server could not be connected to. It seems that there is not a server running on the specified address.",
+							ERROR_COLOR);
+				} catch (final LineUnavailableException e2) {
+					println("Failed to make the call client. Your microphone could not be accessed...", ERROR_COLOR);
+					e2.printStackTrace();
+				} catch (final UnknownHostException e3) {
+					println("Failed to connect to the server. The server could not be found (i.e. its address could not be determined).",
+							ERROR_COLOR);
+				} catch (final IOException e4) {
+					println("Failed to connect to the server due to some data streaming error.", ERROR_COLOR);
+					e4.printStackTrace();
 				}
+
 			}, "CALL-STARTER-THREAD").start();
 
 		}
@@ -850,7 +845,7 @@ public final class Commands {
 			if (args.length == 0)
 				try {
 					new ChangelogParser("/changelog.txt").printChangelog(printer);
-				} catch (ParseException e1) {
+				} catch (final ParseException e1) {
 					e1.printStackTrace();
 					println("An error occurred while trying to parse the changelog.", ERROR_COLOR);
 				}
@@ -886,7 +881,7 @@ public final class Commands {
 					} catch (final IOException e) {
 						println("Failed to get the version data from the remote server.", ERROR_COLOR);
 						e.printStackTrace();
-					} catch (ParseException e) {
+					} catch (final ParseException e) {
 						println("An error occurred while trying to parse the changelog.", ERROR_COLOR);
 						e.printStackTrace();
 					}
@@ -904,12 +899,7 @@ public final class Commands {
 	public static final Command VERSION = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return equalsAnyIgnoreCase(name, "ver", "version");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0 && equalsHelp(args[0])) {
 				printHelp("/" + name,
 						"Gives you formatted information about the version of this program that you have running.");
@@ -920,7 +910,7 @@ public final class Commands {
 				Version version;
 				try {
 					version = new ChangelogParser("/changelog.txt").getVersion();
-				} catch (ParseException e) {
+				} catch (final ParseException e) {
 					e.printStackTrace();
 					println("An error occurred while trying to print the changelog. A detailed error message and the stacktrace have been printed to the program console.",
 							ERROR_COLOR);
@@ -928,7 +918,7 @@ public final class Commands {
 				}
 				println("Version " + version.version + ":", Color.SADDLEBROWN);
 				println();
-				Color idColor = Color.BROWN.brighter();
+				final Color idColor = Color.BROWN.brighter();
 				print("Version Number (V#): ", idColor);
 				println(version.getVersionPoints(), Color.DARKORANGE);
 				print("Version Build Number (B#): ", idColor);
@@ -936,6 +926,11 @@ public final class Commands {
 				print("Version Build Type (BT): ", idColor);
 				println("" + version.buildType.toString(), Color.DARKORANGE);
 			}
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return equalsAnyIgnoreCase(name, "ver", "version");
 		}
 	};
 
@@ -981,7 +976,7 @@ public final class Commands {
 				} catch (final IOException e) {
 					println("An error occurred while trying to connect to the download server. The latest version could not be determined.",
 							ERROR_COLOR);
-				} catch (ParseException e) {
+				} catch (final ParseException e) {
 					println("An error occurred while trying to parse the remote changelog for a version.", ERROR_COLOR);
 					e.printStackTrace();
 				}
@@ -991,7 +986,7 @@ public final class Commands {
 
 					try {
 						current = new ChangelogParser("/changelog.txt").getVersion();
-					} catch (ParseException e) {
+					} catch (final ParseException e) {
 						println("An error occurred while trying to parse the local changelog for a version.",
 								ERROR_COLOR);
 						e.printStackTrace();
@@ -1173,7 +1168,7 @@ public final class Commands {
 					try {
 						ChatRoom.INSTANCE.getServer().stop();
 						println("Your server was stopped successfully. ", SUCCESS_COLOR);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						e.printStackTrace();
 						println("An error occurred while trying to close the server.", ERROR_COLOR);
 					}
@@ -1188,7 +1183,7 @@ public final class Commands {
 				if (args.length > 1)
 					try {
 						port = Integer.parseInt(args[1]);
-					} catch (NumberFormatException e) {
+					} catch (final NumberFormatException e) {
 						println("The port you entered could not be parsed as a number.", ERROR_COLOR);
 						return;
 					}
@@ -1200,7 +1195,7 @@ public final class Commands {
 					// check for that above so we don't need to catch it here.
 					ChatRoom.INSTANCE.startServer(port);
 					println("Successfully started a server.", SUCCESS_COLOR);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					e.printStackTrace();
 					println("Failed to open the server.", ERROR_COLOR);
 				}
@@ -1218,24 +1213,19 @@ public final class Commands {
 	public static final Command CONNECT = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("connect");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length == 0) {
 				print("Please append a subcommand or type ", ERROR_COLOR);
 				print("/" + name + " help", Color.WHITE);
 				println(" for more help.", ERROR_COLOR);
-			} else if (equalsHelp(args[0])) {
+			} else if (equalsHelp(args[0]))
 				printHelp("/" + name + " (address) [port]", "Allows you to connect to a server.");
-			} else {
-				String address = args[0];
+			else {
+				final String address = args[0];
 				int port;
 				try {
 					port = args.length == 1 ? ChatRoom.DEFAULT_CHAT_PORT : Integer.parseInt(args[1]);
-				} catch (NumberFormatException e) {
+				} catch (final NumberFormatException e) {
 					println("Could not parse your port into a number.", ERROR_COLOR);
 					return;
 				}
@@ -1248,33 +1238,33 @@ public final class Commands {
 				try {
 					ChatRoom.INSTANCE.createNewClient(address, port);
 					println("Successfully connected to the server!", SUCCESS_COLOR);
-				} catch (UnknownHostException e) {
+				} catch (final UnknownHostException e) {
 					println("A server could not be located on the specified address. Did you type it correctly?",
 							ERROR_COLOR);
 					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
+				} catch (final IllegalArgumentException e) {
 					print("The port you gave is a number, but it is not in the correct range. Please enter a port ",
 							ERROR_COLOR);
 					print("between", Color.FIREBRICK);
 					println(" 0 and 65536.", ERROR_COLOR);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					println("A connection error occurred while trying to communicate with the server.", ERROR_COLOR);
 					e.printStackTrace();
 				}
 
 			}
 		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("connect");
+		}
 	};
 
 	public static final Command DISCONNECT = new ChatRoomCommand() {
 
 		@Override
-		protected boolean match(String name) {
-			return name.equalsIgnoreCase("disconnect");
-		}
-
-		@Override
-		protected void act(String name, String... args) {
+		protected void act(final String name, final String... args) {
 			if (args.length > 0)
 				if (equalsHelp(args[0]))
 					printHelp("/" + name, "Disconnects you from a server, if you are currently connected to one.");
@@ -1286,6 +1276,11 @@ public final class Commands {
 			} else
 				println("You are not connected to a server.", ERROR_COLOR);
 
+		}
+
+		@Override
+		protected boolean match(final String name) {
+			return name.equalsIgnoreCase("disconnect");
 		}
 	};
 
@@ -1305,22 +1300,18 @@ public final class Commands {
 				if (equalsHelp(args[1])) {
 					printHelp("/" + name + " " + subcommand + " [client-name]", "Stops a client and deletes it.");
 					return;
-				}
-
-				else {
-					if (ChatRoom.INSTANCE.isClientOpen()) {
-						ChatRoom.INSTANCE.getClient().closeConnection();
-						println("Successfully closed the connection.", SUCCESS_COLOR);
-					} else
-						println("There is no open client for you to close...", ERROR_COLOR);
-				}
+				} else if (ChatRoom.INSTANCE.isClientOpen()) {
+					ChatRoom.INSTANCE.getClient().closeConnection();
+					println("Successfully closed the connection.", SUCCESS_COLOR);
+				} else
+					println("There is no open client for you to close...", ERROR_COLOR);
 
 			} else if (equalsHelp(subcommand)) {
 				printHelp("/" + name + " (subcommand)", "Allows you to see information about or manipulate clients.");
 				print("Possible subcommands: ", SUCCESS_COLOR);
 				print("stop", Color.WHITE);
 				println(".", SUCCESS_COLOR);
-			} else if (equalsAnyIgnoreCase(subcommand, "start", "make", "new", "connect", "m", "s", "n", "c")) {
+			} else if (equalsAnyIgnoreCase(subcommand, "start", "make", "new", "connect", "m", "s", "n", "c"))
 				if (args.length < 2) {
 					println("Please specify a server address (and a server port if needed).", ERROR_COLOR);
 					print("Example: ", Color.WHITE);
@@ -1344,24 +1335,22 @@ public final class Commands {
 							ChatRoom.INSTANCE.createNewClient(args[1], Integer.parseInt(args[2]));
 							println("Successfully connected to the server.", SUCCESS_COLOR);
 						}
-					} catch (UnknownHostException e) {
+					} catch (final UnknownHostException e) {
 						e.printStackTrace();
 						println("Could not locate the server... Did you type in the right address?", ERROR_COLOR);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						e.printStackTrace();
 						println("Some sort of connection error occurred while trying to connect to the server.",
 								ERROR_COLOR);
-					} catch (NumberFormatException e) {
+					} catch (final NumberFormatException e) {
 						print("The port you entered, (", ERROR_COLOR);
 						print(args[2], Color.PURPLE);
 						println("), could not be parsed as a numerical port. (Remember that it must be between 0 and 65536, not including either.)",
 								ERROR_COLOR);
-					} catch (IllegalArgumentException e) {
+					} catch (final IllegalArgumentException e) {
 						println("The port you entered was out of range. It must be BETWEEN 0 and 65536, but not 0 or 65536.",
 								ERROR_COLOR);
 					}
-
-			}
 
 		}
 

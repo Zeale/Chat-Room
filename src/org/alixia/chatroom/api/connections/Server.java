@@ -53,18 +53,14 @@ public class Server {
 
 	private final List<ServerClient> connections = new LinkedList<>();
 
-	public Server(final int port) throws IOException {
-		socket = new ServerSocket(port);
-		acceptThread.start();
-	}
-
 	public Server() throws IOException {
 		socket = new ServerSocket(0);
 		acceptThread.start();
 	}
 
-	public int getPort() {
-		return socket.getLocalPort();
+	public Server(final int port) throws IOException {
+		socket = new ServerSocket(port);
+		acceptThread.start();
 	}
 
 	/**
@@ -95,7 +91,7 @@ public class Server {
 							client.sendObject(new ReplyMessage((Message) object));
 						} catch (final SocketException e) {
 							SERVER_LOGGER.log(client.getUsername()
-									+ (client.isLoggedIn() ? (", (" + client.getAccountName() + ")") : "")
+									+ (client.isLoggedIn() ? ", (" + client.getAccountName() + ")" : "")
 									+ " has left the server.");
 							connections.remove(client);
 							client.getListener().connectionClosed();
@@ -110,7 +106,7 @@ public class Server {
 									.authenticate(account.username, account.sessionID);
 							if (auth) {
 
-								for (ServerClient sc : connections)
+								for (final ServerClient sc : connections)
 									if (sc.isLoggedIn() && sc.getAccountName().equals(account.username)) {
 										sc.clearLogin();
 										// The user will receive this message on their computer, so it's ok to say "this
@@ -138,7 +134,7 @@ public class Server {
 							} catch (SocketException | RuntimeException e1) {
 								e1.printStackTrace();
 							}
-						} catch (AuthenticationException e) {
+						} catch (final AuthenticationException e) {
 
 							e.printStackTrace();
 						}
@@ -165,14 +161,14 @@ public class Server {
 							e.printStackTrace();
 						}
 
-					} else if (object instanceof LogoutRequest) {
+					} else if (object instanceof LogoutRequest)
 						if (client.isLoggedIn()) {
-							String oldName = client.getUsername(), oldAccountName = client.getAccountName();
+							final String oldName = client.getUsername(), oldAccountName = client.getAccountName();
 							client.clearLogin();
 							try {
 								client.sendMessage("Successfully logged you out!");
 								SERVER_LOGGER.log(oldName + ", (" + oldAccountName + "), logged out of their account.");
-							} catch (IOException e) {
+							} catch (final IOException e) {
 								SERVER_LOGGER.log(
 										"An error occurred while trying to notify a client that the client was logged out.");
 								e.printStackTrace();
@@ -180,12 +176,11 @@ public class Server {
 						} else
 							try {
 								client.sendMessage("You were never logged in in the first place.");
-							} catch (IOException e) {
+							} catch (final IOException e) {
 								SERVER_LOGGER.log(
 										"An error occurred while telling a client that the client's login attempt failed since they weren't originally logged in.");
 								e.printStackTrace();
 							}
-					}
 
 				}
 			});
@@ -201,6 +196,10 @@ public class Server {
 		// The thread will notice that "running" is false and stop itself. We don't need
 		// to stop it.
 		running = false;
+	}
+
+	public int getPort() {
+		return socket.getLocalPort();
 	}
 
 	private boolean isUsernameValid(final String name) {

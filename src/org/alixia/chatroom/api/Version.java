@@ -23,101 +23,33 @@ package org.alixia.chatroom.api;
  * exists.
  * <p>
  * Following are some examples of valid versions in String form.
- * 
+ *
  * <pre>
  * <code>0.3.9</code>
  * </pre>
- * 
+ *
  * This string is very simple. It only contains numbers denoting the version it
  * represents. This is not a beta nor an alpha build, and it does not contain a
  * build number.
- * 
+ *
  * <pre>
  * <code>1.18.9.4b3</code>
  * </pre>
- * 
+ *
  * This string represents a build number, as well as a version of the program.
  * Since this string is not followed by a hyphen/dash and the word "beta" or
  * "alpha", it does not represent an alpha or beta build.
- * 
+ *
  * <pre>
  * <code>14.3.12b73-alpha</code>
  * </pre>
- * 
+ *
  * This string contains all possible terms, and in the correct order.
- * 
+ *
  * @author Zeale
  *
  */
 public final class Version implements Comparable<Version> {
-
-	public final String version;
-	private final int[] points;
-	public final int buildNumber;
-	public final BuildType buildType;
-
-	public Version(String version) throws IllegalArgumentException {
-		this.version = version;
-		String[] points = version.split("\\.");
-		String lastPoint = points[points.length - 1];
-		this.points = new int[points.length];
-		try {
-			for (int i = 0; i < points.length - 1; i++)
-				this.points[i] = Integer.parseInt(points[i]);
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Failed to parse a version from the string, " + version + ".", e);
-		}
-
-		String buildNumberText = lastPoint;
-		if (hasBuildType(lastPoint)) {
-			String[] parts = lastPoint.split("-");
-			buildType = BuildType.valueOf(parts[1].toUpperCase());
-			buildNumberText = parts[0];
-		} else
-			buildType = BuildType.REGULAR;
-		if (hasBuildNumber(lastPoint)) {
-			String[] parts = buildNumberText.split("b");
-			buildNumber = Integer.parseInt(parts[1]);
-			this.points[this.points.length - 1] = Integer.parseInt(parts[0]);
-		} else {
-			buildNumber = 0;
-			this.points[this.points.length - 1] = Integer.parseInt(buildNumberText);
-		}
-
-	}
-
-	public String getVersionPoints() {
-		String points = "";
-		for (int i = 0; i < this.points.length - 1; i++)
-			points += this.points[i] + ".";
-		return points + this.points[this.points.length - 1];
-	}
-
-	private static boolean hasBuildNumber(String point) {
-		// The last point of a version string gets passed into this method. This point
-		// should contain any sequence of numbers, immediately followed by a 'b' and the
-		// build number.
-		//
-		// The BuildType, if included in the version string, MUST come after the build
-		// number, so, while iterating through the version string below, if we find a
-		// '-' before a 'b', then we know we have found a BuildType, so there can't be a
-		// build number after it.
-
-		for (char c : point.toCharArray())
-			if (c == 'b')
-				// This method won't catch a 'b' followed by nothing, which IS an error; you
-				// can't declare that your version has a build number and then not include the
-				// number in your version string!
-				return true;
-			else if (!Character.isDigit(c))
-				// We return false if we find something, like '-', before we find 'b'.
-				return false;
-		return false;
-	}
-
-	public static boolean hasBuildType(String point) {
-		return point.contains("-");
-	}
 
 	/**
 	 * This enum contains objects that denote the type of a build of a program. The
@@ -125,14 +57,14 @@ public final class Version implements Comparable<Version> {
 	 * by {@link #compareTo(BuildType)} calls. The earlier in the time of a
 	 * program's lifecycle, that an object in this enum denotes, the "less" it is,
 	 * in comparison to other objects in this enum. For example:
-	 * 
+	 *
 	 * <pre>
 	 * <code> {@link #NIGHTLY}.{@link #compareTo(BuildType) compareTo(ALPHA)} </code>
 	 * </pre>
-	 * 
+	 *
 	 * will return {@code -1}, since nightly builds come before alpha builds in the
 	 * life of a program's development.
-	 * 
+	 *
 	 * @author Zeale
 	 *
 	 */
@@ -146,10 +78,74 @@ public final class Version implements Comparable<Version> {
 
 		@Override
 		public String toString() {
-			String name = name().toLowerCase();
-			char firstChar = name.charAt(0);
+			final String name = name().toLowerCase();
+			final char firstChar = name.charAt(0);
 			return name.replaceFirst("" + firstChar, "" + Character.toUpperCase(firstChar));
 		}
+	}
+
+	private static boolean hasBuildNumber(final String point) {
+		// The last point of a version string gets passed into this method. This point
+		// should contain any sequence of numbers, immediately followed by a 'b' and the
+		// build number.
+		//
+		// The BuildType, if included in the version string, MUST come after the build
+		// number, so, while iterating through the version string below, if we find a
+		// '-' before a 'b', then we know we have found a BuildType, so there can't be a
+		// build number after it.
+
+		for (final char c : point.toCharArray())
+			if (c == 'b')
+				// This method won't catch a 'b' followed by nothing, which IS an error; you
+				// can't declare that your version has a build number and then not include the
+				// number in your version string!
+				return true;
+			else if (!Character.isDigit(c))
+				// We return false if we find something, like '-', before we find 'b'.
+				return false;
+		return false;
+	}
+
+	public static boolean hasBuildType(final String point) {
+		return point.contains("-");
+	}
+
+	public final String version;
+
+	private final int[] points;
+
+	public final int buildNumber;
+
+	public final BuildType buildType;
+
+	public Version(final String version) throws IllegalArgumentException {
+		this.version = version;
+		final String[] points = version.split("\\.");
+		final String lastPoint = points[points.length - 1];
+		this.points = new int[points.length];
+		try {
+			for (int i = 0; i < points.length - 1; i++)
+				this.points[i] = Integer.parseInt(points[i]);
+		} catch (final NumberFormatException e) {
+			throw new IllegalArgumentException("Failed to parse a version from the string, " + version + ".", e);
+		}
+
+		String buildNumberText = lastPoint;
+		if (hasBuildType(lastPoint)) {
+			final String[] parts = lastPoint.split("-");
+			buildType = BuildType.valueOf(parts[1].toUpperCase());
+			buildNumberText = parts[0];
+		} else
+			buildType = BuildType.REGULAR;
+		if (hasBuildNumber(lastPoint)) {
+			final String[] parts = buildNumberText.split("b");
+			buildNumber = Integer.parseInt(parts[1]);
+			this.points[this.points.length - 1] = Integer.parseInt(parts[0]);
+		} else {
+			buildNumber = 0;
+			this.points[this.points.length - 1] = Integer.parseInt(buildNumberText);
+		}
+
 	}
 
 	/**
@@ -169,13 +165,13 @@ public final class Version implements Comparable<Version> {
 	 * -1</b>.
 	 */
 	@Override
-	public int compareTo(Version o) {
+	public int compareTo(final Version o) {
 		// First we compare the build types.
 		if (o.buildType != buildType)
 			return buildType.compareTo(o.buildType);
-		int max = Math.max(o.points.length, points.length);
+		final int max = Math.max(o.points.length, points.length);
 		for (int i = 0; i < max; i++) {
-			int comparison = ((Integer) points[i]).compareTo(o.points[i]);
+			final int comparison = ((Integer) points[i]).compareTo(o.points[i]);
 			if (comparison == 0)
 				continue;
 			else
@@ -186,6 +182,13 @@ public final class Version implements Comparable<Version> {
 		// number.
 		return buildNumber - o.buildNumber;// ((Integer) buildNumber).compareTo(o.buildNumber);
 
+	}
+
+	public String getVersionPoints() {
+		String points = "";
+		for (int i = 0; i < this.points.length - 1; i++)
+			points += this.points[i] + ".";
+		return points + this.points[this.points.length - 1];
 	}
 
 	@Override

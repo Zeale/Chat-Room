@@ -11,7 +11,7 @@ public class LogoutRequestPacket implements Serializable {
 	public final String username;
 	public final UUID sessionID;
 
-	public LogoutRequestPacket(String username, UUID sessionID) {
+	public LogoutRequestPacket(final String username, final UUID sessionID) {
 		this.username = username;
 		this.sessionID = sessionID;
 	}

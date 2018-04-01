@@ -75,8 +75,13 @@ public class ChatRoom {
 		return HomeDir.getHomeDir();
 	}
 
+	public static boolean isDevelopmentEnvironment() {
+		return !new File(JarData.class.getProtectionDomain().getCodeSource().getLocation().getFile()).isFile();
+	}
+
 	private Account account;
 	private CallServer callServer;
+
 	private CallClient callClient;
 
 	private ChatRoomGUI gui;
@@ -101,6 +106,12 @@ public class ChatRoom {
 	private final ConnectionListener clientListener = new ConnectionListener() {
 
 		@Override
+		public void connectionClosed() {
+			println("You disconnected from the server.", INFO_COLOR);
+			client = null;
+		}
+
+		@Override
 		public void objectReceived(final Serializable object) {
 			if (object instanceof UserMessage)
 				Platform.runLater(() -> ((UserMessage) object).toConsoleText().print(console));
@@ -108,23 +119,23 @@ public class ChatRoom {
 				Platform.runLater(() -> ((ServerMessage) object).toConsoleText().print(console));
 
 		}
-
-		@Override
-		public void connectionClosed() {
-			println("You disconnected from the server.", INFO_COLOR);
-			client = null;
-		}
 	};
 
 	public final CommandManager commandManager = new CommandManager();
-
 	private Client client;
-	private Server server;
 
+	private Server server;
 	public final LateLoadItem<SettingsGUI> settingsInstance = new LateLoadItem<>(SettingsGUI::new);
+
 	private String username = null;
 
+	private final HistoryManager manager = new HistoryManager();
+
 	ChatRoom() {
+	}
+
+	public void createNewClient(final String host) throws UnknownHostException, IOException {
+		createNewClient(host, DEFAULT_CHAT_PORT);
 	}
 
 	public boolean createNewClient(final String host, final int port)
@@ -139,10 +150,6 @@ public class ChatRoom {
 			client.sendObject(new NameChangeRequest(username));
 		this.client = client;
 		return true;
-	}
-
-	public void createNewClient(final String host) throws UnknownHostException, IOException {
-		createNewClient(host, DEFAULT_CHAT_PORT);
 	}
 
 	public void executeCommand(final String command) {
@@ -161,20 +168,55 @@ public class ChatRoom {
 		return callServer;
 	}
 
+	public Client getClient() {
+		return client;
+	}
+
 	public ChatRoomGUI getGUI() {
 		return gui;
+	}
+
+	public Server getServer() {
+		return server;
 	}
 
 	public String getUsername() {
 		return username == null ? "Anonymous" : username;
 	}
 
+	/**
+	 * Returns whether or not there is a connection to a server. If there is an
+	 * active client, this method returns <code>true</code>. Otherwise, it returns
+	 * false.
+	 *
+	 * @return <code>{@link #getClient()}!=null</code>
+	 */
+	public boolean isClientOpen() {
+		return getClient() != null;
+	}
+
 	public boolean isLoggedIn() {
 		return account != null;
 	}
 
+	public boolean isServerOpen() {
+		return server != null;
+	}
+
 	public boolean isUsernameSet() {
 		return username != null;
+	}
+
+	public void login(final Account account) {
+		this.account = account;
+		if (isClientOpen())
+			getClient().sendObject(ChatRoom.INSTANCE.getAccount());
+	}
+
+	public void logout() {
+		account = null;
+		if (isClientOpen())
+			getClient().sendObject(new LogoutRequest());
 	}
 
 	/**
@@ -196,8 +238,6 @@ public class ChatRoom {
 		getGUI().input.setText("");
 	}
 
-	private final HistoryManager manager = new HistoryManager();
-
 	public void openSettingsWindow() {
 		settingsInstance.get().show();
 	}
@@ -213,21 +253,6 @@ public class ChatRoom {
 	public void println(final String text, final Color color) {
 		print(text, color);
 		println();
-	}
-
-	public Client getClient() {
-		return client;
-	}
-
-	/**
-	 * Returns whether or not there is a connection to a server. If there is an
-	 * active client, this method returns <code>true</code>. Otherwise, it returns
-	 * false.
-	 * 
-	 * @return <code>{@link #getClient()}!=null</code>
-	 */
-	public boolean isClientOpen() {
-		return getClient() != null;
 	}
 
 	/**
@@ -281,6 +306,12 @@ public class ChatRoom {
 			getClient().sendObject(new NameChangeRequest(username));
 	}
 
+	public void startServer(final int port) throws RuntimeException, IOException {
+		if (isServerOpen())
+			throw new RuntimeException("Server already running.");
+		server = new Server(port);
+	}
+
 	private void tryInit() {
 
 		getGUI().stage.initStyle(StageStyle.DECORATED);
@@ -300,7 +331,7 @@ public class ChatRoom {
 			if (isServerOpen())
 				try {
 					getServer().stop();
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					e.printStackTrace();
 				}
 			if (isClientOpen())
@@ -327,7 +358,7 @@ public class ChatRoom {
 
 			try {
 				HomeDir.loadLocalHomeDirectory();
-			} catch (LocalInstallDirectoryBuggedException e1) {
+			} catch (final LocalInstallDirectoryBuggedException e1) {
 				println("The program has dectected that you've set an installation directory, but the location of the directory is bugged (i.e. it couldn't be read from a file).",
 						ERROR_COLOR);
 				print("The program will function as though you never set it to install for now. You can set a new installation directory (or set the same one as before) in ",
@@ -335,7 +366,7 @@ public class ChatRoom {
 				print("/settings", INFO_COLOR);
 				println(".", ERROR_COLOR);
 				e1.printStackTrace();
-			} catch (DirectoryCreationFailedException e1) {
+			} catch (final DirectoryCreationFailedException e1) {
 				println("Found an installation location but failed to create the necessary directories.", ERROR_COLOR);
 				println("Here is the directory that couldn't be created:", ERROR_COLOR);
 				println(e1.directory.getAbsolutePath(), Color.ORANGERED);
@@ -363,18 +394,6 @@ public class ChatRoom {
 		print("/help ", Color.WHITE);
 		println("for more help.", Color.PURPLE);
 
-	}
-
-	public static boolean isDevelopmentEnvironment() {
-		return !new File(JarData.class.getProtectionDomain().getCodeSource().getLocation().getFile()).isFile();
-	}
-
-	public Server getServer() {
-		return server;
-	}
-
-	public boolean isServerOpen() {
-		return server != null;
 	}
 
 	public void updateProgram() {
@@ -434,24 +453,6 @@ public class ChatRoom {
 		println("You can close the program and discard this file, then open the new one with the new updates.",
 				Color.WHITE);
 
-	}
-
-	public void logout() {
-		account = null;
-		if (isClientOpen())
-			getClient().sendObject(new LogoutRequest());
-	}
-
-	public void login(Account account) {
-		this.account = account;
-		if (isClientOpen())
-			getClient().sendObject(ChatRoom.INSTANCE.getAccount());
-	}
-
-	public void startServer(int port) throws RuntimeException, IOException {
-		if (isServerOpen())
-			throw new RuntimeException("Server already running.");
-		server = new Server(port);
 	}
 
 }

@@ -10,20 +10,20 @@ public class AuthenticationException extends Exception {
 	public AuthenticationException() {
 	}
 
-	public AuthenticationException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public AuthenticationException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public AuthenticationException(String message) {
+	public AuthenticationException(final String message) {
 		super(message);
 	}
 
-	public AuthenticationException(Throwable cause) {
+	public AuthenticationException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	public AuthenticationException(final String message, final Throwable cause, final boolean enableSuppression,
+			final boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public AuthenticationException(final Throwable cause) {
 		super(cause);
 	}
 

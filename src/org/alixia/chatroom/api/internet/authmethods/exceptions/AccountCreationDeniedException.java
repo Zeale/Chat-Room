@@ -10,20 +10,20 @@ public class AccountCreationDeniedException extends AuthenticationException {
 	public AccountCreationDeniedException() {
 	}
 
-	public AccountCreationDeniedException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public AccountCreationDeniedException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public AccountCreationDeniedException(String message) {
+	public AccountCreationDeniedException(final String message) {
 		super(message);
 	}
 
-	public AccountCreationDeniedException(Throwable cause) {
+	public AccountCreationDeniedException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	public AccountCreationDeniedException(final String message, final Throwable cause, final boolean enableSuppression,
+			final boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public AccountCreationDeniedException(final Throwable cause) {
 		super(cause);
 	}
 

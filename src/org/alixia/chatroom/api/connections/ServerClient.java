@@ -67,6 +67,8 @@ class ServerClient {
 		}
 	});
 
+	private boolean usernameSet;
+
 	public ServerClient(final Socket socket) throws IOException {
 		this.socket = socket;
 
@@ -81,6 +83,16 @@ class ServerClient {
 		objOut = new ObjectOutputStream(socket.getOutputStream());
 		objIn = new ObjectInputStream(socket.getInputStream());
 
+	}
+
+	/**
+	 * Basically, logs this {@link ServerClient} out, from the perspective of the
+	 * server.
+	 *
+	 */
+	public void clearLogin() {
+		username = DEFAULT_USERNAME;
+		accountName = null;
 	}
 
 	public void closeConnection() {
@@ -104,9 +116,13 @@ class ServerClient {
 		return username;
 	}
 
+	public boolean hasSetUsername() {
+		return usernameSet;
+	}
+
 	/**
 	 * Returns whether or not this client has an account name set.
-	 * 
+	 *
 	 * @return <code>true</code> if {@link #getAccountName()} will return null,
 	 *         <code>false</code> otherwise.
 	 */
@@ -117,7 +133,7 @@ class ServerClient {
 	/**
 	 * Returns <code>true</code> if this client is logged in, <code>false</code>
 	 * otherwise.
-	 * 
+	 *
 	 * @return !{@link #isAnonymous()}.
 	 */
 	public boolean isLoggedIn() {
@@ -178,25 +194,9 @@ class ServerClient {
 			outputThread.start();
 	}
 
-	private boolean usernameSet;
-
-	public boolean hasSetUsername() {
-		return usernameSet;
-	}
-
 	public void setUsername(final String username) {
 		usernameSet = true;
 		this.username = username;
-	}
-
-	/**
-	 * Basically, logs this {@link ServerClient} out, from the perspective of the
-	 * server.
-	 * 
-	 */
-	public void clearLogin() {
-		username = DEFAULT_USERNAME;
-		accountName = null;
 	}
 
 }

@@ -13,20 +13,20 @@ public class PopButton extends Button {
 		setFill(new Color(0, 0, 0, 21d / 255));
 	}
 
-	public void setFill(Color color) {
-		setBackground(FXTools.getBackgroundFromColor(color));
-	}
-
 	public PopButton() {
 		super();
 	}
 
-	public PopButton(String text, Node graphic) {
+	public PopButton(final String text) {
+		super(text);
+	}
+
+	public PopButton(final String text, final Node graphic) {
 		super(text, graphic);
 	}
 
-	public PopButton(String text) {
-		super(text);
+	public void setFill(final Color color) {
+		setBackground(FXTools.getBackgroundFromColor(color));
 	}
 
 }

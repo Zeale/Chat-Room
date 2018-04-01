@@ -10,6 +10,8 @@ import javafx.scene.paint.Color;
 
 abstract class ChatRoomCommand extends Command {
 
+	private final static String[] bulletingOrder = { "-", "+", "~", "•", "" + (char) 9830 };
+
 	{
 		// This is basically the only line that makes this class "belong" in the impl
 		// package. Otherwise, it's an API class.
@@ -20,18 +22,7 @@ abstract class ChatRoomCommand extends Command {
 		ChatRoom.INSTANCE.commandManager.addCommand(this);
 	}
 
-	protected void printHelp(final String usage, final String... descriptions) {
-		ChatRoom.INSTANCE.print("Usage: " + usage, INFO_COLOR);
-		ChatRoom.INSTANCE.print(" - ", Color.WHITE);
-		for (final String s : descriptions)
-			ChatRoom.INSTANCE.println(s, SUCCESS_COLOR);
-	}
-
 	private int subcmdLevel = 1;
-
-	protected void incSubcmdLevel() {
-		subcmdLevel++;
-	}
 
 	protected void decSubcmdLevel() {
 		subcmdLevel--;
@@ -41,9 +32,18 @@ abstract class ChatRoomCommand extends Command {
 		return subcmdLevel;
 	}
 
-	private final static String[] bulletingOrder = { "-", "+", "~", "•", "" + (char) 9830 };
+	protected void incSubcmdLevel() {
+		subcmdLevel++;
+	}
 
-	protected void printSubcommandHelp(String name, String usage, String... descriptions) {
+	protected void printHelp(final String usage, final String... descriptions) {
+		ChatRoom.INSTANCE.print("Usage: " + usage, INFO_COLOR);
+		ChatRoom.INSTANCE.print(" - ", Color.WHITE);
+		for (final String s : descriptions)
+			ChatRoom.INSTANCE.println(s, SUCCESS_COLOR);
+	}
+
+	protected void printSubcommandHelp(final String name, final String usage, final String... descriptions) {
 		String indentation = "";
 		for (int i = 0; i < subcmdLevel; i++)
 			indentation += '\t';
@@ -52,7 +52,7 @@ abstract class ChatRoomCommand extends Command {
 				indentation + bulletingOrder[bulletingOrder.length % subcmdLevel] + " Usage: /" + name + " " + usage,
 				Color.ORANGE);
 		ChatRoom.INSTANCE.print(" - ", Color.ORANGERED);
-		for (String s : descriptions)
+		for (final String s : descriptions)
 			ChatRoom.INSTANCE.println(indentation + s, Color.INDIANRED);
 	}
 

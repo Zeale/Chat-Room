@@ -9,9 +9,6 @@ import java.util.Stack;
 
 public final class DeclaredValueChecker {
 
-	public DeclaredValueChecker() {
-	}
-
 	/**
 	 * Checks if the current value of a variable is the same as the value it was
 	 * declared as during class initialization. Rules dictating whether or not this
@@ -22,7 +19,7 @@ public final class DeclaredValueChecker {
 	 * expression.</li>
 	 * <li>The variable must be a primitive type.</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param varName
 	 *            The name of the variable to be checked. This variable must be
 	 *            static and belong to the {@link Class}, <code>clas</code>.
@@ -49,12 +46,13 @@ public final class DeclaredValueChecker {
 	 *             If an IOException occurs while reading from the
 	 *             <code>.class</code> file of the specified class.
 	 */
-	public static boolean isOriginalValue(String varName, Class<?> clas) throws UnsupportedOperationException,
-			NoSuchFieldException, SecurityException, IllegalArgumentException, RuntimeException, IOException {
+	public static boolean isOriginalValue(final String varName, final Class<?> clas)
+			throws UnsupportedOperationException, NoSuchFieldException, SecurityException, IllegalArgumentException,
+			RuntimeException, IOException {
 		Object currentValue;
 
 		// Check for the current value reflectively:
-		Field field = clas.getDeclaredField(varName);
+		final Field field = clas.getDeclaredField(varName);
 		if (!field.getType().isPrimitive())
 			throw new UnsupportedOperationException("The specified variable's type is not primitive.");
 		field.setAccessible(true);
@@ -62,25 +60,25 @@ public final class DeclaredValueChecker {
 			// We pass in null because we assume that the field is static. If it isn't, an
 			// IllegalArgumentException is thrown.
 			currentValue = field.get(null);
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			throw new RuntimeException("The current value of the variable could not be accessed.", e);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		// Map used to store constant pool values:
-		Map<Integer, Object> constants = new HashMap<>();
+		final Map<Integer, Object> constants = new HashMap<>();
 
 		// Local classes used to represent certain constant pool items:
 		class CPoolClass {
-			public CPoolClass(int internalNameIndex) {
+			public CPoolClass(final int internalNameIndex) {
 			}
 
 		}
 		class CPoolNameAndType {
 			public final int nameIndex;
 
-			public CPoolNameAndType(int nameIndex, int typeIndex) {
+			public CPoolNameAndType(final int nameIndex, final int typeIndex) {
 				this.nameIndex = nameIndex;
 			}
 
@@ -92,7 +90,7 @@ public final class DeclaredValueChecker {
 		class CPoolField {
 			public final int nameAndTypeIndex;
 
-			public CPoolField(int classIndex, int nameAndTypeIndex) {
+			public CPoolField(final int classIndex, final int nameAndTypeIndex) {
 				this.nameAndTypeIndex = nameAndTypeIndex;
 			}
 
@@ -101,13 +99,13 @@ public final class DeclaredValueChecker {
 			}
 		}
 		class CPoolString {
-			public CPoolString(int stringIndex) {
+			public CPoolString(final int stringIndex) {
 			}
 		}
 
 		// Now to read the bytecode of the class for the original value.
 		// First, we open a stream to the .class file of clas.
-		DataInputStream reader = new DataInputStream(clas.getResourceAsStream(clas.getSimpleName() + ".class"));
+		final DataInputStream reader = new DataInputStream(clas.getResourceAsStream(clas.getSimpleName() + ".class"));
 
 		// A .class file starts with the magic hexadecimal code: 0xCafeBabe.
 		if (reader.readInt() != 0xCafeBabe)
@@ -117,12 +115,12 @@ public final class DeclaredValueChecker {
 
 		// Parse the constant pool size (2 bytes). We'll go through this many items in
 		// the constant pool, and cache the ones we need.
-		int constantPoolSize = reader.readShort();
+		final int constantPoolSize = reader.readShort();
 
 		// Constant pool is of size constantPoolSize-1, so we iterate from 1 to the
 		// size.
 		for (int i = 1; i < constantPoolSize; i++) {
-			byte tag = reader.readByte();
+			final byte tag = reader.readByte();
 			switch (tag) {
 			default:
 				throw new RuntimeException(
@@ -194,29 +192,29 @@ public final class DeclaredValueChecker {
 		reader.readInt();// Skip 4 bytes
 		reader.readShort();// Skip 2 bytes
 
-		int interfaceListSize = reader.readShort();
+		final int interfaceListSize = reader.readShort();
 		for (int i = 0; i < interfaceListSize; i++)
 			reader.readShort();
 
-		int fieldListSize = reader.readShort();
+		final int fieldListSize = reader.readShort();
 		for (int i = 0; i < fieldListSize; i++) {
 
 			// Skip 6 bytes (total)
 			reader.readShort();
 			reader.readInt();
 
-			int attributeCount = reader.readShort();
+			final int attributeCount = reader.readShort();
 			// Skip through all the attributes.
 			for (int j = 0; j < attributeCount; j++) {
 				reader.readShort();
-				int attributeSize = reader.readInt();
+				final int attributeSize = reader.readInt();
 				for (int k = 0; k < attributeSize; k++)
 					reader.readByte();
 			}
 
 		}
 
-		int methodCount = reader.readShort();
+		final int methodCount = reader.readShort();
 
 		for (int i = 0; i < methodCount; i++) {
 
@@ -226,31 +224,31 @@ public final class DeclaredValueChecker {
 			// Static variables are initialized via the <clinit> method, whether or not they
 			// are placed in static initialization blocks in the source code. Because of
 			// this, we'll have to check the code in this method.
-			boolean isClinit = "<clinit>".equals(constants.get((int) reader.readShort()));
+			final boolean isClinit = "<clinit>".equals(constants.get((int) reader.readShort()));
 
 			reader.readShort();// Skip over the method descriptor.
 
-			short attributeCount = reader.readShort();
+			final short attributeCount = reader.readShort();
 
 			if (isClinit) {
 				// This is the method we want. Iterate over each attribute it has.
-				for (int j = 0; j < attributeCount; j++) {
+				for (int j = 0; j < attributeCount; j++)
 					if ("Code".equals(constants.get((int) reader.readShort()))) {
 
 						reader.readInt();// Skip over the attribute size. We only need the code table size.
 						reader.readInt();// Skip max stack size and max locals.
 
-						int codeLength = reader.readInt();
+						final int codeLength = reader.readInt();
 
 						// Doubles and longs in the stack will have a null value after them. This
 						// emulates the numbering of an actual stack.
-						Stack<Object> stack = new Stack<Object>() {
+						final Stack<Object> stack = new Stack<Object>() {
 
 							private static final long serialVersionUID = 1L;
 
 							// Handles the push method
 							@Override
-							public void addElement(Object item) {
+							public void addElement(final Object item) {
 								super.addElement(item);
 								if (item instanceof Double || item instanceof Long)
 									super.addElement(null);
@@ -258,22 +256,30 @@ public final class DeclaredValueChecker {
 
 							// Handles the add method
 							@Override
-							public synchronized void insertElementAt(Object obj, int index) {
+							public synchronized void insertElementAt(final Object obj, final int index) {
 								if (obj instanceof Double || obj instanceof Long)
 									super.insertElementAt(null, index);
 								super.insertElementAt(obj, index);
 							}
 
 							@Override
+							public synchronized Object peek() {
+								final Object item = super.peek();
+								if (item == null)
+									return super.get(size() - 2);
+								return item;
+							}
+
+							@Override
 							public synchronized Object pop() {
-								Object item = super.pop();
+								final Object item = super.pop();
 								if (item == null)
 									return super.pop();
 								return item;
 							}
 
 							@Override
-							public synchronized Object remove(int index) {
+							public synchronized Object remove(final int index) {
 								Object item = super.remove(index);
 								if (item == null)
 									item = super.remove(index - 1);
@@ -282,17 +288,9 @@ public final class DeclaredValueChecker {
 								return item;
 							}
 
-							@Override
-							public synchronized Object peek() {
-								Object item = super.peek();
-								if (item == null)
-									return super.get(size() - 2);
-								return item;
-							}
-
 						};
 
-						int[] bytes = new int[codeLength];
+						final int[] bytes = new int[codeLength];
 						for (int k = 0; k < codeLength; k++)
 							bytes[k] = reader.readUnsignedByte();
 
@@ -307,11 +305,7 @@ public final class DeclaredValueChecker {
 
 						// Here is where we simulate the class's initialization. This process doesn't
 						// handle things like arrays, method calls, or other variables.
-						for (int k = 0; k < codeLength; k++) {
-							// When parsing through mnemonics, we ignore anything that only puts a reference
-							// onto the stack or removes a reference from the stack, since this method only
-							// supports primitive types.
-
+						for (int k = 0; k < codeLength; k++)
 							switch (bytes[k]) {
 
 							default:
@@ -327,7 +321,7 @@ public final class DeclaredValueChecker {
 								break;
 							case 0x12:// ldc
 							case 0x14:// ldc2_w
-								Object item = constants.get((bytes[++k] << 8) + bytes[++k]);
+								final Object item = constants.get((bytes[++k] << 8) + bytes[++k]);
 								if (item instanceof Integer || item instanceof Float || item instanceof Long
 										|| item instanceof Double)
 									stack.push(item);
@@ -520,7 +514,7 @@ public final class DeclaredValueChecker {
 								stack.pop();
 								break;
 							case 0x5f:// swap
-								Object top = stack.pop(), bottom = stack.pop();
+								final Object top = stack.pop(), bottom = stack.pop();
 								stack.push(top);
 								stack.push(bottom);
 								break;
@@ -608,7 +602,6 @@ public final class DeclaredValueChecker {
 								break;
 
 							}
-						}
 						// Set will be false here if there is initialization code for the class
 						// (something happens during class init) but our variable isn't initialized.
 						return !set ? ((Object) false).equals(currentValue) || ((Object) 0).equals(currentValue)
@@ -618,23 +611,23 @@ public final class DeclaredValueChecker {
 						// This isn't the "Code" attribute. Skip it.
 						for (int k = 0; k < reader.readInt(); k++)
 							reader.readByte();
-
-				}
 				throw new RuntimeException(
 						"Couldn't find the static initialization bytecode for the specified class. Any initial assignments or declarations to the specified variable could not be found.");
-			} else {
+			} else
 				// We don't want this method.
 				for (int j = 0; j < attributeCount; j++) {
 					reader.readShort();// Skip the attribute name. We don't care for this method.
 					for (int k = 0; k < reader.readInt(); k++)
 						reader.readByte();// Skip the attribute data.
 				}
-			}
 		}
 
 		// We get to here if there is no <clinit> method because there is no code to run
 		// during class initialization. Compare if the variable is its default value.
 		return ((Object) false).equals(currentValue) || ((Object) 0).equals(currentValue);
+	}
+
+	public DeclaredValueChecker() {
 	}
 
 }

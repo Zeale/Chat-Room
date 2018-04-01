@@ -11,7 +11,7 @@ public class CreateAccountRequestPacket implements Serializable {
 	public final String name;
 	public final String password;
 
-	public CreateAccountRequestPacket(String name, String password) {
+	public CreateAccountRequestPacket(final String name, final String password) {
 		this.name = name;
 		this.password = password;
 	}
