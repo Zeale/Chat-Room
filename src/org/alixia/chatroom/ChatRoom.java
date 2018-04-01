@@ -338,7 +338,7 @@ public class ChatRoom {
 				e1.printStackTrace();
 			} catch (DirectoryCreationFailedException e1) {
 				println("Found an installation location but failed to create the necessary directories.", ERROR_COLOR);
-				println("Here is the directory that couldn't be create:", ERROR_COLOR);
+				println("Here is the directory that couldn't be created:", ERROR_COLOR);
 				println(e1.directory.getAbsolutePath(), Color.ORANGERED);
 				e1.printStackTrace();
 			}
