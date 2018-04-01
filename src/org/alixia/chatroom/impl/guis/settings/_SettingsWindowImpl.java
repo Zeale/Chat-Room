@@ -1,8 +1,11 @@
 package org.alixia.chatroom.impl.guis.settings;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.data.JarData;
@@ -12,6 +15,7 @@ import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.impl.data.HomeDir;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -110,6 +114,10 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		 */
 
 		{
+			Text warning = new Text(
+					"This will attempt to restart the program. If restarting it fails, the program will simply close.");
+			warning.setFill(Color.CRIMSON);
+
 			final Button installDirSelectorButton = new Button("Select Folder");
 			installDirSelectorButton.setTextFill(Color.BLUE);
 			final TextField installDirInput = new TextField();
@@ -120,7 +128,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 			final Button installButton = new Button("Install");
 
-			addWrapper("Installation", 10, installDirWrapper, installButton);
+			addWrapper("Installation", 10, warning, installDirWrapper, installButton);
 
 			// File selector impl
 
@@ -154,6 +162,19 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 					try {
 						HomeDir.setSaveLocation(saveLocation);
+
+						// Attempt to restart.
+						if (!ChatRoom.isDevelopmentEnvironment()) {
+							Process proc = Runtime.getRuntime().exec(
+									new String[] { "java", "-jar", JarData.getRuntimeLocation().getAbsolutePath() });
+							Reader reader = new InputStreamReader(proc.getInputStream());
+							// Skip over all the input.
+							while (reader.ready())
+								reader.read();
+
+							// Close this instance of the program.
+							Platform.exit();
+						}
 					} catch (final FileNotFoundException e) {
 						installDirInput.setBorder(new Border(
 								new BorderStroke(Color.GOLD, BorderStrokeStyle.SOLID, null, errorBorderWidth)));
