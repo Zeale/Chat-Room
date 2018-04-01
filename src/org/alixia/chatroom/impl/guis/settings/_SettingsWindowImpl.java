@@ -30,7 +30,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 	private final Button close = new PopButton("close");
 
-	private final VBox settingsBox = new VBox();
+	private final VBox settingsBox = new VBox(7);
 	private final ScrollPane scrollWrapper = new ScrollPane(settingsBox);
 	private final LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(
 			() -> new _AdvancedSettingsImpl());
@@ -89,12 +89,19 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 		addWrapper("Account", 10, usernameBox, passwordBox, login);
 
-		// Login impl
-		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
-
 		/*
 		 * Installation Box
 		 */
+
+		Button installDirSelectorButton = new Button("File");
+		TextField installDirInput = new TextField();
+		HBox installDirWrapper = new HBox(15, installDirInput, installDirSelectorButton);
+
+		addWrapper("Installation", 10, installDirWrapper);
+
+		// Login impl
+		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
+
 		// Get whether or not the program is installed
 
 		// Handle Ctrl+Alt+Shift+D; this will open the advanced settings window.
