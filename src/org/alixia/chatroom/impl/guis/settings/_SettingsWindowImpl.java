@@ -1,11 +1,20 @@
 package org.alixia.chatroom.impl.guis.settings;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import org.alixia.chatroom.ChatRoom;
+import org.alixia.chatroom.api.data.JarData;
+import org.alixia.chatroom.api.fxtools.FXTools;
 import org.alixia.chatroom.api.guis.ChatRoomWindow;
 import org.alixia.chatroom.api.items.LateLoadItem;
+import org.alixia.chatroom.impl.data.HomeDir;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -22,8 +31,10 @@ import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.StageStyle;
 
 abstract class _SettingsWindowImpl extends ChatRoomWindow {
@@ -74,33 +85,93 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		 * Account Box
 		 */
 
-		final Text usernameInfo = new Text("Username:"), passwordInfo = new Text("Password:");
-		final TextField usernameInput = new TextField(), passwordInput = new PasswordField();
-		usernameInput.setPromptText("Username");
-		passwordInput.setPromptText("Passwrd123");
+		{
+			final Text usernameInfo = new Text("Username:"), passwordInfo = new Text("Password:");
+			final TextField usernameInput = new TextField(), passwordInput = new PasswordField();
+			usernameInput.setPromptText("Username");
+			passwordInput.setPromptText("Passwrd123");
 
-		final HBox usernameBox = new HBox(15, usernameInfo, usernameInput);
-		final HBox passwordBox = new HBox(15, passwordInfo, passwordInput);
+			final HBox usernameBox = new HBox(15, usernameInfo, usernameInput);
+			final HBox passwordBox = new HBox(15, passwordInfo, passwordInput);
 
-		usernameBox.setAlignment(Pos.CENTER);
-		passwordBox.setAlignment(Pos.CENTER);
+			usernameBox.setAlignment(Pos.CENTER);
+			passwordBox.setAlignment(Pos.CENTER);
 
-		final Button login = new Button("Login");
+			final Button login = new Button("Login");
 
-		addWrapper("Account", 10, usernameBox, passwordBox, login);
+			addWrapper("Account", 10, usernameBox, passwordBox, login);
+
+			// Login impl
+			login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
+		}
 
 		/*
 		 * Installation Box
 		 */
 
-		Button installDirSelectorButton = new Button("File");
-		TextField installDirInput = new TextField();
-		HBox installDirWrapper = new HBox(15, installDirInput, installDirSelectorButton);
+		{
+			Button installDirSelectorButton = new Button("File");
+			TextField installDirInput = new TextField();
 
-		addWrapper("Installation", 10, installDirWrapper);
+			installDirInput.setOnKeyPressed(event -> installDirInput.setBorder(null));
 
-		// Login impl
-		login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
+			HBox installDirWrapper = new HBox(15, installDirInput, installDirSelectorButton);
+
+			Button installButton = new Button("Install");
+
+			addWrapper("Installation", 10, installDirWrapper, installButton);
+
+			// File selector impl
+
+			DirectoryChooser chooser = new DirectoryChooser();
+			chooser.setTitle("Install Location");
+			chooser.setInitialDirectory(HomeDir.isHomeDirSet() ? HomeDir.getHomeDir() : JarData.getRuntimeLocation());
+
+			installDirSelectorButton.setOnAction(event -> {
+				File result = chooser.showDialog(_SettingsWindowImpl.this);
+				if (result == null)
+					return;
+				installDirInput.setText(result.getAbsolutePath());
+			});
+
+			installButton.setOnAction(new EventHandler<ActionEvent>() {
+
+				private final BorderWidths errorBorderWidth = new BorderWidths(2.5);
+
+				@Override
+				public void handle(ActionEvent event) {
+
+					String location = installDirInput.getText();
+					if (location.isEmpty()) {
+						installDirInput.setBorder(new Border(
+								new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, null, errorBorderWidth)));
+						return;
+					}
+
+					File saveLocation = new File(location);
+
+					try {
+						HomeDir.setSaveLocation(saveLocation);
+					} catch (FileNotFoundException e) {
+						installDirInput.setBorder(new Border(
+								new BorderStroke(Color.GOLD, BorderStrokeStyle.SOLID, null, errorBorderWidth)));
+						return;
+					} catch (NullPointerException e) {
+						// This should never be thrown.
+						e.printStackTrace();
+					} catch (RuntimeException e) {
+						FXTools.spawnLabelAtMousePos("Folders could not be created at the location specified...",
+								ChatRoom.ERROR_COLOR, _SettingsWindowImpl.this);
+					} catch (IOException e) {
+						FXTools.spawnLabelAtMousePos("An error occurred while reading or writing the program.",
+								ChatRoom.ERROR_COLOR, _SettingsWindowImpl.this);
+						e.printStackTrace();
+					}
+				}
+
+			});
+
+		}
 
 		// Get whether or not the program is installed
 

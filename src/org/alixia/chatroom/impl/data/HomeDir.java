@@ -23,13 +23,17 @@ public final class HomeDir {
 
 	private static File homeDirectory;
 
-	public static File getHomeDirectory() throws NoHomeDirectoryException {
+	public static boolean isHomeDirSet() {
+		return homeDirectory != null;
+	}
+
+	public static File getHomeDir() throws NoHomeDirectoryException {
 		if (homeDirectory == null)
 			throw new NoHomeDirectoryException();
 		return homeDirectory;
 	}
 
-	public static boolean hasLocalHomeDirectory() throws DevelopmentEnvironmentException {
+	public static boolean hasLocalHomeDirectory() {
 		// assertNonDevEnv();
 		return ChatRoom.isDevelopmentEnvironment()
 				? new File(JarData.getRuntimeLocation(), INSTALL_LOCATION_FILE_PATH).isFile()
@@ -103,7 +107,7 @@ public final class HomeDir {
 	 * If the directory leads to a folder that does not end in the name
 	 * <code>Chat Room</code>, this program will create a subfolder to the given
 	 * directory named <code>Chat Room</code>. This subfolder is where this program
-	 * will install everything. Also, {@link #getHomeDirectory()} will return a
+	 * will install everything. Also, {@link #getHomeDir()} will return a
 	 * {@link File} representing the subfolder, not the parameter to this method.
 	 * <p>
 	 * This will rewrite the running jar file and cause issues with later class
@@ -120,7 +124,8 @@ public final class HomeDir {
 	 *             In case an {@link IOException} occurs while attempting to read
 	 *             all the data from the program's current jar file.
 	 */
-	public static void setSaveLocation(File saveLocation) throws NullPointerException, RuntimeException, IOException {
+	public static void setSaveLocation(File saveLocation)
+			throws NullPointerException, RuntimeException, IOException, FileNotFoundException {
 		Objects.requireNonNull(saveLocation);
 
 		try {
@@ -130,7 +135,7 @@ public final class HomeDir {
 			if (!saveLocation.exists())
 				throw new RuntimeException("Failed to make the installation directory.");
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
 		}
 
 		// So, the above code *should* throw an exception if the save location is not
@@ -145,9 +150,21 @@ public final class HomeDir {
 
 		File runtimeLocation = JarData.getRuntimeLocation();
 
+		JarData data;
+		try {
+			data = JarData.current(true);
+		} catch (DevelopmentEnvironmentException e) {
+			File file = JarData.getRuntimeLocation();
+			File installLoc = new File(file, INSTALL_LOCATION_FILE_PATH);
+			installLoc.mkdirs();
+			installLoc.createNewFile();
+			try (PrintWriter writer = new PrintWriter(new FileOutputStream(installLoc))) {
+				writer.println(saveLocation.getAbsolutePath());
+			}
+			return;
+		}
 		try (JarOutputStream rawStream = new JarOutputStream(new FileOutputStream(runtimeLocation));
 				PrintWriter writer = new PrintWriter(rawStream)) {
-			JarData data = JarData.current(true);
 
 			// We are not in a dev env.
 			Map<JarEntry, List<Integer>> entries = data.getEntries();
@@ -164,16 +181,8 @@ public final class HomeDir {
 			writer.println(saveLocation.getAbsolutePath());
 			// The try statement will close the outputs.
 
-		} catch (DevelopmentEnvironmentException e) {
-			File file = JarData.getRuntimeLocation();
-			File installLoc = new File(file, INSTALL_LOCATION_FILE_PATH);
-			try (PrintWriter writer = new PrintWriter(new FileOutputStream(installLoc))) {
-				writer.println(saveLocation.getAbsolutePath());
-			}
 		}
 
-		// TODO Rewrite this jar to include a file which contains the installation
-		// directory.
 		homeDirectory = saveLocation;
 	}
 
