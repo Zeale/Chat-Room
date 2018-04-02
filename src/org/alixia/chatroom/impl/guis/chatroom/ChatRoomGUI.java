@@ -3,9 +3,9 @@ package org.alixia.chatroom.impl.guis.chatroom;
 import static org.alixia.chatroom.ChatRoom.WARNING_COLOR;
 
 import org.alixia.chatroom.api.OS;
-import org.alixia.chatroom.api.fxtools.FXTools;
-import org.alixia.chatroom.api.fxtools.Resizable;
-import org.alixia.chatroom.api.fxtools.ResizeOperator;
+import org.alixia.chatroom.api.fx.tools.FXTools;
+import org.alixia.chatroom.api.fx.tools.Resizable;
+import org.alixia.chatroom.api.fx.tools.ResizeOperator;
 import org.alixia.chatroom.resources.fxnodes.popbutton.PopButton;
 
 import javafx.animation.FillTransition;

@@ -1,6 +1,6 @@
 package org.alixia.chatroom.resources.fxnodes.popbutton;
 
-import org.alixia.chatroom.api.fxtools.FXTools;
+import org.alixia.chatroom.api.fx.tools.FXTools;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;

@@ -3,7 +3,7 @@ package org.alixia.chatroom.impl.guis.settings;
 import java.io.IOException;
 
 import org.alixia.chatroom.ChatRoom;
-import org.alixia.chatroom.api.fxtools.FXTools;
+import org.alixia.chatroom.api.fx.tools.FXTools;
 import org.alixia.chatroom.api.internet.Authentication;
 import org.alixia.chatroom.impl.internet.authmethods.AppAuthMethodImpl;
 

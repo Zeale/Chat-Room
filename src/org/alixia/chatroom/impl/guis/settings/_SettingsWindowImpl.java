@@ -1,6 +1,5 @@
 package org.alixia.chatroom.impl.guis.settings;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,7 +8,7 @@ import java.io.Reader;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.data.JarData;
-import org.alixia.chatroom.api.fxtools.FXTools;
+import org.alixia.chatroom.api.fx.tools.FXTools;
 import org.alixia.chatroom.api.guis.ChatRoomWindow;
 import org.alixia.chatroom.api.items.LateLoadItem;
 import org.alixia.chatroom.impl.data.HomeDir;

@@ -1,4 +1,4 @@
-package org.alixia.chatroom.api.fxtools;
+package org.alixia.chatroom.api.fx.tools;
 
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
