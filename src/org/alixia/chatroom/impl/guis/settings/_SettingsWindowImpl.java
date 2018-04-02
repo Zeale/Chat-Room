@@ -8,6 +8,7 @@ import java.io.Reader;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.data.JarData;
+import org.alixia.chatroom.api.fx.nodes.HelpButton;
 import org.alixia.chatroom.api.fx.tools.FXTools;
 import org.alixia.chatroom.api.guis.ChatRoomWindow;
 import org.alixia.chatroom.api.items.LateLoadItem;
@@ -102,7 +103,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 			final Button login = new Button("Login");
 
-			addWrapper("Account", 10, usernameBox, passwordBox, login);
+			addBox("Account", 10, usernameBox, passwordBox, login);
 
 			// Login impl
 			login.setOnAction(event -> handleLogin(usernameInput.getText(), passwordInput.getText()));
@@ -127,7 +128,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 			final Button installButton = new Button("Install");
 
-			addWrapper("Installation", 10, warning, installDirWrapper, installButton);
+			addBox("Installation", new HelpButton(), 10, warning, installDirWrapper, installButton);
 
 			// File selector impl
 
@@ -224,7 +225,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 	public _SettingsWindowImpl() {
 	}
 
-	protected VBox addWrapper(final String title, final int spacing, final Node... children) {
+	protected VBox addBox(final String title, final int spacing, final Node... children) {
 		// Make box
 		final VBox box = new VBox(spacing, children);
 		settingsBox.getChildren().add(box);
@@ -243,6 +244,39 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 		// Return box
 		return box;
+	}
+
+	protected VBox addBox(String title, HelpButton helpButton, int spacing, Node... children) {
+
+		// Make box
+		final VBox box = new VBox(spacing, children);
+		AnchorPane wrapper = new AnchorPane(box, helpButton);
+
+		AnchorPane.setRightAnchor(helpButton, 2.5);
+		AnchorPane.setTopAnchor(helpButton, 2.5);
+
+		AnchorPane.setTopAnchor(box, 0d);
+		AnchorPane.setRightAnchor(box, 0d);
+		AnchorPane.setLeftAnchor(box, 0d);
+		AnchorPane.setBottomAnchor(box, 0d);
+
+		settingsBox.getChildren().add(wrapper);
+
+		// Add title
+		final Text titleNode = new Text(title);
+		titleNode.setFont(Font.font(Font.getDefault().getSize() + 14));
+		box.getChildren().add(0, titleNode);
+
+		// Style box
+		box.setAlignment(Pos.CENTER);
+		wrapper.setBorder(new Border(new BorderStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR, BorderStrokeStyle.SOLID,
+				null, new BorderWidths(2))));
+		box.setPadding(new Insets(10));
+		box.setFillWidth(false);
+
+		// Return box
+		return box;
+
 	}
 
 	protected abstract void handleLogin(String username, String password);
