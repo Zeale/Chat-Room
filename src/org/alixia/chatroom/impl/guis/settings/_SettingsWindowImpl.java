@@ -132,7 +132,17 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 			final Button installButton = new Button("Install");
 
-			addBox("Installation", new HelpButton(), 10, warning, installDirWrapper, installButton);
+			HelpButton help = new HelpButton();
+			help.printBullet();
+			help.println(
+					"You can set a location for Chat Room to store data from here. This will allow you to save settings and other information.",
+					Color.ORANGE);
+			help.printBullet();
+			help.print("Setting (or resetting) an installation directory will", Color.ORANGE);
+			help.print(" cause the program to try and restart", Color.ORANGERED);
+			help.println(". If the restart fails, the program will simply close.", Color.ORANGE);
+
+			addBox("Installation", help, 10, warning, installDirWrapper, installButton);
 
 			// File selector impl
 
@@ -284,7 +294,5 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 	}
 
 	protected abstract void handleLogin(String username, String password);
-
-	// protected abstract void handleInstall();
 
 }
