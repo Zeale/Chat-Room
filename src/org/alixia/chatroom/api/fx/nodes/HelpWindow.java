@@ -2,6 +2,7 @@ package org.alixia.chatroom.api.fx.nodes;
 
 import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.Printable;
+import org.alixia.chatroom.api.fx.tools.FXTools;
 
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Scene;
@@ -36,23 +37,37 @@ public class HelpWindow implements org.alixia.chatroom.api.Console, Printable {
 	{
 		stage.setScene(new Scene(root));
 
-		stage.setWidth(600);
-		stage.setHeight(600);
+		stage.setWidth(400);
+		stage.setHeight(400);
 
 		stage.setAlwaysOnTop(true);
 
 		stage.getScene().setFill(ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR);
 
 		stage.focusedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
-			if (!newValue && oldValue)
+			if (!newValue && oldValue) {
+				if (stage.getOwner() != null)
+					stage.getOwner().requestFocus();
 				stage.close();
+			}
 		});
 
-		Rectangle right = new Rectangle(5, 15), left = new Rectangle(5, 15);
+		double length = 3.6, width = 15;
+		Rectangle right = new Rectangle(length, width), left = new Rectangle(length, width);
 		right.setRotate(45);
 		left.setRotate(-45);
 
 		closeButton.getChildren().addAll(right, left);
+
+		root.setBackground(FXTools.getBackgroundFromColor(ChatRoom.DEFAULT_WINDOW_BACKGROUND_COLOR));
+		AnchorPane.setBottomAnchor(console, 25d);
+		AnchorPane.setLeftAnchor(console, 25d);
+		AnchorPane.setRightAnchor(console, 25d);
+		AnchorPane.setTopAnchor(console, 25d);
+
+		AnchorPane.setLeftAnchor(closeButton, 9d);
+		AnchorPane.setTopAnchor(closeButton, 5d);
+
 	}
 
 	public void setOwner(Window owner) {
