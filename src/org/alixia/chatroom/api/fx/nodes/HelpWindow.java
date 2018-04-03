@@ -6,6 +6,7 @@ import org.alixia.chatroom.api.fx.tools.FXTools;
 
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -67,6 +68,21 @@ public class HelpWindow implements org.alixia.chatroom.api.Console, Printable {
 
 		AnchorPane.setLeftAnchor(closeButton, 9d);
 		AnchorPane.setTopAnchor(closeButton, 5d);
+
+		closeButton.setOnMouseClicked(event -> {
+			if (event.getButton() == MouseButton.PRIMARY)
+				hide();
+		});
+
+		closeButton.setOnMousePressed(event -> {
+			right.setFill(Color.WHITE);
+			left.setFill(Color.WHITE);
+		});
+
+		closeButton.setOnMouseReleased(event -> {
+			right.setFill(Color.BLACK);
+			left.setFill(Color.BLACK);
+		});
 
 	}
 
