@@ -24,11 +24,20 @@ public class HelpButton extends StackPane {
 
 	private Duration transitionExitDuration;
 
+	public HelpButton() {
+	}
+
+	private final HelpWindow helpWindow = new HelpWindow();
+
+	public HelpWindow getHelpWindow() {
+		return helpWindow;
+	}
+
 	{
 		background.widthProperty().bind(widthProperty());
 		background.heightProperty().bind(heightProperty());
 		getChildren().addAll(background, questionMark);
-		setPrefSize(16, 16);
+		setSize(16);
 
 		background.setStroke(ChatRoom.DEFAULT_WINDOW_BORDER_COLOR);
 		background.setStrokeWidth(2);
@@ -68,6 +77,13 @@ public class HelpButton extends StackPane {
 			hoverTransition.playFrom(transitionExitDuration);
 		});
 
+		setOnMouseClicked(event -> {
+			if (getHelpWindow().isShowing())
+				getHelpWindow().hide();
+			else
+				getHelpWindow().show();
+		});
+
 	}
 
 	public void setBackground(Paint paint) {
@@ -80,10 +96,11 @@ public class HelpButton extends StackPane {
 	}
 
 	public void setSize(double size) {
-		setWidth(size);
-		setHeight(size);
-		background.setArcHeight(getHeight() + 4);
-		background.setArcWidth(getWidth() + 4);
+		setPrefSize(size, size);
+		setMaxSize(size, size);
+		setMinSize(size, size);
+		background.setArcHeight(getPrefHeight() + 4);
+		background.setArcWidth(getPrefWidth() + 4);
 	}
 
 }
