@@ -47,8 +47,7 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 
 	private final VBox settingsBox = new VBox(7);
 	private final ScrollPane scrollWrapper = new ScrollPane(settingsBox);
-	private final LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(
-			() -> new _AdvancedSettingsImpl());
+	private final LateLoadItem<_AdvancedSettingsImpl> advancedSettings = new LateLoadItem<>(_AdvancedSettingsImpl::new);
 
 	{
 		contentPane.getChildren().add(scrollWrapper);
@@ -84,6 +83,11 @@ abstract class _SettingsWindowImpl extends ChatRoomWindow {
 		// On focus
 		focusedProperty().addListener(
 				(ChangeListener<Boolean>) (observable, oldValue, newValue) -> root.setOpacity(newValue ? 1 : 0.2));
+
+		// Minimize main window when the settings window shows up.
+		setOnShown(event -> ChatRoom.INSTANCE.getGUI().stage.setIconified(true));
+		// Maximize main window when settings window hides.
+		setOnHiding(event -> ChatRoom.INSTANCE.getGUI().stage.setIconified(false));
 
 		/*
 		 * Account Box
