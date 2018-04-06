@@ -2,7 +2,6 @@ package org.alixia.chatroom.impl.commands;
 
 import static org.alixia.chatroom.ChatRoom.DEFAULT_CALL_PORT;
 import static org.alixia.chatroom.ChatRoom.DEFAULT_CALL_SAMPLE_RATE;
-import static org.alixia.chatroom.ChatRoom.DEFAULT_CHAT_PORT;
 import static org.alixia.chatroom.ChatRoom.ERROR_COLOR;
 import static org.alixia.chatroom.ChatRoom.INFO_COLOR;
 import static org.alixia.chatroom.ChatRoom.SUCCESS_COLOR;
@@ -132,18 +131,13 @@ public final class Commands {
 			case 1:
 				println("SHOWING PAGE 1 OF HELP", Color.BISQUE);
 				// /clear-screen
-				printBasicHelp("/help page",
+				printBasicHelp("/help (page)",
 						"Provides help for a specific command (if provided) or all commands in general.");
 				printBasicHelp("/clear-screen", "Clears all text (and other nodes) from the console.");
-				// /new
-				println("/new ...", Color.CRIMSON);
-				printBasicHelp("\tclient (server-address) [port] (client-name)",
-						"Creates a new client. The client will be connected to the server specified by (server-address). The port is optional and defaults to "
-								+ DEFAULT_CHAT_PORT
-								+ ". The (client-name) is required and can be used to refer to the new client later.");
-				printBasicHelp("\tserver [port] (server-name)",
-						"Creates a new server with the given port. Do note that your router's firewall (if there is one) will likely block any incoming connections to your computer on any port, unless you port forward. The [port] is optional and defaults to "
-								+ DEFAULT_CHAT_PORT + ".");
+				// /server
+				printBasicHelp("/server (subcommand)", "Used to host or manage a server.");
+				printBasicHelp("/client (subcommand)",
+						"Used to make or manage a client, which allows you to connect to a server.");
 				break;
 			case 2:
 				println("SHOWING PAGE 2 OF HELP", Color.BISQUE);

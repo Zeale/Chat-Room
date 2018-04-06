@@ -267,8 +267,8 @@ public class ChatRoom {
 			getClient().sendObject(new BasicUserMessage(text));
 		else {
 			print("You can only send messages to a server through a client. Do ", ERROR_COLOR);
-			print("/new help ", Color.ORANGERED);
-			println("For help with connections.", ERROR_COLOR);
+			print("/client help ", Color.ORANGERED);
+			println("for help with connections.", ERROR_COLOR);
 		}
 
 	}
@@ -389,11 +389,11 @@ public class ChatRoom {
 		println("milliseconds!", SUCCESS_COLOR);
 
 		print("Connect to a server with ", Color.RED);
-		print("/new client (hostname) [port] (client-name) ", Color.GREEN);
+		print("/connect (hostname) [port] ", Color.GREEN);
 		print("to get started!", Color.RED);
 		println();
 		print("To start hosting a server, do ", Color.RED);
-		print("/new server [port] (server-name)", Color.GREEN);
+		print("/server [port] (server-name)", Color.GREEN);
 		println(".", Color.RED);
 		print("Do ", Color.PURPLE);
 		print("/help ", Color.WHITE);
