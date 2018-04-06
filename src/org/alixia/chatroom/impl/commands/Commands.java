@@ -1144,7 +1144,9 @@ public final class Commands {
 			// "/server help" - Print help for the /server command
 			if (equalsHelp(subcommand))
 				printHelp("/" + name + " (subcommand)",
-						"Allows you to manage " + (ChatRoom.INSTANCE.isServerOpen() ? "your" : "a") + " server.");
+						new Subcommand("stop", "Attempts to stop the server, if you have it running."),
+						new Subcommand("start [port]",
+								"Attempts to start a server. The port is optional, and, if given, must be an integer from 0 to 65535."));
 			else
 			// "/server stop" - Stop the server if it's running. If it isn't, tell the user.
 			// (Unless they entered "/server stop help". In this case, we'd print help for
@@ -1194,7 +1196,7 @@ public final class Commands {
 					println("Failed to open the server.", ERROR_COLOR);
 				}
 
-			}
+			} // TODO Add "port" command
 
 		}
 
