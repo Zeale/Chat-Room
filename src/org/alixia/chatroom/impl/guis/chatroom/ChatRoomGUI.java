@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -40,6 +41,8 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public final class ChatRoomGUI {
+
+	public static final Image DEFAULT_ICON = new Image("/org/alixia/chatroom/assets/graphics/icons/Icon.png");
 
 	public static final Color DEFAULT_WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
 			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
@@ -86,6 +89,7 @@ public final class ChatRoomGUI {
 
 	public ChatRoomGUI(final Stage stage) {
 		this.stage = stage;
+		stage.getIcons().add(DEFAULT_ICON);
 		stage.setWidth(800);
 		stage.setHeight(600);
 		stage.setScene(scene);
