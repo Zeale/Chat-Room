@@ -181,6 +181,14 @@ public class Server {
 										"An error occurred while telling a client that the client's login attempt failed since they weren't originally logged in.");
 								e.printStackTrace();
 							}
+					else if (object instanceof Message)
+						sendAll((Message) object, client);
+					else
+						try {
+							client.sendMessage("Your message couldn't be handled...");
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 
 				}
 			});
