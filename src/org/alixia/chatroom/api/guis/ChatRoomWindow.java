@@ -6,12 +6,14 @@ import org.alixia.chatroom.api.OS;
 import org.alixia.chatroom.api.fx.tools.FXTools;
 import org.alixia.chatroom.api.fx.tools.Resizable;
 import org.alixia.chatroom.api.fx.tools.ResizeOperator;
+import org.alixia.chatroom.impl.guis.chatroom.ChatRoomGUI;
 
 import javafx.animation.FillTransition;
 import javafx.animation.StrokeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -34,12 +36,15 @@ import javafx.util.Duration;
 
 public class ChatRoomWindow extends Stage {
 
+	private static final Image DEFAULT_ICON = ChatRoomGUI.DEFAULT_ICON;
+
 	public static final Color DEFAULT_WINDOW_BORDER_COLOR = new Color(0.2, 0.2, 0.2, 1),
 			DEFAULT_NODE_OUTPUT_COLOR = new Color(0, 0, 0, 0.3), DEFAULT_NODE_ITEM_COLOR = Color.DARKGRAY,
 			DEFAULT_WINDOW_BACKGROUND_COLOR = new Color(0.3, 0.3, 0.3, 0.8);
 
 	{
 		initStyle(StageStyle.TRANSPARENT);
+		getIcons().add(DEFAULT_ICON);
 	}
 
 	protected final AnchorPane contentPane = new AnchorPane();
