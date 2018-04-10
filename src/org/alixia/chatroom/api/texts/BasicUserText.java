@@ -1,14 +1,13 @@
 package org.alixia.chatroom.api.texts;
 
-import org.alixia.chatroom.ChatRoom;
 import org.alixia.chatroom.api.Console;
+import org.alixia.chatroom.api.fx.tools.FXTools;
 
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.stage.Popup;
 
 /**
  * <p>
@@ -43,29 +42,9 @@ public class BasicUserText extends ConsoleText {
 			if (specialName)
 				name.setFont(Font.font("Brush Script MT", DEFAULT_SIZE + 8));
 
-			new Object() {
-				private final Popup popup = new Popup();
-				private final Label label = new Label(accountName);
-
-				{
-					label.setTextFill(Color.ORANGERED);
-					label.setBackground(null);
-					popup.getScene().setRoot(label);
-
-					popup.setWidth(label.getMaxWidth());
-					label.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
-
-					popup.setHeight(25);
-
-					name.setOnMouseMoved(event -> {
-						popup.setX(event.getScreenX());
-						popup.setY(event.getScreenY() - 50);
-						popup.show(ChatRoom.INSTANCE.getGUI().stage);
-					});
-
-					name.setOnMouseExited(event -> popup.hide());
-				}
-			};
+			Label label = FXTools.addHoverText(name, accountName, new Color(0.1, 0.1, 0.1, 0.85));
+			label.setTextFill(Color.ORANGERED);
+			label.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
 
 		}
 

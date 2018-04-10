@@ -35,6 +35,7 @@ import org.alixia.chatroom.api.changelogparser.ParseException;
 import org.alixia.chatroom.api.commands.Command;
 import org.alixia.chatroom.api.commands.CommandConsumer;
 import org.alixia.chatroom.api.commands.CommandManager;
+import org.alixia.chatroom.api.connections.messages.Message;
 import org.alixia.chatroom.api.connections.voicecall.CallClient;
 import org.alixia.chatroom.api.connections.voicecall.CallServer;
 import org.alixia.chatroom.api.internet.Authentication;
@@ -1353,6 +1354,8 @@ public final class Commands {
 						println("The port you entered was out of range. It must be BETWEEN 0 and 65536, but not 0 or 65536.",
 								ERROR_COLOR);
 					}
+			else
+				println("That subcommand was not recognized.", ERROR_COLOR);
 
 		}
 

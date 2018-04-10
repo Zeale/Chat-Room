@@ -2,12 +2,16 @@ package org.alixia.chatroom.api.fx.tools;
 
 import java.awt.MouseInfo;
 
+import org.alixia.chatroom.ChatRoom;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
@@ -143,6 +147,54 @@ public final class FXTools {
 	public static void spawnLabelAtMousePos(final String text, final Color color, final Stage stage) {
 		spawnLabel(text, color, MouseInfo.getPointerInfo().getLocation().getX(),
 				MouseInfo.getPointerInfo().getLocation().getY(), stage);
+	}
+
+	public static void addPopup(Node node, Parent popupRoot) {
+		new Object() {
+			private final Popup popup = new Popup();
+
+			{
+				popup.getScene().setRoot(popupRoot);
+
+				node.addEventHandler(MouseEvent.MOUSE_MOVED, event -> {
+					popup.setX(event.getScreenX());
+					popup.setY(event.getScreenY() - 50);
+					popup.show(ChatRoom.INSTANCE.getGUI().stage);
+					popup.sizeToScene();
+				});
+				node.addEventHandler(MouseEvent.MOUSE_EXITED, event -> popup.hide());
+			}
+		};
+	}
+
+	public static Label addHoverText(Node node, String text) {
+
+		final Label label = new Label(text);
+
+		new Object() {
+			private final Popup popup = new Popup();
+
+			{
+				popup.getScene().setRoot(label);
+
+				node.addEventHandler(MouseEvent.MOUSE_MOVED, event -> {
+					popup.setX(event.getScreenX());
+					popup.setY(event.getScreenY() - 50);
+					popup.show(ChatRoom.INSTANCE.getGUI().stage);
+					popup.sizeToScene();
+				});
+				node.addEventHandler(MouseEvent.MOUSE_EXITED, event -> popup.hide());
+			}
+		};
+
+		return label;
+
+	}
+
+	public static Label addHoverText(Node node, String text, Color backgroundColor) {
+		Label label = addHoverText(node, text);
+		label.getScene().setFill(backgroundColor);
+		return label;
 	}
 
 	private FXTools() {
