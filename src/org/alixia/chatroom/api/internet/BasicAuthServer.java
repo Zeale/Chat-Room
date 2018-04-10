@@ -328,4 +328,9 @@ public class BasicAuthServer {
 		store(new File(path));
 	}
 
+	@Override
+	public String toString() {
+		return "A " + getClass().getSimpleName() + " server running under ChatRoom.";
+	}
+
 }
