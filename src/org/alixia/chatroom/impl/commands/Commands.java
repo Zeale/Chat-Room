@@ -1196,7 +1196,13 @@ public final class Commands {
 					println("Failed to open the server.", ERROR_COLOR);
 				}
 
-			} // TODO Add "port" command
+			} else if (equalsAnyIgnoreCase(subcommand, "port", "get-port")) {
+				if (ChatRoom.INSTANCE.isServerOpen())
+					println("Your server is running on port " + ChatRoom.INSTANCE.getServer().getPort() + ".",
+							SUCCESS_COLOR);
+				else
+					println("You do not have a server running!", ERROR_COLOR);
+			}
 
 		}
 
@@ -1393,6 +1399,12 @@ public final class Commands {
 		@Override
 		protected void act(final String name, final String... args) {
 
+			if (equalsHelp(args[0])) {
+				printFullHelp("/" + name, "Attempts to clean up garbage and free ram used by the program.",
+						(Subcommand[]) null);
+				return;
+			}
+
 			final long ram = Runtime.getRuntime().totalMemory(), start = System.currentTimeMillis();
 			System.gc();
 			final long time = System.currentTimeMillis() - start,
@@ -1428,7 +1440,8 @@ public final class Commands {
 
 		@Override
 		protected boolean match(final String name) {
-			return equalsAnyIgnoreCase(name, "clean", "cleanup", "clear-lag", "clearlag", "clean-up");
+			return equalsAnyIgnoreCase(name, "gc", "garbage-collect", "collect-garbage", "cg", "clean", "cleanup",
+					"clear-lag", "clearlag", "clean-up");
 		}
 	};
 

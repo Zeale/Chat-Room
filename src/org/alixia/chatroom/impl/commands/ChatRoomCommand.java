@@ -49,8 +49,18 @@ abstract class ChatRoomCommand extends Command {
 
 	protected void printHelp(String usage, Subcommand... subcommands) {
 		ChatRoom.INSTANCE.println("Usage: " + usage, INFO_COLOR);
-		for (Subcommand s : subcommands)
-			s.printHelp(1);
+		if (subcommands != null)
+			for (Subcommand s : subcommands)
+				s.printHelp(1);
+	}
+
+	protected void printFullHelp(String usage, String desc, Subcommand... subcommands) {
+		ChatRoom.INSTANCE.print("Usage: " + usage, INFO_COLOR);
+		ChatRoom.INSTANCE.print(" ~ ", Color.BLACK);
+		ChatRoom.INSTANCE.println(desc, SUCCESS_COLOR);
+		if (subcommands != null)
+			for (Subcommand s : subcommands)
+				s.printHelp(1);
 	}
 
 	protected void printSubcommandHelp(final String name, final String usage, final String... descriptions) {
