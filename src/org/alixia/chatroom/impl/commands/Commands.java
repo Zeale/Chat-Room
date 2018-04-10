@@ -1162,7 +1162,7 @@ public final class Commands {
 					println("You don't have a server open...", ERROR_COLOR);
 				else
 					try {
-						ChatRoom.INSTANCE.getServer().stop();
+						ChatRoom.INSTANCE.stopServer();
 						println("Your server was stopped successfully. ", SUCCESS_COLOR);
 					} catch (final IOException e) {
 						e.printStackTrace();

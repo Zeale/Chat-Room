@@ -180,6 +180,11 @@ public class ChatRoom {
 		return server;
 	}
 
+	public void stopServer() throws IOException {
+		server.stop();
+		server = null;
+	}
+
 	public String getUsername() {
 		return username == null ? "Anonymous" : username;
 	}
