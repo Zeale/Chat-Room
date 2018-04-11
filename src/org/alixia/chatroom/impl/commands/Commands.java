@@ -35,7 +35,6 @@ import org.alixia.chatroom.api.changelogparser.ParseException;
 import org.alixia.chatroom.api.commands.Command;
 import org.alixia.chatroom.api.commands.CommandConsumer;
 import org.alixia.chatroom.api.commands.CommandManager;
-import org.alixia.chatroom.api.connections.messages.Message;
 import org.alixia.chatroom.api.connections.voicecall.CallClient;
 import org.alixia.chatroom.api.connections.voicecall.CallServer;
 import org.alixia.chatroom.api.internet.Authentication;
@@ -54,6 +53,8 @@ import org.alixia.chatroom.api.texts.BoldText;
 import org.alixia.chatroom.api.texts.ConsoleText;
 import org.alixia.chatroom.api.texts.Println;
 import org.alixia.chatroom.api.texts.SimpleText;
+import org.alixia.chatroom.impl.data.DirectoryCreationFailedException;
+import org.alixia.chatroom.impl.data.HomeDir;
 
 import javafx.application.Platform;
 import javafx.scene.effect.DropShadow;
@@ -176,6 +177,20 @@ public final class Commands {
 
 	public static final Command AUTH_SERVER = new ChatRoomCommand() {
 
+		private final File userDataDir;
+
+		{
+
+			File userDataDir;
+
+			try {
+				userDataDir = ChatRoom.canSaveThings() ? ChatRoom.getSaveFolder("auth-server/users/data") : null;
+			} catch (DirectoryCreationFailedException e) {
+				userDataDir = null;
+			}
+			this.userDataDir = userDataDir;
+		}
+
 		@Override
 		protected void act(final String name, final String... args) {
 			if (args.length == 0)
@@ -222,12 +237,55 @@ public final class Commands {
 					}
 				} else if (subcommand.equalsIgnoreCase("save")) {
 					if (args.length < 2) {
-						print("Usage: ", ERROR_COLOR);
-						println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
-						print("Do ", INFO_COLOR);
-						print("/" + name + " " + subcommand + " help ", Color.ORANGERED);
-						println("for more details.", INFO_COLOR);
-						return;
+
+						if (HomeDir.isHomeDirSet() && userDataDir != null) {
+							println("Do you want to save the data to your installation directory?", INFO_COLOR);
+							addConsumer(new CommandConsumer() {
+
+								private void saveToDir() {
+									print("Attempting to save users at ", INFO_COLOR);
+									print(userDataDir.toString(), Color.ORANGERED);
+									println(".", INFO_COLOR);
+
+									File file = new File(userDataDir, "user-" + System.currentTimeMillis() + ".dat");
+									try {
+										file.createNewFile();
+										Authentication.getAuthServer().store(file);
+									} catch (IOException e) {
+										e.printStackTrace();
+										println("Failed to write the data to (or to create) the file " + file,
+												ERROR_COLOR);
+									}
+								}
+
+								@Override
+								public void consume(String command, String... args) {
+									command = command.toLowerCase();
+									if (command.startsWith("yes ") || command.equals("y") || command.equals("yes")) {
+										println("Ok.", SUCCESS_COLOR);
+										saveToDir();
+									} else if (command.startsWith("no ") || command.equals("no") || command.equals("n"))
+										println("Ok.", SUCCESS_COLOR);
+									else {
+										print("Please either type \"", ERROR_COLOR);
+										print("yes", Color.ORANGERED);
+										print("\" or \"", ERROR_COLOR);
+										print("no", Color.ORANGERED);
+										println("\"", ERROR_COLOR);
+										addConsumer(this);
+									}
+
+								}
+							});
+						} else {
+
+							print("Usage: ", ERROR_COLOR);
+							println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
+							print("Do ", INFO_COLOR);
+							print("/" + name + " " + subcommand + " help ", Color.ORANGERED);
+							println("for more details.", INFO_COLOR);
+							return;
+						}
 					}
 					if (equalsHelp(args[1])) {
 						printHelp("/" + name + " " + subcommand + " (file-path.extension)",
@@ -252,6 +310,7 @@ public final class Commands {
 					println("Successfully printed the user data to the file, " + file.getAbsolutePath(), SUCCESS_COLOR);
 				} else if (subcommand.equalsIgnoreCase("load")) {
 					if (args.length < 2) {
+						// TODO Implement loading with the installation dir.
 						print("Usage: ", ERROR_COLOR);
 						println("/" + name + " " + subcommand + " (file-path.extension)", ERROR_COLOR);
 						print("Do ", INFO_COLOR);
