@@ -57,6 +57,43 @@ import javafx.stage.StageStyle;
  */
 public class ChatRoom {
 
+	/**
+	 * Returns whether or not the user has selected a home directory. Get a folder
+	 * to be able to save things to with {@link #getSaveFolder(String)}, <b>but only
+	 * if this method returns <code>true</code></b>.
+	 * 
+	 * @return Whether or not saving data is supported (i.e. the user has set an
+	 *         installation directory).
+	 */
+	public static final boolean canSaveThings() {
+		return HomeDir.isHomeDirSet();
+	}
+
+	/**
+	 * <p>
+	 * Returns a folder with the specified name that can be used to save data. If a
+	 * file exists at the location, an exception is thrown. If a folder does not
+	 * already exist at the location, one is made by a call to this method.
+	 * <p>
+	 * See what this method returns for how the name is handled.
+	 * 
+	 * @param name
+	 *            The folder's name. A sub-folder will contain a slash between the
+	 *            name of the parent folder and the name of the child folder, e.g.
+	 * 
+	 *            <pre>
+	 *            <code>parent/child</code>
+	 *            </pre>
+	 * 
+	 * @return A file constructed with the code: <code>new </code>
+	 *         {@link File}({@link HomeDir#getHomeDir()}, <code>name</code>);
+	 */
+	public static final File getSaveFolder(String name) {
+		File file = new File(HomeDir.getHomeDir(), name);
+		file.mkdirs();
+		return file;
+	}
+
 	public static final int DEFAULT_CALL_SAMPLE_RATE = 96000;
 	public static final int DEFAULT_CALL_PORT = 25369;
 	public static final int DEFAULT_AUTHENTICATION_PORT = Authentication.DEFAULT_AUTHENTICATION_PORT;

@@ -50,6 +50,12 @@ public final class HomeDir {
 
 	}
 
+	/**
+	 * Returns whether or not a home directory is available for parts of this
+	 * application to save data to.
+	 * 
+	 * @return <code>true</code> if {@link #homeDirectory} is not <code>null</code>.
+	 */
 	public static boolean isHomeDirSet() {
 		return homeDirectory != null;
 	}
