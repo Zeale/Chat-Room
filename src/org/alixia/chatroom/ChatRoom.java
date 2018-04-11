@@ -87,10 +87,14 @@ public class ChatRoom {
 	 * 
 	 * @return A file constructed with the code: <code>new </code>
 	 *         {@link File}({@link HomeDir#getHomeDir()}, <code>name</code>);
+	 * @throws DirectoryCreationFailedException
+	 *             In case the save folder could not be created. A file might exist
+	 *             with the same name as it.
 	 */
-	public static final File getSaveFolder(String name) {
+	public static final File getSaveFolder(String name) throws DirectoryCreationFailedException {
 		File file = new File(HomeDir.getHomeDir(), name);
-		file.mkdirs();
+		if (!(file.mkdirs() || file.isDirectory()))
+			throw new DirectoryCreationFailedException(file);
 		return file;
 	}
 
