@@ -66,7 +66,7 @@ import javafx.scene.text.Text;
 public final class Commands {
 
 	// Literally everything in this class is implementation specific, so it
-	// DEFINITELY belongs in this impl class.
+	// DEFINITELY belongs in this impl package.
 
 	private static final CommandManager commandManager = ChatRoom.INSTANCE.commandManager;
 
