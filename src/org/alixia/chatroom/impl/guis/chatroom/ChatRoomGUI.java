@@ -67,8 +67,8 @@ public final class ChatRoomGUI {
 		input.setBackground(FXTools.getBackgroundFromColor(DEFAULT_NODE_OUTPUT_COLOR));
 		input.setStyle("-fx-text-fill: darkgray; ");
 
-		AnchorPane.setLeftAnchor(flowWrapper, 50d);
-		AnchorPane.setRightAnchor(flowWrapper, 50d);
+		AnchorPane.setLeftAnchor(flowWrapper, 0d);
+		AnchorPane.setRightAnchor(flowWrapper, 0d);
 		AnchorPane.setTopAnchor(flowWrapper, 0d);
 		AnchorPane.setBottomAnchor(flowWrapper, 250d);
 
